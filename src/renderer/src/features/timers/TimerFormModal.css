@@ -1,0 +1,75 @@
+.timer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.timer-form__file-input {
+  display: none;
+}
+
+.timer-form__image-picker {
+  align-self: flex-start;
+  width: 84px;
+  height: 84px;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border);
+  background: var(--surface-sunken);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.timer-form__image-picker:hover {
+  background: var(--surface-hover);
+}
+
+.timer-form__image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.timer-form__image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  text-align: center;
+  padding: 6px;
+}
+
+.timer-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 550;
+  color: var(--text-secondary);
+}
+
+.timer-form__field input,
+.timer-form__field textarea {
+  font: inherit;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+  resize: vertical;
+}
+
+.timer-form__field input:focus,
+.timer-form__field textarea:focus {
+  outline: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.timer-form__delete {
+  margin-right: auto;
+  color: var(--danger);
+}

@@ -1,0 +1,73 @@
+.timer-run {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.timer-run__image {
+  width: 88px;
+  height: 88px;
+  border-radius: var(--radius-lg);
+  object-fit: cover;
+}
+
+.timer-run__description {
+  font-size: 13px;
+  color: var(--text-secondary);
+  max-width: 320px;
+}
+
+.timer-run__clock {
+  font-size: 40px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  background: transparent;
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+}
+
+.timer-run__clock:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.timer-run__clock-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.timer-run__clock-input {
+  width: 56px;
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  padding: 4px 2px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.timer-run__clock-action {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.timer-run__clock-action:hover:not(:disabled) {
+  background: var(--surface-active);
+}
+
+.timer-run__actions {
+  display: flex;
+  gap: 10px;
+}

@@ -1,0 +1,87 @@
+.timer-card {
+  position: relative;
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.timer-card__body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  text-align: left;
+  min-width: 0;
+}
+
+.timer-card__thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  color: var(--text-tertiary);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.timer-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.timer-card__info {
+  min-width: 0;
+  flex: 1;
+}
+
+.timer-card__name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timer-card__description {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timer-card__clock {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+}
+
+.timer-card__clock--running {
+  color: var(--accent);
+}
+
+.timer-card__edit {
+  width: 36px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  color: var(--text-tertiary);
+  border-left: 1px solid var(--border);
+  background: transparent;
+}
+
+.timer-card__edit:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
