@@ -311,6 +311,37 @@ export function SunIcon({ size = 18 }: IconProps): JSX.Element {
   )
 }
 
+export function TreeIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <path d="M12 2 6.5 10h2.2L4.5 16h4.7v6h5.6v-6h4.7l-4.2-6h2.2Z" />
+    </svg>
+  )
+}
+
+export function LeafIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <path d="M20 4C10 4 4 10 4 18c0 1 .8 2 2 2 8 0 14-6 14-16 0-.2 0-.2 0 0Z" />
+      <path d="M6.5 19 18 6" stroke="#ffffff" strokeOpacity="0.35" strokeWidth="1.3" fill="none" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function GiftIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <rect x="4" y="9.5" width="16" height="10.5" rx="1.5" strokeWidth="1.7" />
+      <path d="M4 13h16M12 9.5v10.5" strokeWidth="1.7" />
+      <path
+        d="M12 9.5c0-2.5-1.8-4-3.5-4S6 6.7 6 8s1.3 1.5 3 1.5h3ZM12 9.5c0-2.5 1.8-4 3.5-4S18 6.7 18 8s-1.3 1.5-3 1.5h-3Z"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 export function WaveIcon({ size = 18 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">

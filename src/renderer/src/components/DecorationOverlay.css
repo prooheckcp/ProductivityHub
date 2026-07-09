@@ -58,6 +58,12 @@
   line-height: 1;
 }
 
+.decoration-overlay__tree {
+  position: absolute;
+  bottom: -2%;
+  opacity: 0.55;
+}
+
 @keyframes decoration-fall {
   0% {
     transform: translate(0, 0) rotate(0deg);

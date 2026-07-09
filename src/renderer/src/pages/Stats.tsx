@@ -35,7 +35,6 @@ export default function Stats(): JSX.Element {
   const [view, setView] = useState<ChartView>('bar')
   const [category, setCategory] = useState<string | null>(null)
   const [stats, setStats] = useState<StatsResult | null>(null)
-  const [loading, setLoading] = useState(true)
   const [showCalendar, setShowCalendar] = useState(false)
   const now = Date.now()
   const [customStart, setCustomStart] = useState(() => toDateInputValue(now - 7 * 24 * 60 * 60 * 1000))
@@ -43,7 +42,6 @@ export default function Stats(): JSX.Element {
 
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
     const query: StatsQuery =
       range === 'custom'
         ? {
@@ -53,11 +51,11 @@ export default function Stats(): JSX.Element {
             category
           }
         : { range, category }
+    // Keep showing the previous stats while the new query is in flight instead
+    // of unmounting the whole results section — that unmount/remount on every
+    // filter click was the visible flicker.
     window.api.stats.get(query).then((result) => {
-      if (!cancelled) {
-        setStats(result)
-        setLoading(false)
-      }
+      if (!cancelled) setStats(result)
     })
     return () => {
       cancelled = true
@@ -158,7 +156,7 @@ export default function Stats(): JSX.Element {
         })}
       </div>
 
-      {!loading && stats && (
+      {stats && (
         <>
           <div className="stats-columns">
             <Card>

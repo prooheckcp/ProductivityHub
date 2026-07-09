@@ -6,7 +6,6 @@ const settingsFile = (): string => dataFile('settings.json')
 
 const DEFAULT_SETTINGS: AppSettings = {
   backgroundGradient: 'indigo',
-  buttonGradient: 'indigo',
   font: 'system',
   textColor: null
 }

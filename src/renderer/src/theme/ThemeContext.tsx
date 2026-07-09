@@ -23,7 +23,6 @@ export const FONT_LABELS: Record<FontChoice, string> = {
 
 const DEFAULT_SETTINGS: AppSettings = {
   backgroundGradient: DEFAULT_GRADIENT_ID,
-  buttonGradient: DEFAULT_GRADIENT_ID,
   font: 'system',
   textColor: null
 }
@@ -32,11 +31,9 @@ type ThemeContextValue = {
   settings: AppSettings
   gradients: Gradient[]
   backgroundGradient: Gradient
-  buttonGradient: Gradient
   loaded: boolean
   unlockedAchievementIds: Set<string>
   setBackgroundGradient: (id: string) => void
-  setButtonGradient: (id: string) => void
   setFont: (font: FontChoice) => void
   setTextColor: (color: string | null) => void
   reloadSettings: () => void
@@ -60,17 +57,21 @@ const LIGHT_CHROME = {
 
 function applyToDocument(settings: AppSettings): void {
   const root = document.documentElement
-  const button = getGradient(settings.buttonGradient)
   const background = getGradient(settings.backgroundGradient)
 
   for (const [prop, value] of Object.entries(LIGHT_CHROME)) {
     root.style.setProperty(prop, value)
   }
 
-  root.style.setProperty('--accent', button.stops[0])
-  root.style.setProperty('--accent-2', button.stops[1])
-  root.style.setProperty('--accent-gradient', `linear-gradient(135deg, ${button.stops[0]}, ${button.stops[1]})`)
-  root.style.setProperty('--accent-contrast', button.contrast)
+  // Buttons/accents take their color straight from the selected background
+  // theme — no separate "button color" choice to keep in sync with it.
+  root.style.setProperty('--accent', background.stops[0])
+  root.style.setProperty('--accent-2', background.stops[1])
+  root.style.setProperty(
+    '--accent-gradient',
+    `linear-gradient(135deg, ${background.stops[0]}, ${background.stops[1]})`
+  )
+  root.style.setProperty('--accent-contrast', background.contrast)
 
   // The page background IS the theme's own gradient (or, for scenes like
   // Summer's sky/ocean/sand, its own hand-authored backgroundCss) — no
@@ -136,11 +137,9 @@ export function ThemeProvider({ children }: { children: ReactNode }): JSX.Elemen
       settings,
       gradients: GRADIENTS,
       backgroundGradient: getGradient(settings.backgroundGradient),
-      buttonGradient: getGradient(settings.buttonGradient),
       loaded,
       unlockedAchievementIds,
       setBackgroundGradient: (id) => updateSetting({ backgroundGradient: id }),
-      setButtonGradient: (id) => updateSetting({ buttonGradient: id }),
       setFont: (font) => updateSetting({ font }),
       setTextColor: (color) => updateSetting({ textColor: color }),
       reloadSettings: load

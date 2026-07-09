@@ -4,7 +4,7 @@ import PageHeader from '../components/PageHeader'
 import Card from '../components/Card'
 import Button from '../components/Button'
 import ConfirmDialog from '../components/ConfirmDialog'
-import { useTheme, FONT_LABELS } from '../theme/ThemeContext'
+import { useTheme, FONT_LABELS, FONT_STACKS } from '../theme/ThemeContext'
 import { COLOR_GRADIENTS, EFFECT_GRADIENTS } from '../theme/gradients'
 import type { FontChoice } from '@shared/types'
 import GradientPicker from '../features/settings/GradientPicker'
@@ -13,7 +13,7 @@ import './Settings.css'
 const FONT_CHOICES: FontChoice[] = ['system', 'serif', 'rounded', 'mono', 'comic', 'arial']
 
 export default function Settings(): JSX.Element {
-  const { settings, setBackgroundGradient, setButtonGradient, setFont, setTextColor } = useTheme()
+  const { settings, setBackgroundGradient, setFont, setTextColor } = useTheme()
   const [exportStatus, setExportStatus] = useState<string | null>(null)
   const [confirmingImport, setConfirmingImport] = useState(false)
   const [importing, setImporting] = useState(false)
@@ -57,12 +57,6 @@ export default function Settings(): JSX.Element {
           onChange={setBackgroundGradient}
           options={EFFECT_GRADIENTS}
         />
-        <GradientPicker
-          label="Button color"
-          value={settings.buttonGradient}
-          onChange={setButtonGradient}
-          options={COLOR_GRADIENTS}
-        />
 
         <p className="settings__label">Font</p>
         <div className="font-picker">
@@ -71,6 +65,7 @@ export default function Settings(): JSX.Element {
               key={font}
               type="button"
               className={'font-picker__option' + (settings.font === font ? ' font-picker__option--active' : '')}
+              style={{ fontFamily: FONT_STACKS[font] }}
               onClick={() => setFont(font)}
             >
               {FONT_LABELS[font]}

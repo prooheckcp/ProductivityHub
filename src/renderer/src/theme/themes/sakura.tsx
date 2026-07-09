@@ -1,8 +1,15 @@
 import { useMemo } from 'react'
 import type { CSSProperties, JSX } from 'react'
-import { SakuraFlowerIcon } from '../../components/icons'
+import { SakuraFlowerIcon, TreeIcon } from '../../components/icons'
 import { makeParticles } from './particles'
 import type { DecorationProps, Gradient } from './types'
+
+const TREE_SPOTS = [
+  { left: '8%', size: 44 },
+  { left: '22%', size: 32 },
+  { left: '68%', size: 50 },
+  { left: '85%', size: 36 }
+]
 
 function SakuraDecoration({ tint }: DecorationProps): JSX.Element {
   // Wide size range so petals read as a real mixed flurry, not a uniform grid.
@@ -10,6 +17,12 @@ function SakuraDecoration({ tint }: DecorationProps): JSX.Element {
 
   return (
     <div className="decoration-overlay" aria-hidden="true" style={{ color: tint }}>
+      {TREE_SPOTS.map((spot, index) => (
+        <span key={index} className="decoration-overlay__tree" style={{ left: spot.left, color: '#f4a7c6' }}>
+          <TreeIcon size={spot.size} />
+        </span>
+      ))}
+
       {petals.map((p) => (
         <span
           key={p.id}

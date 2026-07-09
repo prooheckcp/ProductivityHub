@@ -40,7 +40,6 @@ export default function GradientPicker({ label, value, onChange, options = GRADI
               onClick={() => unlocked && onChange(gradient.id)}
               disabled={!unlocked}
               aria-pressed={isActive}
-              title={unlocked ? undefined : unlockHint(gradient)}
             >
               {isActive && (
                 <span className="gradient-swatch__check">
@@ -48,9 +47,12 @@ export default function GradientPicker({ label, value, onChange, options = GRADI
                 </span>
               )}
               {!unlocked && (
-                <span className="gradient-swatch__lock">
-                  <LockIcon size={16} />
-                </span>
+                <>
+                  <span className="gradient-swatch__lock">
+                    <LockIcon size={16} />
+                  </span>
+                  <span className="gradient-swatch__tooltip">{unlockHint(gradient)}</span>
+                </>
               )}
               <span className="gradient-swatch__label">{gradient.name}</span>
             </button>

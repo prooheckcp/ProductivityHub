@@ -67,7 +67,6 @@ export type FontChoice = 'system' | 'serif' | 'rounded' | 'mono' | 'comic' | 'ar
 
 export type AppSettings = {
   backgroundGradient: string
-  buttonGradient: string
   font: FontChoice
   textColor: string | null
 }
