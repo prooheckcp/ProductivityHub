@@ -132,7 +132,7 @@ export type TaskFormInput = {
 
 // ---- Achievements ----
 
-export type AchievementCategory = 'timers' | 'tasks' | 'devtools'
+export type AchievementCategory = 'timers' | 'tasks' | 'devtools' | 'timerUsage'
 
 export type AchievementDef = {
   id: string
@@ -146,6 +146,7 @@ export type AchievementProgress = {
   timersCreated: number
   tasksCompleted: number
   devToolsMs: number
+  timerUsageMs: number
   unlocked: Record<string, number>
 }
 

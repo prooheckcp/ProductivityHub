@@ -50,7 +50,7 @@ export const snow: Gradient = {
   contrast: '#0c2f52',
   kind: 'effect',
   decoration: 'snow',
-  unlockedBy: null,
+  unlockedBy: 'timerusage-10h',
   cardTint: '#d5eaff',
   Decoration: SnowDecoration
 }

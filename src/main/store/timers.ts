@@ -2,6 +2,7 @@ import { randomUUID } from 'crypto'
 import type { Timer, TimerFormInput, TimerSession } from '../../shared/types'
 import { dataFile } from './paths'
 import { readJsonFile, writeJsonFile } from './jsonFile'
+import { recordTimerUsage } from './achievements'
 
 const timersFile = (): string => dataFile('timers.json')
 const sessionsFile = (): string => dataFile('timer-sessions.json')
@@ -44,6 +45,7 @@ function finalizeRunningSession(timer: Timer, now: number): void {
       durationMs
     })
     timer.accumulatedMs += durationMs
+    recordTimerUsage(durationMs)
   }
   timer.runningSince = null
 }

@@ -86,7 +86,7 @@ export const forest: Gradient = {
   contrast: '#ffffff',
   kind: 'effect',
   decoration: 'forest',
-  unlockedBy: null,
+  unlockedBy: 'tasks-1',
   cardTint: '#cdf0d9',
   Decoration: ForestDecoration
 }

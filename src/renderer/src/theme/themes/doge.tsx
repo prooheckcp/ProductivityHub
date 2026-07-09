@@ -42,7 +42,7 @@ export const doge: Gradient = {
   contrast: '#4a2e00',
   kind: 'effect',
   decoration: 'doge',
-  unlockedBy: null,
+  unlockedBy: 'devtools-1h',
   cardTint: '#fbe6a8',
   Decoration: DogeDecoration
 }

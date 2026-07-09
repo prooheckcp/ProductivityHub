@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { JSX } from 'react'
 import PageHeader from '../components/PageHeader'
 import Card from '../components/Card'
-import { CheckIcon, ChecklistIcon, CodeIcon, GiftIcon, TimerIcon } from '../components/icons'
+import { CheckIcon, ChecklistIcon, ChartIcon, CodeIcon, GiftIcon, TimerIcon } from '../components/icons'
 import { ACHIEVEMENT_DEFS, describeAchievements } from '@shared/achievements'
 import type { AchievementCategory, AchievementProgress, AchievementSummary } from '@shared/types'
 import { formatDuration } from '../utils/format'
@@ -11,22 +11,26 @@ import './Achievements.css'
 
 const SECTIONS: { key: AchievementCategory; title: string }[] = [
   { key: 'timers', title: 'Timers' },
+  { key: 'timerUsage', title: 'Timer Usage' },
   { key: 'tasks', title: 'Tasks' },
   { key: 'devtools', title: 'Developer Tools' }
 ]
 
 const CATEGORY_ICONS: Record<AchievementCategory, (props: { size?: number }) => JSX.Element> = {
   timers: TimerIcon,
+  timerUsage: ChartIcon,
   tasks: ChecklistIcon,
   devtools: CodeIcon
 }
+
+const DURATION_CATEGORIES: AchievementCategory[] = ['devtools', 'timerUsage']
 
 function rewardFor(achievementId: string): string | null {
   return GRADIENTS.find((g) => g.unlockedBy === achievementId)?.name ?? null
 }
 
 function formatAmount(category: AchievementCategory, value: number): string {
-  return category === 'devtools' ? formatDuration(value) : String(Math.round(value))
+  return DURATION_CATEGORIES.includes(category) ? formatDuration(value) : String(Math.round(value))
 }
 
 export default function Achievements(): JSX.Element {

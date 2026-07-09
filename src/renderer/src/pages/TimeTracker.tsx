@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { JSX } from 'react'
 import { useLocation } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
@@ -6,7 +6,7 @@ import Button from '../components/Button'
 import EmptyState from '../components/EmptyState'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { PlusIcon } from '../components/icons'
-import { useTimers } from '../features/timers/useTimers'
+import { useTimersContext } from '../features/timers/TimersContext'
 import TimerCard from '../features/timers/TimerCard'
 import TimerFormModal from '../features/timers/TimerFormModal'
 import TimerRunModal from '../features/timers/TimerRunModal'
@@ -24,7 +24,7 @@ export default function TimeTracker(): JSX.Element {
     pauseTimer,
     resetTimer,
     setManualTime
-  } = useTimers()
+  } = useTimersContext()
 
   const location = useLocation()
   const deepLinkTimerId = (location.state as { openTimerId?: string } | null)?.openTimerId ?? null
@@ -33,6 +33,13 @@ export default function TimeTracker(): JSX.Element {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [openId, setOpenId] = useState<string | null>(deepLinkTimerId)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  // Re-applies the deep link even when we're already on this page — e.g. tapping
+  // the active-timer widget while sitting on Time Tracker. location.key changes
+  // on every navigate() call, even to the same path, so this fires every time.
+  useEffect(() => {
+    if (deepLinkTimerId) setOpenId(deepLinkTimerId)
+  }, [location.key, deepLinkTimerId])
 
   const editingTimer = timers.find((t) => t.id === editingId) ?? null
   const openTimer = timers.find((t) => t.id === openId) ?? null

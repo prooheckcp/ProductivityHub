@@ -67,7 +67,7 @@ export const summer: Gradient = {
   contrast: '#7a2e0e',
   kind: 'effect',
   decoration: 'summer',
-  unlockedBy: null,
+  unlockedBy: 'timerusage-1h',
   backgroundCss: BACKGROUND_CSS,
   cardTint: '#fbe4ae',
   Decoration: SummerDecoration

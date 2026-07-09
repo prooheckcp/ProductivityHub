@@ -10,6 +10,7 @@ const DEFAULT_PROGRESS: AchievementProgress = {
   timersCreated: 0,
   tasksCompleted: 0,
   devToolsMs: 0,
+  timerUsageMs: 0,
   unlocked: {}
 }
 
@@ -28,9 +29,15 @@ function notifyUnlocked(defs: AchievementDef[]): void {
   }
 }
 
+function countFor(progress: AchievementProgress, category: AchievementDef['category']): number {
+  if (category === 'timers') return progress.timersCreated
+  if (category === 'tasks') return progress.tasksCompleted
+  if (category === 'timerUsage') return progress.timerUsageMs
+  return progress.devToolsMs
+}
+
 function unlockNewly(progress: AchievementProgress, category: AchievementDef['category']): AchievementDef[] {
-  const count =
-    category === 'timers' ? progress.timersCreated : category === 'tasks' ? progress.tasksCompleted : progress.devToolsMs
+  const count = countFor(progress, category)
   const newlyUnlocked: AchievementDef[] = []
   for (const def of ACHIEVEMENT_DEFS) {
     if (def.category === category && count >= def.threshold && !(def.id in progress.unlocked)) {
@@ -73,6 +80,14 @@ export function recordDevToolsUsage(deltaMs: number): AchievementProgress {
   const progress = loadProgress()
   progress.devToolsMs += deltaMs
   notifyUnlocked(unlockNewly(progress, 'devtools'))
+  saveProgress(progress)
+  return progress
+}
+
+export function recordTimerUsage(deltaMs: number): AchievementProgress {
+  const progress = loadProgress()
+  progress.timerUsageMs += deltaMs
+  notifyUnlocked(unlockNewly(progress, 'timerUsage'))
   saveProgress(progress)
   return progress
 }

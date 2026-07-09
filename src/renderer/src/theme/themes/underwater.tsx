@@ -36,7 +36,7 @@ export const underwater: Gradient = {
   contrast: '#ffffff',
   kind: 'effect',
   decoration: 'underwater',
-  unlockedBy: null,
+  unlockedBy: 'timerusage-50h',
   cardTint: '#bceef4',
   Decoration: UnderwaterDecoration
 }

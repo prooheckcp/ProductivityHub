@@ -99,6 +99,10 @@ export default function TimerRunModal({
         <img
           className="timer-run__image"
           src={timer.imagePath ? toFileUrl(timer.imagePath) : defaultCover}
+          onError={(event) => {
+            event.currentTarget.onerror = null
+            event.currentTarget.src = defaultCover
+          }}
           alt=""
         />
         {timer.description && <p className="timer-run__description">{timer.description}</p>}

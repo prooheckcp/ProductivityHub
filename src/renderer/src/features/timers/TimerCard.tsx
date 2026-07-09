@@ -22,7 +22,14 @@ export default function TimerCard({ timer, now, onOpen, onEdit }: TimerCardProps
     <div className="timer-card">
       <button type="button" className="timer-card__body" onClick={onOpen}>
         <div className="timer-card__cover">
-          <img src={timer.imagePath ? toFileUrl(timer.imagePath) : defaultCover} alt="" />
+          <img
+            src={timer.imagePath ? toFileUrl(timer.imagePath) : defaultCover}
+            onError={(event) => {
+              event.currentTarget.onerror = null
+              event.currentTarget.src = defaultCover
+            }}
+            alt=""
+          />
           <div className="timer-card__cover-fade" />
           <p className={'timer-card__clock' + (isRunning ? ' timer-card__clock--running' : '')}>
             {isRunning && <span className="timer-card__clock-dot" />}
