@@ -3,6 +3,11 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc'
 import { startAppTracker, stopAppTracker } from './appTracker'
+import { startDeadlineNotifier, stopDeadlineNotifier } from './deadlineNotifier'
+
+const iconPath = app.isPackaged
+  ? join(process.resourcesPath, 'icon.png')
+  : join(__dirname, '../../resources/icon.png')
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -13,6 +18,8 @@ function createWindow(): void {
     show: false,
     autoHideMenuBar: true,
     titleBarStyle: 'hiddenInset',
+    title: 'Shiba Tracker',
+    icon: iconPath,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false
@@ -36,7 +43,7 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
-  electronApp.setAppUserModelId('com.productivityhub.app')
+  electronApp.setAppUserModelId('com.shibatracker.app')
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
@@ -44,6 +51,7 @@ app.whenReady().then(() => {
 
   registerIpcHandlers()
   startAppTracker()
+  startDeadlineNotifier()
 
   createWindow()
 
@@ -60,4 +68,5 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   stopAppTracker()
+  stopDeadlineNotifier()
 })

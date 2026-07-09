@@ -1,0 +1,180 @@
+.task-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.task-modal__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.task-modal__complete {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  display: grid;
+  place-items: center;
+  color: var(--accent-contrast);
+  background: var(--surface);
+}
+
+.task-modal__complete--done {
+  background: var(--accent-gradient);
+  border-color: transparent;
+}
+
+.task-modal__name {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 6px 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.task-modal__name:focus {
+  outline: none;
+}
+
+.task-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.task-modal__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.task-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.task-modal__input {
+  font: inherit;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.task-modal__input:focus {
+  outline: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.task-modal__priority-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.task-modal__priority-option {
+  padding: 0;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 999px;
+}
+
+.task-modal__priority-option--active {
+  border-color: var(--text-primary);
+}
+
+.task-modal__time-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-modal__time {
+  font-size: 15px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.task-modal__time-toggle {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.task-modal__time-toggle:hover {
+  background: var(--surface-active);
+}
+
+.task-modal__subtasks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.task-modal__subtask {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  text-align: left;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.task-modal__subtask:hover {
+  background: var(--surface-hover);
+}
+
+.task-modal__subtask-check {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  display: grid;
+  place-items: center;
+  color: var(--accent-contrast);
+}
+
+.task-modal__subtask-check--done {
+  background: var(--accent-gradient);
+  border-color: transparent;
+}
+
+.task-modal__subtask-name--done {
+  text-decoration: line-through;
+  color: var(--text-tertiary);
+}
+
+.task-modal__add-subtask {
+  display: flex;
+  gap: 8px;
+}
+
+.task-modal__add-subtask .task-modal__input {
+  flex: 1;
+}
+
+.task-modal__delete {
+  margin-right: auto;
+  color: var(--danger);
+}

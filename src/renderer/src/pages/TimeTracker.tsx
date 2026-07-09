@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { JSX } from 'react'
+import { useLocation } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import Button from '../components/Button'
 import EmptyState from '../components/EmptyState'
@@ -25,9 +26,12 @@ export default function TimeTracker(): JSX.Element {
     setManualTime
   } = useTimers()
 
+  const location = useLocation()
+  const deepLinkTimerId = (location.state as { openTimerId?: string } | null)?.openTimerId ?? null
+
   const [showCreate, setShowCreate] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [openId, setOpenId] = useState<string | null>(null)
+  const [openId, setOpenId] = useState<string | null>(deepLinkTimerId)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const editingTimer = timers.find((t) => t.id === editingId) ?? null

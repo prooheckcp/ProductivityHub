@@ -1,5 +1,19 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
-import type { Timer, StatsResult, StatsRangeKey, TimerFormInput } from '../shared/types'
+import type {
+  AchievementProgress,
+  AppSettings,
+  Category,
+  CategoryFormInput,
+  HomeSummary,
+  Project,
+  ProjectFormInput,
+  StatsRangeKey,
+  StatsResult,
+  Task,
+  TaskFormInput,
+  Timer,
+  TimerFormInput
+} from '../shared/types'
 
 export type Api = {
   timers: {
@@ -13,11 +27,51 @@ export type Api = {
     setManualTime: (id: string, ms: number) => Promise<Timer>
   }
   images: {
-    saveTimerImage: (fileName: string, data: Uint8Array) => Promise<string>
-    deleteImage: (path: string) => Promise<void>
+    save: (fileName: string, data: Uint8Array) => Promise<string>
+    delete: (path: string) => Promise<void>
   }
   stats: {
     get: (range: StatsRangeKey) => Promise<StatsResult>
+  }
+  apps: {
+    getIcon: (path: string | null) => Promise<string | null>
+  }
+  settings: {
+    get: () => Promise<AppSettings>
+    update: (patch: Partial<AppSettings>) => Promise<AppSettings>
+  }
+  achievements: {
+    get: () => Promise<AchievementProgress>
+  }
+  home: {
+    getSummary: () => Promise<HomeSummary>
+  }
+  todo: {
+    projects: {
+      list: () => Promise<Project[]>
+      create: (input: ProjectFormInput) => Promise<Project>
+      update: (id: string, patch: ProjectFormInput) => Promise<Project>
+      remove: (id: string) => Promise<void>
+    }
+    categories: {
+      list: () => Promise<Category[]>
+      create: (projectId: string, input: CategoryFormInput) => Promise<Category>
+      update: (id: string, patch: CategoryFormInput) => Promise<Category>
+      remove: (id: string) => Promise<void>
+    }
+    tasks: {
+      list: () => Promise<Task[]>
+      create: (categoryId: string, parentTaskId: string | null, input: TaskFormInput) => Promise<Task>
+      update: (id: string, patch: TaskFormInput) => Promise<Task>
+      remove: (id: string) => Promise<void>
+      setCompleted: (id: string, completed: boolean) => Promise<Task>
+      start: (id: string) => Promise<Task>
+      pause: (id: string) => Promise<Task>
+    }
+  }
+  data: {
+    export: () => Promise<{ canceled: boolean; path?: string }>
+    import: () => Promise<{ canceled: boolean }>
   }
 }
 

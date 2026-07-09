@@ -1,42 +1,95 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import type { JSX, ReactNode } from 'react'
-import { DEFAULT_THEME_ID, getTheme, THEMES, type Theme } from './themes'
+import type { AppSettings, FontChoice } from '@shared/types'
+import { DEFAULT_GRADIENT_ID, getGradient, GRADIENTS, type Gradient } from './gradients'
 
-const STORAGE_KEY = 'productivityhub:theme'
+export const FONT_STACKS: Record<FontChoice, string> = {
+  system: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, Helvetica, Arial, sans-serif`,
+  serif: `Georgia, 'Times New Roman', Times, serif`,
+  rounded: `ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, sans-serif`,
+  mono: `ui-monospace, 'SF Mono', 'Cascadia Code', 'Segoe UI Mono', monospace`
+}
+
+export const FONT_LABELS: Record<FontChoice, string> = {
+  system: 'System default',
+  serif: 'Serif',
+  rounded: 'Rounded',
+  mono: 'Monospace'
+}
+
+const DEFAULT_SETTINGS: AppSettings = {
+  backgroundGradient: DEFAULT_GRADIENT_ID,
+  buttonGradient: DEFAULT_GRADIENT_ID,
+  font: 'system'
+}
 
 type ThemeContextValue = {
-  theme: Theme
-  themeId: string
-  themes: Theme[]
-  setThemeId: (id: string) => void
+  settings: AppSettings
+  gradients: Gradient[]
+  backgroundGradient: Gradient
+  buttonGradient: Gradient
+  loaded: boolean
+  setBackgroundGradient: (id: string) => void
+  setButtonGradient: (id: string) => void
+  setFont: (font: FontChoice) => void
+  reloadSettings: () => void
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
-function applyThemeToDocument(theme: Theme): void {
+function applyToDocument(settings: AppSettings): void {
   const root = document.documentElement
-  root.style.setProperty('--accent', theme.gradient[0])
-  root.style.setProperty('--accent-2', theme.gradient[1])
-  root.style.setProperty('--accent-gradient', `linear-gradient(135deg, ${theme.gradient[0]}, ${theme.gradient[1]})`)
-  root.style.setProperty('--accent-contrast', theme.contrast)
-  root.setAttribute('data-theme-id', theme.id)
+  const button = getGradient(settings.buttonGradient)
+  const background = getGradient(settings.backgroundGradient)
+
+  root.style.setProperty('--accent', button.stops[0])
+  root.style.setProperty('--accent-2', button.stops[1])
+  root.style.setProperty('--accent-gradient', `linear-gradient(135deg, ${button.stops[0]}, ${button.stops[1]})`)
+  root.style.setProperty('--accent-contrast', button.contrast)
+
+  root.style.setProperty(
+    '--bg-gradient',
+    `linear-gradient(160deg, ${background.stops[0]}22, ${background.stops[1]}11)`
+  )
+  root.style.setProperty('--font-family', FONT_STACKS[settings.font])
+  root.setAttribute('data-decoration', background.decoration ?? 'none')
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }): JSX.Element {
-  const [themeId, setThemeId] = useState<string>(() => {
-    return localStorage.getItem(STORAGE_KEY) ?? DEFAULT_THEME_ID
-  })
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
+  const [loaded, setLoaded] = useState(false)
 
-  const theme = useMemo(() => getTheme(themeId), [themeId])
+  function load(): void {
+    window.api.settings.get().then((loadedSettings) => {
+      setSettings(loadedSettings)
+      setLoaded(true)
+    })
+  }
+
+  useEffect(load, [])
 
   useEffect(() => {
-    applyThemeToDocument(theme)
-    localStorage.setItem(STORAGE_KEY, theme.id)
-  }, [theme])
+    applyToDocument(settings)
+  }, [settings])
+
+  async function updateSetting(patch: Partial<AppSettings>): Promise<void> {
+    const updated = await window.api.settings.update(patch)
+    setSettings(updated)
+  }
 
   const value = useMemo<ThemeContextValue>(
-    () => ({ theme, themeId: theme.id, themes: THEMES, setThemeId }),
-    [theme]
+    () => ({
+      settings,
+      gradients: GRADIENTS,
+      backgroundGradient: getGradient(settings.backgroundGradient),
+      buttonGradient: getGradient(settings.buttonGradient),
+      loaded,
+      setBackgroundGradient: (id) => updateSetting({ backgroundGradient: id }),
+      setButtonGradient: (id) => updateSetting({ buttonGradient: id }),
+      setFont: (font) => updateSetting({ font }),
+      reloadSettings: load
+    }),
+    [settings, loaded]
   )
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

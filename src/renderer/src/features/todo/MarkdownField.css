@@ -1,0 +1,133 @@
+.markdown-field {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.markdown-field__toolbar {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  background: var(--surface-sunken);
+  border-bottom: 1px solid var(--border);
+}
+
+.markdown-field__tab {
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+}
+
+.markdown-field__tab:hover {
+  background: var(--surface-hover);
+}
+
+.markdown-field__tab--active {
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.markdown-field__textarea {
+  display: block;
+  width: 100%;
+  border: none;
+  padding: 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--surface);
+  resize: vertical;
+}
+
+.markdown-field__textarea:focus {
+  outline: none;
+}
+
+.markdown-field__preview {
+  padding: 10px 12px;
+  min-height: 132px;
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.markdown-field__empty {
+  color: var(--text-tertiary);
+  font-size: 12.5px;
+}
+
+.markdown-body :first-child {
+  margin-top: 0;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3 {
+  margin: 12px 0 6px;
+  font-weight: 650;
+}
+
+.markdown-body h1 {
+  font-size: 18px;
+}
+.markdown-body h2 {
+  font-size: 16px;
+}
+.markdown-body h3 {
+  font-size: 14px;
+}
+
+.markdown-body p {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  margin: 8px 0;
+  padding-left: 22px;
+}
+
+.markdown-body li {
+  margin: 2px 0;
+}
+
+.markdown-body code {
+  background: var(--surface-sunken);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.markdown-body pre {
+  background: var(--surface-sunken);
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+}
+
+.markdown-body a {
+  color: var(--accent);
+}
+
+.markdown-body table {
+  border-collapse: collapse;
+  margin: 8px 0;
+}
+
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+  font-size: 12.5px;
+}
+
+.markdown-body blockquote {
+  margin: 8px 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--border);
+  color: var(--text-secondary);
+}

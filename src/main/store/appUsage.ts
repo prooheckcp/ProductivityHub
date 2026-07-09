@@ -13,3 +13,7 @@ export function appendAppUsageSession(session: AppUsageSession): void {
   sessions.push(session)
   writeJsonFile(sessionsFile(), sessions)
 }
+
+export function restoreAppUsageSessions(sessions: AppUsageSession[]): void {
+  writeJsonFile(sessionsFile(), sessions)
+}

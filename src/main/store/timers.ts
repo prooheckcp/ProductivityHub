@@ -56,6 +56,11 @@ export function listTimerSessions(): TimerSession[] {
   return loadSessions()
 }
 
+export function restoreTimersData(timers: Timer[], sessions: TimerSession[]): void {
+  saveTimers(timers)
+  writeJsonFile(sessionsFile(), sessions)
+}
+
 export function createTimer(input: TimerFormInput): Timer {
   const now = Date.now()
   const timer: Timer = {

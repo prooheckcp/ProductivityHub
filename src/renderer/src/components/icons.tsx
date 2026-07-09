@@ -49,12 +49,18 @@ export function PlusIcon({ size = 18 }: IconProps): JSX.Element {
 
 export function SettingsIcon({ size = 18 }: IconProps): JSX.Element {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
-      <circle cx="12" cy="12" r="3" strokeWidth="1.8" />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none">
       <path
-        d="M12 3.5v2.1M12 18.4v2.1M5.4 5.4l1.5 1.5M17.1 17.1l1.5 1.5M3.5 12h2.1M18.4 12h2.1M5.4 18.6l1.5-1.5M17.1 6.9l1.5-1.5"
-        strokeWidth="1.8"
-        strokeLinecap="round"
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61
+        l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41
+        h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87
+        C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58
+        c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54
+        c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96
+        c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6
+        s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
       />
     </svg>
   )
@@ -112,6 +118,42 @@ export function ChartIcon({ size = 18 }: IconProps): JSX.Element {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </svg>
+  )
+}
+
+export function TrophyIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path
+        d="M7 4.5h10v4a5 5 0 0 1-10 0v-4Z M7 5.5H4.5v2a2.5 2.5 0 0 0 2.5 2.4 M17 5.5h2.5v2a2.5 2.5 0 0 1-2.5 2.4 M10 15.3v2.2h4v-2.2 M8.5 20.5h7"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+export function PawIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <ellipse cx="12" cy="16" rx="5.2" ry="4.2" />
+      <ellipse cx="5.2" cy="10.5" rx="2.1" ry="2.6" transform="rotate(-20 5.2 10.5)" />
+      <ellipse cx="9.6" cy="6.6" rx="2.1" ry="2.6" transform="rotate(-8 9.6 6.6)" />
+      <ellipse cx="14.4" cy="6.6" rx="2.1" ry="2.6" transform="rotate(8 14.4 6.6)" />
+      <ellipse cx="18.8" cy="10.5" rx="2.1" ry="2.6" transform="rotate(20 18.8 10.5)" />
+    </svg>
+  )
+}
+
+export function SakuraFlowerIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      {[0, 72, 144, 216, 288].map((angle) => (
+        <ellipse key={angle} cx="12" cy="7.2" rx="2.6" ry="3.6" transform={`rotate(${angle} 12 12)`} />
+      ))}
+      <circle cx="12" cy="12" r="1.8" opacity="0.6" />
     </svg>
   )
 }

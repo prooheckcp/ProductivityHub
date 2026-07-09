@@ -1,0 +1,11 @@
+.stats-chart {
+  width: 100%;
+}
+
+.stats-chart--empty {
+  display: grid;
+  place-items: center;
+  height: 240px;
+  color: var(--text-tertiary);
+  font-size: 13px;
+}

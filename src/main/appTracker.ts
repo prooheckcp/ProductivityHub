@@ -5,8 +5,13 @@ import { appendAppUsageSession } from './store/appUsage'
 
 const POLL_INTERVAL_MS = 5000
 const MIN_DURATION_MS = 1000
+// Bounds crash data loss: a long-running session gets flushed to disk in
+// chunks instead of staying in memory until the app switches or quits.
+const CHECKPOINT_MS = 60 * 1000
 
-let currentApp: string | null = null
+type ActiveApp = { name: string; path: string | null }
+
+let current: ActiveApp | null = null
 let currentStart: number | null = null
 let intervalHandle: NodeJS.Timeout | null = null
 
@@ -25,68 +30,99 @@ function runCommand(command: string, args: string[]): Promise<string | null> {
     })
     child.on('error', () => resolve(null))
     child.on('close', (code) => {
-      resolve(code === 0 ? output.trim() || null : null)
+      resolve(code === 0 ? output : null)
     })
   })
 }
 
-function getActiveAppNameMac(): Promise<string | null> {
-  const script =
-    'tell application "System Events" to get name of first application process whose frontmost is true'
-  return runCommand('osascript', ['-e', script])
+async function getActiveAppMac(): Promise<ActiveApp | null> {
+  const script = `
+tell application "System Events"
+  set p to first application process whose frontmost is true
+  set n to name of p
+  set f to ""
+  try
+    set f to POSIX path of (file of p)
+  end try
+end tell
+return n & "\\n" & f
+`.trim()
+  const output = await runCommand('osascript', ['-e', script])
+  if (!output) return null
+  const [name, path] = output.split('\n').map((s) => s.trim())
+  if (!name) return null
+  return { name, path: path || null }
 }
 
 const WINDOWS_SCRIPT = `
 Add-Type @"
 using System;
 using System.Runtime.InteropServices;
-public class ProductivityHubActiveWindow {
+public class ShibaTrackerActiveWindow {
   [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
   [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint procId);
 }
 "@
-$hwnd = [ProductivityHubActiveWindow]::GetForegroundWindow()
+$hwnd = [ShibaTrackerActiveWindow]::GetForegroundWindow()
 $procId = 0
-[ProductivityHubActiveWindow]::GetWindowThreadProcessId($hwnd, [ref]$procId) | Out-Null
-try { (Get-Process -Id $procId).ProcessName } catch { "" }
+[ShibaTrackerActiveWindow]::GetWindowThreadProcessId($hwnd, [ref]$procId) | Out-Null
+try {
+  $p = Get-Process -Id $procId
+  $path = ""
+  try { $path = $p.Path } catch {}
+  Write-Output "$($p.ProcessName)"
+  Write-Output "$path"
+} catch { Write-Output "" }
 `.trim()
 
-function getActiveAppNameWindows(): Promise<string | null> {
-  return runCommand('powershell', ['-NoProfile', '-NonInteractive', '-Command', WINDOWS_SCRIPT])
+async function getActiveAppWindows(): Promise<ActiveApp | null> {
+  const output = await runCommand('powershell', ['-NoProfile', '-NonInteractive', '-Command', WINDOWS_SCRIPT])
+  if (!output) return null
+  const lines = output.split('\n').map((s) => s.trim())
+  const name = lines[0]
+  const path = lines[1]
+  if (!name) return null
+  return { name, path: path || null }
 }
 
-function getActiveAppName(): Promise<string | null> {
-  if (platform === 'darwin') return getActiveAppNameMac()
-  if (platform === 'win32') return getActiveAppNameWindows()
+function getActiveApp(): Promise<ActiveApp | null> {
+  if (platform === 'darwin') return getActiveAppMac()
+  if (platform === 'win32') return getActiveAppWindows()
   return Promise.resolve(null)
 }
 
 function finalizeCurrentSession(now: number): void {
-  if (currentApp === null || currentStart === null) return
+  if (current === null || currentStart === null) return
   const durationMs = now - currentStart
   if (durationMs >= MIN_DURATION_MS) {
     appendAppUsageSession({
       id: randomUUID(),
-      appName: currentApp,
+      appName: current.name,
+      appPath: current.path,
       startedAt: currentStart,
       endedAt: now,
       durationMs
     })
   }
-  currentApp = null
+  current = null
   currentStart = null
 }
 
 async function poll(): Promise<void> {
-  const name = await getActiveAppName()
+  const active = await getActiveApp()
   const now = Date.now()
-  if (!name) {
+  if (!active) {
     finalizeCurrentSession(now)
     return
   }
-  if (name !== currentApp) {
+  if (active.name !== current?.name) {
     finalizeCurrentSession(now)
-    currentApp = name
+    current = active
+    currentStart = now
+  } else if (currentStart !== null && now - currentStart >= CHECKPOINT_MS) {
+    const stillActive = current
+    finalizeCurrentSession(now)
+    current = stillActive
     currentStart = now
   }
 }
@@ -106,7 +142,7 @@ export function stopAppTracker(): void {
   finalizeCurrentSession(Date.now())
 }
 
-export function currentAppUsage(): { appName: string; startedAt: number } | null {
-  if (currentApp === null || currentStart === null) return null
-  return { appName: currentApp, startedAt: currentStart }
+export function currentAppUsage(): { appName: string; appPath: string | null; startedAt: number } | null {
+  if (current === null || currentStart === null) return null
+  return { appName: current.name, appPath: current.path, startedAt: currentStart }
 }

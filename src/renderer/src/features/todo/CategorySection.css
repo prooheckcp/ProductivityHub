@@ -1,0 +1,89 @@
+.category-section {
+  margin-bottom: 14px;
+}
+
+.category-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.category-section__heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-section__name {
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--text-primary);
+}
+
+.category-section__count {
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.category-section__delete {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--text-tertiary);
+  background: transparent;
+}
+
+.category-section__delete:hover {
+  background: var(--surface-hover);
+  color: var(--danger);
+}
+
+.category-section__tasks {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.category-section__add-task {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.category-section__input {
+  flex: 1;
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
+.category-section__input:focus {
+  outline: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.category-section__add-button {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  display: grid;
+  place-items: center;
+}
+
+.category-section__add-button:hover {
+  background: var(--surface-hover);
+}

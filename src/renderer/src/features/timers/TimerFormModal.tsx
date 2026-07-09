@@ -30,7 +30,7 @@ export default function TimerFormModal({
 
   function discardUnsavedUpload(path: string | null): void {
     if (path && path !== initialImagePath) {
-      window.api.images.deleteImage(path).catch(() => {})
+      window.api.images.delete(path).catch(() => {})
     }
   }
 
@@ -40,7 +40,7 @@ export default function TimerFormModal({
     setUploading(true)
     try {
       const buffer = await file.arrayBuffer()
-      const savedPath = await window.api.images.saveTimerImage(file.name, new Uint8Array(buffer))
+      const savedPath = await window.api.images.save(file.name, new Uint8Array(buffer))
       discardUnsavedUpload(imagePath)
       setImagePath(savedPath)
     } finally {
@@ -86,7 +86,7 @@ export default function TimerFormModal({
         </>
       }
     >
-      <form id="timer-form" className="timer-form" onSubmit={handleSubmit}>
+      <form id="timer-form" className="form-fields" onSubmit={handleSubmit}>
         <button
           type="button"
           className="timer-form__image-picker"
@@ -110,7 +110,7 @@ export default function TimerFormModal({
           onChange={handleFileChange}
         />
 
-        <label className="timer-form__field">
+        <label className="form-field">
           <span>Name</span>
           <input
             type="text"
@@ -121,7 +121,7 @@ export default function TimerFormModal({
           />
         </label>
 
-        <label className="timer-form__field">
+        <label className="form-field">
           <span>Description</span>
           <textarea
             value={description}

@@ -1,6 +1,13 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import type { StatsRangeKey, TimerFormInput } from '../shared/types'
+import type {
+  AppSettings,
+  CategoryFormInput,
+  ProjectFormInput,
+  StatsRangeKey,
+  TaskFormInput,
+  TimerFormInput
+} from '../shared/types'
 
 const api = {
   timers: {
@@ -14,12 +21,53 @@ const api = {
     setManualTime: (id: string, ms: number) => ipcRenderer.invoke('timers:setManualTime', id, ms)
   },
   images: {
-    saveTimerImage: (fileName: string, data: Uint8Array) =>
-      ipcRenderer.invoke('images:saveTimerImage', fileName, data),
-    deleteImage: (path: string) => ipcRenderer.invoke('images:deleteImage', path)
+    save: (fileName: string, data: Uint8Array) => ipcRenderer.invoke('images:save', fileName, data),
+    delete: (path: string) => ipcRenderer.invoke('images:delete', path)
   },
   stats: {
     get: (range: StatsRangeKey) => ipcRenderer.invoke('stats:get', range)
+  },
+  apps: {
+    getIcon: (path: string | null) => ipcRenderer.invoke('apps:getIcon', path)
+  },
+  settings: {
+    get: () => ipcRenderer.invoke('settings:get'),
+    update: (patch: Partial<AppSettings>) => ipcRenderer.invoke('settings:update', patch)
+  },
+  achievements: {
+    get: () => ipcRenderer.invoke('achievements:get')
+  },
+  home: {
+    getSummary: () => ipcRenderer.invoke('home:getSummary')
+  },
+  todo: {
+    projects: {
+      list: () => ipcRenderer.invoke('todo:projects:list'),
+      create: (input: ProjectFormInput) => ipcRenderer.invoke('todo:projects:create', input),
+      update: (id: string, patch: ProjectFormInput) => ipcRenderer.invoke('todo:projects:update', id, patch),
+      remove: (id: string) => ipcRenderer.invoke('todo:projects:delete', id)
+    },
+    categories: {
+      list: () => ipcRenderer.invoke('todo:categories:list'),
+      create: (projectId: string, input: CategoryFormInput) =>
+        ipcRenderer.invoke('todo:categories:create', projectId, input),
+      update: (id: string, patch: CategoryFormInput) => ipcRenderer.invoke('todo:categories:update', id, patch),
+      remove: (id: string) => ipcRenderer.invoke('todo:categories:delete', id)
+    },
+    tasks: {
+      list: () => ipcRenderer.invoke('todo:tasks:list'),
+      create: (categoryId: string, parentTaskId: string | null, input: TaskFormInput) =>
+        ipcRenderer.invoke('todo:tasks:create', categoryId, parentTaskId, input),
+      update: (id: string, patch: TaskFormInput) => ipcRenderer.invoke('todo:tasks:update', id, patch),
+      remove: (id: string) => ipcRenderer.invoke('todo:tasks:delete', id),
+      setCompleted: (id: string, completed: boolean) => ipcRenderer.invoke('todo:tasks:setCompleted', id, completed),
+      start: (id: string) => ipcRenderer.invoke('todo:tasks:start', id),
+      pause: (id: string) => ipcRenderer.invoke('todo:tasks:pause', id)
+    }
+  },
+  data: {
+    export: () => ipcRenderer.invoke('data:export'),
+    import: () => ipcRenderer.invoke('data:import')
   }
 }
 

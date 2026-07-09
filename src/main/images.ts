@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, unlinkSync, writeFileSync } from 'fs'
 import { extname, join } from 'path'
 import { getImagesDir } from './store/paths'
 
-export function saveTimerImage(fileName: string, data: Uint8Array): string {
+export function saveImage(fileName: string, data: Uint8Array): string {
   const dir = getImagesDir()
   mkdirSync(dir, { recursive: true })
   const ext = extname(fileName || '').toLowerCase()
