@@ -3,7 +3,7 @@
   align-items: center;
   gap: 6px;
   padding: 7px 14px;
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   border: 1px solid transparent;
   font-size: 13px;
   font-weight: 550;
@@ -22,7 +22,7 @@
 }
 
 .btn--primary:hover:not(:disabled) {
-  opacity: 0.9;
+  opacity: 0.88;
 }
 
 .btn--secondary {

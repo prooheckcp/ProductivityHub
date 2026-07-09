@@ -4,7 +4,7 @@ import type {
   AppSettings,
   CategoryFormInput,
   ProjectFormInput,
-  StatsRangeKey,
+  StatsQuery,
   TaskFormInput,
   TimerFormInput
 } from '../shared/types'
@@ -25,7 +25,7 @@ const api = {
     delete: (path: string) => ipcRenderer.invoke('images:delete', path)
   },
   stats: {
-    get: (range: StatsRangeKey) => ipcRenderer.invoke('stats:get', range)
+    get: (query: StatsQuery) => ipcRenderer.invoke('stats:get', query)
   },
   apps: {
     getIcon: (path: string | null) => ipcRenderer.invoke('apps:getIcon', path)

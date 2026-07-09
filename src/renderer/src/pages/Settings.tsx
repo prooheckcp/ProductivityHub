@@ -5,14 +5,15 @@ import Card from '../components/Card'
 import Button from '../components/Button'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { useTheme, FONT_LABELS } from '../theme/ThemeContext'
+import { COLOR_GRADIENTS, EFFECT_GRADIENTS } from '../theme/gradients'
 import type { FontChoice } from '@shared/types'
 import GradientPicker from '../features/settings/GradientPicker'
 import './Settings.css'
 
-const FONT_CHOICES: FontChoice[] = ['system', 'serif', 'rounded', 'mono']
+const FONT_CHOICES: FontChoice[] = ['system', 'serif', 'rounded', 'mono', 'comic', 'arial']
 
 export default function Settings(): JSX.Element {
-  const { settings, setBackgroundGradient, setButtonGradient, setFont } = useTheme()
+  const { settings, setBackgroundGradient, setButtonGradient, setFont, setTextColor } = useTheme()
   const [exportStatus, setExportStatus] = useState<string | null>(null)
   const [confirmingImport, setConfirmingImport] = useState(false)
   const [importing, setImporting] = useState(false)
@@ -40,16 +41,28 @@ export default function Settings(): JSX.Element {
       <Card className="settings__card">
         <h2 className="settings__section-title">Appearance</h2>
         <p className="settings__section-description">
-          Background and button gradients are independent — mix and match, or pick a decorative
-          set like Doge or Sakura for the background.
+          The background theme is applied directly — no dimming or dark overlay — so what you
+          see below is what your workspace will look like.
         </p>
 
         <GradientPicker
-          label="Background gradient"
+          label="Background — static colors"
           value={settings.backgroundGradient}
           onChange={setBackgroundGradient}
+          options={COLOR_GRADIENTS}
         />
-        <GradientPicker label="Button gradient" value={settings.buttonGradient} onChange={setButtonGradient} />
+        <GradientPicker
+          label="Background — animated themes"
+          value={settings.backgroundGradient}
+          onChange={setBackgroundGradient}
+          options={EFFECT_GRADIENTS}
+        />
+        <GradientPicker
+          label="Button color"
+          value={settings.buttonGradient}
+          onChange={setButtonGradient}
+          options={COLOR_GRADIENTS}
+        />
 
         <p className="settings__label">Font</p>
         <div className="font-picker">
@@ -63,6 +76,25 @@ export default function Settings(): JSX.Element {
               {FONT_LABELS[font]}
             </button>
           ))}
+        </div>
+
+        <p className="settings__label">Text color</p>
+        <div className="text-color-picker">
+          <input
+            type="color"
+            className="text-color-picker__swatch"
+            value={settings.textColor ?? '#17171a'}
+            onChange={(event) => setTextColor(event.target.value)}
+            aria-label="Text color"
+          />
+          <span className="text-color-picker__hint">
+            {settings.textColor ? settings.textColor : 'Using theme default'}
+          </span>
+          {settings.textColor && (
+            <Button variant="ghost" onClick={() => setTextColor(null)}>
+              Reset
+            </Button>
+          )}
         </div>
       </Card>
 

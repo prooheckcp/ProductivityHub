@@ -7,20 +7,25 @@ export const FONT_STACKS: Record<FontChoice, string> = {
   system: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, Helvetica, Arial, sans-serif`,
   serif: `Georgia, 'Times New Roman', Times, serif`,
   rounded: `ui-rounded, 'SF Pro Rounded', 'Segoe UI', system-ui, sans-serif`,
-  mono: `ui-monospace, 'SF Mono', 'Cascadia Code', 'Segoe UI Mono', monospace`
+  mono: `ui-monospace, 'SF Mono', 'Cascadia Code', 'Segoe UI Mono', monospace`,
+  comic: `'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', cursive`,
+  arial: `Arial, 'Helvetica Neue', Helvetica, sans-serif`
 }
 
 export const FONT_LABELS: Record<FontChoice, string> = {
   system: 'System default',
   serif: 'Serif',
   rounded: 'Rounded',
-  mono: 'Monospace'
+  mono: 'Monospace',
+  comic: 'Comic Sans',
+  arial: 'Arial'
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
   backgroundGradient: DEFAULT_GRADIENT_ID,
   buttonGradient: DEFAULT_GRADIENT_ID,
-  font: 'system'
+  font: 'system',
+  textColor: null
 }
 
 type ThemeContextValue = {
@@ -29,35 +34,68 @@ type ThemeContextValue = {
   backgroundGradient: Gradient
   buttonGradient: Gradient
   loaded: boolean
+  unlockedAchievementIds: Set<string>
   setBackgroundGradient: (id: string) => void
   setButtonGradient: (id: string) => void
   setFont: (font: FontChoice) => void
+  setTextColor: (color: string | null) => void
   reloadSettings: () => void
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
+
+// Every theme we offer (Indigo, Sakura, Underwater...) is a light, colorful
+// look — none of them are a "dark mode". Pinning the chrome to these light
+// values regardless of the OS color scheme keeps that promise: the old
+// dark-mode `:root` block left --bg/--surface near-black, so any background
+// gradient wash still rendered as "dark with a faint tint" no matter which
+// theme was picked.
+const LIGHT_CHROME = {
+  '--surface': '#ffffff',
+  '--surface-hover': '#eeeef0',
+  '--surface-active': '#e8e8ec',
+  '--border': '#e5e5e8',
+  '--text-secondary': '#6b6b74',
+  '--text-tertiary': '#9a9aa2',
+  '--shadow-sm': '0 1px 2px rgba(15, 15, 20, 0.05)',
+  '--shadow-md': '0 6px 20px rgba(15, 15, 20, 0.08)'
+}
 
 function applyToDocument(settings: AppSettings): void {
   const root = document.documentElement
   const button = getGradient(settings.buttonGradient)
   const background = getGradient(settings.backgroundGradient)
 
+  for (const [prop, value] of Object.entries(LIGHT_CHROME)) {
+    root.style.setProperty(prop, value)
+  }
+
   root.style.setProperty('--accent', button.stops[0])
   root.style.setProperty('--accent-2', button.stops[1])
   root.style.setProperty('--accent-gradient', `linear-gradient(135deg, ${button.stops[0]}, ${button.stops[1]})`)
   root.style.setProperty('--accent-contrast', button.contrast)
 
-  root.style.setProperty(
-    '--bg-gradient',
-    `linear-gradient(160deg, ${background.stops[0]}22, ${background.stops[1]}11)`
-  )
+  // The page background IS the theme's own gradient — no dark/white overlay
+  // diluting it — so what you pick in Settings is what you actually see.
+  // `--surface-sunken` (input backgrounds, subtle fills) picks up a whisper
+  // of the theme too, kept mostly neutral since a lot of small UI chrome
+  // reads off it.
+  const gradientCss = `linear-gradient(135deg, ${background.stops[0]}, ${background.stops[1]})`
+  root.style.setProperty('--bg-gradient', gradientCss)
+  root.style.setProperty('--bg', background.stops[1])
+  root.style.setProperty('--sidebar-bg', gradientCss)
+  root.style.setProperty('--surface-sunken', `color-mix(in srgb, ${background.stops[0]} 6%, #f7f7f8)`)
+
   root.style.setProperty('--font-family', FONT_STACKS[settings.font])
   root.setAttribute('data-decoration', background.decoration ?? 'none')
+
+  root.style.setProperty('--text-primary', settings.textColor ?? '#17171a')
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }): JSX.Element {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
   const [loaded, setLoaded] = useState(false)
+  const [unlockedAchievementIds, setUnlockedAchievementIds] = useState<Set<string>>(new Set())
 
   function load(): void {
     window.api.settings.get().then((loadedSettings) => {
@@ -67,6 +105,12 @@ export function ThemeProvider({ children }: { children: ReactNode }): JSX.Elemen
   }
 
   useEffect(load, [])
+
+  useEffect(() => {
+    window.api.achievements.get().then((progress) => {
+      setUnlockedAchievementIds(new Set(Object.keys(progress.unlocked)))
+    })
+  }, [])
 
   useEffect(() => {
     applyToDocument(settings)
@@ -84,12 +128,14 @@ export function ThemeProvider({ children }: { children: ReactNode }): JSX.Elemen
       backgroundGradient: getGradient(settings.backgroundGradient),
       buttonGradient: getGradient(settings.buttonGradient),
       loaded,
+      unlockedAchievementIds,
       setBackgroundGradient: (id) => updateSetting({ backgroundGradient: id }),
       setButtonGradient: (id) => updateSetting({ buttonGradient: id }),
       setFont: (font) => updateSetting({ font }),
+      setTextColor: (color) => updateSetting({ textColor: color }),
       reloadSettings: load
     }),
-    [settings, loaded]
+    [settings, loaded, unlockedAchievementIds]
   )
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>

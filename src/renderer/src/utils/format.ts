@@ -21,3 +21,11 @@ export function formatClock(ms: number): ClockParts {
 export function clockToMs(hh: number, mm: number, ss: number): number {
   return ((Math.max(0, hh) * 60 + Math.max(0, mm)) * 60 + Math.max(0, ss)) * 1000
 }
+
+export type ClockPartsWithCentis = ClockParts & { cs: string }
+
+export function formatClockWithCentis(ms: number): ClockPartsWithCentis {
+  const clamped = Math.max(0, ms)
+  const pad = (n: number): string => String(n).padStart(2, '0')
+  return { ...formatClock(clamped), cs: pad(Math.floor((clamped % 1000) / 10)) }
+}

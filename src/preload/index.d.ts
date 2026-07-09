@@ -7,7 +7,7 @@ import type {
   HomeSummary,
   Project,
   ProjectFormInput,
-  StatsRangeKey,
+  StatsQuery,
   StatsResult,
   Task,
   TaskFormInput,
@@ -31,7 +31,7 @@ export type Api = {
     delete: (path: string) => Promise<void>
   }
   stats: {
-    get: (range: StatsRangeKey) => Promise<StatsResult>
+    get: (query: StatsQuery) => Promise<StatsResult>
   }
   apps: {
     getIcon: (path: string | null) => Promise<string | null>

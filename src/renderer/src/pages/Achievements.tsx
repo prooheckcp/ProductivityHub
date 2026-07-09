@@ -3,12 +3,19 @@ import type { JSX } from 'react'
 import PageHeader from '../components/PageHeader'
 import Card from '../components/Card'
 import { CheckIcon, TrophyIcon } from '../components/icons'
-import { ACHIEVEMENT_DEFS } from '@shared/achievements'
-import type { AchievementProgress } from '@shared/types'
+import { ACHIEVEMENT_DEFS, describeAchievements } from '@shared/achievements'
+import type { AchievementCategory, AchievementProgress, AchievementSummary } from '@shared/types'
+import { formatDuration } from '../utils/format'
 import './Achievements.css'
 
-function progressFor(progress: AchievementProgress, category: 'timers' | 'tasks'): number {
-  return category === 'timers' ? progress.timersCreated : progress.tasksCompleted
+const SECTIONS: { key: AchievementCategory; title: string }[] = [
+  { key: 'timers', title: 'Timers' },
+  { key: 'tasks', title: 'Tasks' },
+  { key: 'devtools', title: 'Developer Tools' }
+]
+
+function formatAmount(category: AchievementCategory, value: number): string {
+  return category === 'devtools' ? formatDuration(value) : String(Math.round(value))
 }
 
 export default function Achievements(): JSX.Element {
@@ -20,50 +27,59 @@ export default function Achievements(): JSX.Element {
 
   if (!progress) return <></>
 
+  const summaries = describeAchievements(progress)
   const unlockedCount = Object.keys(progress.unlocked).length
 
   return (
     <>
-      <PageHeader
-        title="Achievements"
-        subtitle={`${unlockedCount} of ${ACHIEVEMENT_DEFS.length} unlocked.`}
-      />
+      <PageHeader title="Achievements" subtitle={`${unlockedCount} of ${ACHIEVEMENT_DEFS.length} unlocked.`} />
 
-      <div className="achievements-grid">
-        {ACHIEVEMENT_DEFS.map((def) => {
-          const unlockedAt = progress.unlocked[def.id]
-          const isUnlocked = unlockedAt !== undefined
-          const current = progressFor(progress, def.category)
-          const percent = Math.min(100, Math.round((current / def.threshold) * 100))
+      {SECTIONS.map((section) => {
+        const items = summaries.filter((s) => s.category === section.key)
+        if (items.length === 0) return null
+        return (
+          <div key={section.key} className="achievements-section">
+            <h2 className="achievements-section__title">{section.title}</h2>
+            <div className="achievements-grid">
+              {items.map((achievement: AchievementSummary) => {
+                const isUnlocked = achievement.unlockedAt !== null
+                const percent = Math.round(achievement.progress * 100)
 
-          return (
-            <Card key={def.id} className={'achievement-card' + (isUnlocked ? ' achievement-card--unlocked' : '')}>
-              <div className="achievement-card__icon">
-                {isUnlocked ? <CheckIcon size={20} /> : <TrophyIcon size={20} />}
-              </div>
-              <div className="achievement-card__body">
-                <p className="achievement-card__title">{def.title}</p>
-                <p className="achievement-card__description">{def.description}</p>
-                {!isUnlocked && (
-                  <div className="achievement-card__progress">
-                    <div className="achievement-card__progress-track">
-                      <div className="achievement-card__progress-fill" style={{ width: `${percent}%` }} />
+                return (
+                  <Card
+                    key={achievement.id}
+                    className={'achievement-card' + (isUnlocked ? ' achievement-card--unlocked' : '')}
+                  >
+                    <div className="achievement-card__icon">
+                      {isUnlocked ? <CheckIcon size={20} /> : <TrophyIcon size={20} />}
                     </div>
-                    <span className="achievement-card__progress-label">
-                      {Math.min(current, def.threshold)} / {def.threshold}
-                    </span>
-                  </div>
-                )}
-                {isUnlocked && (
-                  <p className="achievement-card__unlocked-at">
-                    Unlocked {new Date(unlockedAt).toLocaleDateString()}
-                  </p>
-                )}
-              </div>
-            </Card>
-          )
-        })}
-      </div>
+                    <div className="achievement-card__body">
+                      <p className="achievement-card__title">{achievement.title}</p>
+                      <p className="achievement-card__description">{achievement.description}</p>
+                      {!isUnlocked && (
+                        <div className="achievement-card__progress">
+                          <div className="achievement-card__progress-track">
+                            <div className="achievement-card__progress-fill" style={{ width: `${percent}%` }} />
+                          </div>
+                          <span className="achievement-card__progress-label">
+                            {formatAmount(achievement.category, Math.min(achievement.current, achievement.threshold))} /{' '}
+                            {formatAmount(achievement.category, achievement.threshold)}
+                          </span>
+                        </div>
+                      )}
+                      {isUnlocked && (
+                        <p className="achievement-card__unlocked-at">
+                          Unlocked {new Date(achievement.unlockedAt ?? 0).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </Card>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })}
     </>
   )
 }

@@ -7,7 +7,8 @@ const settingsFile = (): string => dataFile('settings.json')
 const DEFAULT_SETTINGS: AppSettings = {
   backgroundGradient: 'indigo',
   buttonGradient: 'indigo',
-  font: 'system'
+  font: 'system',
+  textColor: null
 }
 
 export function getSettings(): AppSettings {

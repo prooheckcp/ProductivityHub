@@ -1,15 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { JSX } from 'react'
 import Modal from '../../components/Modal'
-import Button from '../../components/Button'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import { CheckIcon, CloseIcon, PauseIcon, PlayIcon } from '../../components/icons'
 import { toFileUrl } from '../../utils/fileUrl'
-import { clockToMs, formatClock } from '../../utils/format'
+import { clockToMs, formatClock, formatClockWithCentis } from '../../utils/format'
 import type { ClockParts } from '../../utils/format'
 import { currentElapsedMs } from '@shared/timeMath'
 import type { Timer } from '@shared/types'
 import './TimerRunModal.css'
+
+const FAST_TICK_MS = 30
 
 type TimerRunModalProps = {
   timer: Timer
@@ -34,9 +35,19 @@ export default function TimerRunModal({
   const [draft, setDraft] = useState<ClockParts>({ hh: '00', mm: '00', ss: '00' })
   const [confirmingReset, setConfirmingReset] = useState(false)
   const [busy, setBusy] = useState(false)
-
-  const clock = formatClock(currentElapsedMs(timer, now))
   const isRunning = timer.runningSince !== null
+
+  // The page-level `now` only ticks once a second (shared across the whole
+  // timer grid) — run a faster local clock in here so milliseconds move
+  // smoothly while this modal is the one thing on screen.
+  const [fastNow, setFastNow] = useState(() => Date.now())
+  useEffect(() => {
+    if (!isRunning || editing) return
+    const interval = setInterval(() => setFastNow(Date.now()), FAST_TICK_MS)
+    return () => clearInterval(interval)
+  }, [isRunning, editing])
+
+  const clock = formatClockWithCentis(currentElapsedMs(timer, isRunning ? fastNow : now))
 
   async function handleToggle(): Promise<void> {
     setBusy(true)
@@ -82,14 +93,17 @@ export default function TimerRunModal({
   }
 
   return (
-    <Modal title={timer.name} onClose={onClose} width={420}>
+    <Modal title={timer.name} onClose={onClose} width={620}>
       <div className="timer-run">
         {timer.imagePath && <img className="timer-run__image" src={toFileUrl(timer.imagePath)} alt="" />}
         {timer.description && <p className="timer-run__description">{timer.description}</p>}
 
         {!editing ? (
           <button type="button" className="timer-run__clock" onClick={handleEditStart} disabled={busy}>
-            <span>{clock.hh}</span>:<span>{clock.mm}</span>:<span>{clock.ss}</span>
+            <span className="timer-run__clock-main">
+              <span>{clock.hh}</span>:<span>{clock.mm}</span>:<span>{clock.ss}</span>
+            </span>
+            <span className="timer-run__clock-centis">.{clock.cs}</span>
           </button>
         ) : (
           <div className="timer-run__clock-edit">
@@ -125,13 +139,23 @@ export default function TimerRunModal({
         )}
 
         <div className="timer-run__actions">
-          <Button variant="primary" onClick={handleToggle} disabled={busy || editing}>
-            {isRunning ? <PauseIcon size={15} /> : <PlayIcon size={15} />}
-            {isRunning ? 'Pause' : 'Start'}
-          </Button>
-          <Button variant="secondary" onClick={() => setConfirmingReset(true)} disabled={busy}>
+          <button
+            type="button"
+            className="timer-run__toggle"
+            onClick={handleToggle}
+            disabled={busy || editing}
+            aria-label={isRunning ? 'Pause' : 'Start'}
+          >
+            {isRunning ? <PauseIcon size={26} /> : <PlayIcon size={26} />}
+          </button>
+          <button
+            type="button"
+            className="timer-run__reset"
+            onClick={() => setConfirmingReset(true)}
+            disabled={busy}
+          >
             Reset
-          </Button>
+          </button>
         </div>
       </div>
 

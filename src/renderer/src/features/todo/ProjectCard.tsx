@@ -20,11 +20,19 @@ export default function ProjectCard({ name, description, tasks, onOpen, onEdit }
     <div className="project-card">
       <button type="button" className="project-card__body" onClick={onOpen}>
         <p className="project-card__name">{name}</p>
-        {description && <p className="project-card__description">{description}</p>}
+        <p className="project-card__description">{description || 'No description yet.'}</p>
         <ProgressBar percent={percent} label={`${completed}/${tasks.length}`} />
       </button>
-      <button type="button" className="project-card__edit" onClick={onEdit} aria-label="Edit project">
-        <SettingsIcon size={15} />
+      <button
+        type="button"
+        className="project-card__edit"
+        onClick={(event) => {
+          event.stopPropagation()
+          onEdit()
+        }}
+        aria-label="Edit project"
+      >
+        <SettingsIcon size={14} />
       </button>
     </div>
   )

@@ -1,10 +1,12 @@
 import { spawn } from 'child_process'
 import { platform } from 'process'
+import { lookupKnownCategory } from '../shared/appCategories'
 
 // macOS bundles ship an App Store category in Info.plist (LSApplicationCategoryType),
 // readable via Spotlight metadata without extra permissions. Windows has no equivalent
-// standard metadata for arbitrary installed programs, so category breakdown is mac-only.
-export const CATEGORY_SUPPORTED = platform === 'darwin'
+// standard metadata for arbitrary installed programs, so automatic detection is mac-only —
+// everywhere else (and any mac app missing the metadata) falls back to a locally-known map.
+export const CATEGORY_AUTO_DETECT_SUPPORTED = platform === 'darwin'
 
 const cache = new Map<string, string | null>()
 
@@ -31,11 +33,17 @@ function formatCategory(raw: string): string {
   return last.charAt(0).toUpperCase() + last.slice(1)
 }
 
-export async function getAppCategory(appPath: string | null): Promise<string | null> {
-  if (!CATEGORY_SUPPORTED || !appPath) return null
-  if (cache.has(appPath)) return cache.get(appPath) ?? null
-  const raw = await runCommand('mdls', ['-raw', '-name', 'kMDItemAppStoreCategory', appPath])
-  const category = raw && raw !== '(null)' ? formatCategory(raw) : null
-  cache.set(appPath, category)
+export async function getAppCategory(appName: string, appPath: string | null): Promise<string | null> {
+  const cacheKey = appPath ?? `name:${appName.toLowerCase()}`
+  if (cache.has(cacheKey)) return cache.get(cacheKey) ?? null
+
+  let category: string | null = null
+  if (CATEGORY_AUTO_DETECT_SUPPORTED && appPath) {
+    const raw = await runCommand('mdls', ['-raw', '-name', 'kMDItemAppStoreCategory', appPath])
+    category = raw && raw !== '(null)' ? formatCategory(raw) : null
+  }
+  if (!category) category = lookupKnownCategory(appName)
+
+  cache.set(cacheKey, category)
   return category
 }

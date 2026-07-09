@@ -2,6 +2,7 @@ import type { JSX } from 'react'
 import { NavLink } from 'react-router-dom'
 import { NAV_ITEMS, SECONDARY_NAV_ITEMS, type NavItem } from '../navigation'
 import logo from '../assets/logo.png'
+import logoText from '../assets/logo-text.png'
 import './Sidebar.css'
 
 function NavList({ items }: { items: NavItem[] }): JSX.Element {
@@ -27,8 +28,8 @@ export default function Sidebar(): JSX.Element {
   return (
     <nav className="sidebar">
       <div className="sidebar__brand">
-        <img className="sidebar__brand-mark" src={logo} alt="Shiba Tracker" />
-        <span className="sidebar__brand-name">Shiba Tracker</span>
+        <img className="sidebar__brand-mark" src={logo} alt="" />
+        <img className="sidebar__brand-name" src={logoText} alt="Shiba Tracker" />
       </div>
 
       <NavList items={NAV_ITEMS} />

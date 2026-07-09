@@ -36,21 +36,34 @@ function runCommand(command: string, args: string[]): Promise<string | null> {
 }
 
 async function getActiveAppMac(): Promise<ActiveApp | null> {
+  // `path to frontmost application` is a Standard Additions call resolved via
+  // Launch Services directly — far more reliable than System Events' `file of
+  // process`, which throws for many ordinary GUI apps and left most icons
+  // unresolved. Falling back to `file of p` covers the rare case where the
+  // frontmost app has no Launch Services entry (e.g. some background agents).
   const script = `
-tell application "System Events"
-  set p to first application process whose frontmost is true
-  set n to name of p
-  set f to ""
-  try
-    set f to POSIX path of (file of p)
-  end try
-end tell
+set n to ""
+set f to ""
+try
+  set n to name of (path to frontmost application) as text
+  set f to POSIX path of (path to frontmost application)
+end try
+if n is "" then
+  tell application "System Events"
+    set p to first application process whose frontmost is true
+    set n to name of p
+    try
+      set f to POSIX path of (file of p)
+    end try
+  end tell
+end if
 return n & "\\n" & f
 `.trim()
   const output = await runCommand('osascript', ['-e', script])
   if (!output) return null
-  const [name, path] = output.split('\n').map((s) => s.trim())
-  if (!name) return null
+  const [rawName, path] = output.split('\n').map((s) => s.trim())
+  if (!rawName) return null
+  const name = rawName.replace(/\.app$/i, '')
   return { name, path: path || null }
 }
 

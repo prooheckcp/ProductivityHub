@@ -1,6 +1,8 @@
+import { describeAchievements } from '../shared/achievements'
 import type { HomeSummary } from '../shared/types'
 import { currentAppUsage } from './appTracker'
 import { listAppUsageSessions } from './store/appUsage'
+import { getAchievementProgress } from './store/achievements'
 import { listCategories, listProjects, listTasks } from './store/todo'
 import { listTimers, listTimerSessions } from './store/timers'
 
@@ -61,5 +63,23 @@ export function getHomeSummary(): HomeSummary {
     }
   }
 
-  return { timerMsToday, appMsToday, tasksCompletedToday, recentTimers, recentProject }
+  const achievements = describeAchievements(getAchievementProgress())
+  const recentAchievements = achievements
+    .filter((a) => a.unlockedAt !== null)
+    .sort((a, b) => (b.unlockedAt ?? 0) - (a.unlockedAt ?? 0))
+    .slice(0, 3)
+  const closeAchievements = achievements
+    .filter((a) => a.unlockedAt === null)
+    .sort((a, b) => b.progress - a.progress)
+    .slice(0, 3)
+
+  return {
+    timerMsToday,
+    appMsToday,
+    tasksCompletedToday,
+    recentTimers,
+    recentProject,
+    recentAchievements,
+    closeAchievements
+  }
 }

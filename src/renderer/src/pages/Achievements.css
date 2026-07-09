@@ -1,3 +1,16 @@
+.achievements-section {
+  margin-bottom: 22px;
+}
+
+.achievements-section__title {
+  font-size: 13px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  margin-bottom: 10px;
+}
+
 .achievements-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -8,6 +21,11 @@
   display: flex;
   gap: 12px;
   opacity: 0.6;
+  transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.achievement-card:hover {
+  transform: translateY(-2px);
 }
 
 .achievement-card--unlocked {

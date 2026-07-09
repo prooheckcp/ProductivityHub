@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import Card from '../components/Card'
 import EmptyState from '../components/EmptyState'
-import { TimerIcon } from '../components/icons'
+import { TimerIcon, TrophyIcon } from '../components/icons'
 import type { HomeSummary } from '@shared/types'
 import { formatDuration } from '../utils/format'
 import { toFileUrl } from '../utils/fileUrl'
@@ -83,6 +83,55 @@ export default function Home(): JSX.Element {
           title="No recent activity yet"
           description="Start a timer or complete a to-do to see quick links show up here."
         />
+      )}
+
+      {summary && (summary.recentAchievements.length > 0 || summary.closeAchievements.length > 0) && (
+        <div className="home__achievements">
+          {summary.recentAchievements.length > 0 && (
+            <Card className="home__achievements-card">
+              <h2 className="home__achievements-title">Recently unlocked</h2>
+              <ul className="home__achievements-list">
+                {summary.recentAchievements.map((a) => (
+                  <li key={a.id} className="home__achievement-row">
+                    <span className="home__achievement-icon home__achievement-icon--unlocked">
+                      <TrophyIcon size={16} />
+                    </span>
+                    <span>
+                      <span className="home__achievement-name">{a.title}</span>
+                      <span className="home__achievement-meta">
+                        {new Date(a.unlockedAt ?? 0).toLocaleDateString()}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+
+          {summary.closeAchievements.length > 0 && (
+            <Card className="home__achievements-card">
+              <h2 className="home__achievements-title">Almost there</h2>
+              <ul className="home__achievements-list">
+                {summary.closeAchievements.map((a) => (
+                  <li key={a.id} className="home__achievement-row">
+                    <span className="home__achievement-icon">
+                      <TrophyIcon size={16} />
+                    </span>
+                    <span className="home__achievement-progress">
+                      <span className="home__achievement-name">{a.title}</span>
+                      <span className="home__achievement-progress-track">
+                        <span
+                          className="home__achievement-progress-fill"
+                          style={{ width: `${Math.round(a.progress * 100)}%` }}
+                        />
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
+        </div>
       )}
     </>
   )

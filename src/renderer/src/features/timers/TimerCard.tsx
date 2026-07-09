@@ -21,7 +21,7 @@ export default function TimerCard({ timer, now, onOpen, onEdit }: TimerCardProps
     <div className="timer-card">
       <button type="button" className="timer-card__body" onClick={onOpen}>
         <div className="timer-card__thumb">
-          {timer.imagePath ? <img src={toFileUrl(timer.imagePath)} alt="" /> : <TimerIcon size={22} />}
+          {timer.imagePath ? <img src={toFileUrl(timer.imagePath)} alt="" /> : <TimerIcon size={20} />}
         </div>
         <div className="timer-card__info">
           <p className="timer-card__name">{timer.name}</p>
@@ -31,8 +31,16 @@ export default function TimerCard({ timer, now, onOpen, onEdit }: TimerCardProps
           </p>
         </div>
       </button>
-      <button type="button" className="timer-card__edit" onClick={onEdit} aria-label="Edit timer">
-        <SettingsIcon size={16} />
+      <button
+        type="button"
+        className="timer-card__edit"
+        onClick={(event) => {
+          event.stopPropagation()
+          onEdit()
+        }}
+        aria-label="Edit timer"
+      >
+        <SettingsIcon size={14} />
       </button>
     </div>
   )

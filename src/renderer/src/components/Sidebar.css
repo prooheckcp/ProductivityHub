@@ -4,8 +4,10 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 20px 12px;
-  background: var(--surface-sunken);
+  /* Extra top padding clears the macOS traffic-light buttons, which overlay
+     the top-left of the window (titleBarStyle: 'hiddenInset'). */
+  padding: 36px 12px 20px;
+  background: var(--sidebar-bg);
   border-right: 1px solid var(--border);
   -webkit-app-region: drag;
 }
@@ -27,10 +29,8 @@
 }
 
 .sidebar__brand-name {
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text-primary);
-  letter-spacing: -0.01em;
+  height: 18px;
+  width: auto;
 }
 
 .sidebar__list {

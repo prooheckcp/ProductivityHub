@@ -157,3 +157,78 @@ export function SakuraFlowerIcon({ size = 18 }: IconProps): JSX.Element {
     </svg>
   )
 }
+
+export function LockIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <rect x="5.5" y="11" width="13" height="9.5" rx="2" strokeWidth="1.7" />
+      <path d="M8 11V7.5a4 4 0 0 1 8 0V11" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function CalendarIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <rect x="3.5" y="5" width="17" height="16" rx="2.5" strokeWidth="1.7" />
+      <path d="M3.5 9.5h17M8 3v3.5M16 3v3.5" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="M8 13.5h2M14 13.5h2M8 17h2M14 17h2" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function FilterIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path d="M4 5.5h16L14 13v6l-4 2v-8L4 5.5Z" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function BubbleIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <circle cx="12" cy="12" r="8" strokeWidth="1.6" />
+      <path d="M9 8.5c-1 1-1.5 2.2-1.4 3.4" strokeWidth="1.4" strokeLinecap="round" opacity="0.7" />
+    </svg>
+  )
+}
+
+export function SnowflakeIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      {[0, 60, 120].map((angle) => (
+        <g key={angle} transform={`rotate(${angle} 12 12)`}>
+          <path d="M12 3v18" strokeWidth="1.6" strokeLinecap="round" />
+          <path d="M12 6 9.5 8M12 6l2.5 2M12 18l-2.5-2M12 18l2.5-2" strokeWidth="1.4" strokeLinecap="round" />
+        </g>
+      ))}
+    </svg>
+  )
+}
+
+export function SunIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <circle cx="12" cy="12" r="4.5" strokeWidth="1.6" />
+      <path
+        d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+export function WaveIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path
+        d="M2 14c2 0 2-3 4-3s2 3 4 3 2-3 4-3 2 3 4 3 2-3 4-3"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}

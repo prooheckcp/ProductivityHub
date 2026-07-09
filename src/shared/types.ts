@@ -34,13 +34,21 @@ export type TimerFormInput = {
   imagePath: string | null
 }
 
-export type StatsRangeKey = '1d' | '7d' | '30d' | 'all'
+export type StatsRangeKey = '1d' | '7d' | '30d' | 'all' | 'custom'
 
 export type StatsEntry = {
   key: string
   label: string
   ms: number
   appPath?: string | null
+  category?: string | null
+}
+
+export type StatsQuery = {
+  range: StatsRangeKey
+  startMs?: number
+  endMs?: number
+  category?: string | null
 }
 
 export type StatsResult = {
@@ -50,16 +58,18 @@ export type StatsResult = {
   appsAllTime: StatsEntry[]
   categories: StatsEntry[]
   categorySupport: boolean
+  availableCategories: string[]
 }
 
 // ---- Settings ----
 
-export type FontChoice = 'system' | 'serif' | 'rounded' | 'mono'
+export type FontChoice = 'system' | 'serif' | 'rounded' | 'mono' | 'comic' | 'arial'
 
 export type AppSettings = {
   backgroundGradient: string
   buttonGradient: string
   font: FontChoice
+  textColor: string | null
 }
 
 // ---- To-Do ----
@@ -123,7 +133,7 @@ export type TaskFormInput = {
 
 // ---- Achievements ----
 
-export type AchievementCategory = 'timers' | 'tasks'
+export type AchievementCategory = 'timers' | 'tasks' | 'devtools'
 
 export type AchievementDef = {
   id: string
@@ -136,7 +146,19 @@ export type AchievementDef = {
 export type AchievementProgress = {
   timersCreated: number
   tasksCompleted: number
+  devToolsMs: number
   unlocked: Record<string, number>
+}
+
+export type AchievementSummary = {
+  id: string
+  title: string
+  description: string
+  category: AchievementCategory
+  threshold: number
+  current: number
+  progress: number
+  unlockedAt: number | null
 }
 
 // ---- Home ----
@@ -154,6 +176,8 @@ export type HomeSummary = {
   tasksCompletedToday: number
   recentTimers: Timer[]
   recentProject: RecentProjectLink | null
+  recentAchievements: AchievementSummary[]
+  closeAchievements: AchievementSummary[]
 }
 
 // ---- Export/Import ----

@@ -1,5 +1,6 @@
+import { Notification } from 'electron'
 import { ACHIEVEMENT_DEFS } from '../../shared/achievements'
-import type { AchievementProgress } from '../../shared/types'
+import type { AchievementDef, AchievementProgress } from '../../shared/types'
 import { dataFile } from './paths'
 import { readJsonFile, writeJsonFile } from './jsonFile'
 
@@ -8,6 +9,7 @@ const progressFile = (): string => dataFile('achievements.json')
 const DEFAULT_PROGRESS: AchievementProgress = {
   timersCreated: 0,
   tasksCompleted: 0,
+  devToolsMs: 0,
   unlocked: {}
 }
 
@@ -19,13 +21,24 @@ function saveProgress(progress: AchievementProgress): void {
   writeJsonFile(progressFile(), progress)
 }
 
-function unlockNewly(progress: AchievementProgress, category: 'timers' | 'tasks'): void {
-  const count = category === 'timers' ? progress.timersCreated : progress.tasksCompleted
+function notifyUnlocked(defs: AchievementDef[]): void {
+  if (!Notification.isSupported()) return
+  for (const def of defs) {
+    new Notification({ title: 'Achievement unlocked', body: def.title }).show()
+  }
+}
+
+function unlockNewly(progress: AchievementProgress, category: AchievementDef['category']): AchievementDef[] {
+  const count =
+    category === 'timers' ? progress.timersCreated : category === 'tasks' ? progress.tasksCompleted : progress.devToolsMs
+  const newlyUnlocked: AchievementDef[] = []
   for (const def of ACHIEVEMENT_DEFS) {
     if (def.category === category && count >= def.threshold && !(def.id in progress.unlocked)) {
       progress.unlocked[def.id] = Date.now()
+      newlyUnlocked.push(def)
     }
   }
+  return newlyUnlocked
 }
 
 export function getAchievementProgress(): AchievementProgress {
@@ -35,7 +48,7 @@ export function getAchievementProgress(): AchievementProgress {
 export function recordTimerCreated(): AchievementProgress {
   const progress = loadProgress()
   progress.timersCreated += 1
-  unlockNewly(progress, 'timers')
+  notifyUnlocked(unlockNewly(progress, 'timers'))
   saveProgress(progress)
   return progress
 }
@@ -43,7 +56,7 @@ export function recordTimerCreated(): AchievementProgress {
 export function recordTaskCompleted(): AchievementProgress {
   const progress = loadProgress()
   progress.tasksCompleted += 1
-  unlockNewly(progress, 'tasks')
+  notifyUnlocked(unlockNewly(progress, 'tasks'))
   saveProgress(progress)
   return progress
 }
@@ -52,6 +65,14 @@ export function recordTaskCompleted(): AchievementProgress {
 export function recordTaskUncompleted(): AchievementProgress {
   const progress = loadProgress()
   progress.tasksCompleted = Math.max(0, progress.tasksCompleted - 1)
+  saveProgress(progress)
+  return progress
+}
+
+export function recordDevToolsUsage(deltaMs: number): AchievementProgress {
+  const progress = loadProgress()
+  progress.devToolsMs += deltaMs
+  notifyUnlocked(unlockNewly(progress, 'devtools'))
   saveProgress(progress)
   return progress
 }

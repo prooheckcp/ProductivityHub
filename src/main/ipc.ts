@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron'
-import type { AppSettings, CategoryFormInput, ProjectFormInput, StatsRangeKey, TaskFormInput, TimerFormInput } from '../shared/types'
+import type { AppSettings, CategoryFormInput, ProjectFormInput, StatsQuery, TaskFormInput, TimerFormInput } from '../shared/types'
 import { getAppIconDataUrl } from './appIcons'
 import { exportData, importData } from './dataTransfer'
 import { getHomeSummary } from './homeSummary'
@@ -70,7 +70,7 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('images:delete', (_event, path: string) => deleteImageIfExists(path))
 
   // ---- Stats ----
-  ipcMain.handle('stats:get', (_event, range: StatsRangeKey) => getStats(range))
+  ipcMain.handle('stats:get', (_event, query: StatsQuery) => getStats(query))
   ipcMain.handle('apps:getIcon', (_event, path: string | null) => getAppIconDataUrl(path))
 
   // ---- Settings ----

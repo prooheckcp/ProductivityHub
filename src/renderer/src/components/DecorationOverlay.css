@@ -4,10 +4,108 @@
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
-  opacity: 0.16;
   color: var(--accent);
 }
 
 .decoration-overlay__item {
   position: absolute;
+  opacity: 0.22;
+  will-change: transform, opacity;
+}
+
+.decoration-overlay__item--fall {
+  top: -8%;
+  animation-name: decoration-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.decoration-overlay__item--rise {
+  bottom: -8%;
+  animation-name: decoration-rise;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.decoration-overlay__item--fade {
+  animation-name: decoration-fade;
+  animation-duration: 6s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes decoration-fall {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.22;
+  }
+  90% {
+    opacity: 0.22;
+  }
+  100% {
+    transform: translate(var(--drift), 112vh) rotate(220deg);
+    opacity: 0;
+  }
+}
+
+@keyframes decoration-rise {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.24;
+  }
+  90% {
+    opacity: 0.2;
+  }
+  100% {
+    transform: translate(var(--drift), -112vh);
+    opacity: 0;
+  }
+}
+
+@keyframes decoration-fade {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 0.24;
+    transform: scale(1);
+  }
+}
+
+.decoration-overlay__sun {
+  position: absolute;
+  top: 6%;
+  right: 8%;
+  opacity: 0.28;
+  animation: decoration-sun-pulse 5s ease-in-out infinite;
+}
+
+@keyframes decoration-sun-pulse {
+  0%,
+  100% {
+    opacity: 0.22;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.32;
+    transform: scale(1.08);
+  }
+}
+
+.decoration-overlay__sand {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 10%;
+  background: linear-gradient(to top, color-mix(in srgb, currentColor 35%, transparent), transparent);
+  opacity: 0.5;
 }

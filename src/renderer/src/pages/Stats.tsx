@@ -3,16 +3,17 @@ import type { JSX } from 'react'
 import PageHeader from '../components/PageHeader'
 import Card from '../components/Card'
 import EmptyState from '../components/EmptyState'
-import type { StatsRangeKey, StatsResult } from '@shared/types'
+import { CalendarIcon, FilterIcon } from '../components/icons'
+import type { StatsQuery, StatsRangeKey, StatsResult } from '@shared/types'
 import { formatDuration } from '../utils/format'
 import AppIcon from '../features/stats/AppIcon'
 import StatsChart, { type ChartView } from '../features/stats/StatsChart'
 import './Stats.css'
 
 const RANGES: { key: StatsRangeKey; label: string }[] = [
-  { key: '1d', label: 'Last 24 hours' },
-  { key: '7d', label: 'Last 7 days' },
-  { key: '30d', label: 'Last 30 days' },
+  { key: '1d', label: '24h' },
+  { key: '7d', label: '7d' },
+  { key: '30d', label: '30d' },
   { key: 'all', label: 'All time' }
 ]
 
@@ -24,16 +25,35 @@ const VIEWS: { key: ChartView; label: string }[] = [
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
+function toDateInputValue(ms: number): string {
+  return new Date(ms).toISOString().slice(0, 10)
+}
+
 export default function Stats(): JSX.Element {
   const [range, setRange] = useState<StatsRangeKey>('7d')
   const [view, setView] = useState<ChartView>('bar')
+  const [category, setCategory] = useState<string | null>(null)
   const [stats, setStats] = useState<StatsResult | null>(null)
   const [loading, setLoading] = useState(true)
+  const [showCalendar, setShowCalendar] = useState(false)
+  const [showCategoryMenu, setShowCategoryMenu] = useState(false)
+  const now = Date.now()
+  const [customStart, setCustomStart] = useState(() => toDateInputValue(now - 7 * 24 * 60 * 60 * 1000))
+  const [customEnd, setCustomEnd] = useState(() => toDateInputValue(now))
 
   useEffect(() => {
     let cancelled = false
     setLoading(true)
-    window.api.stats.get(range).then((result) => {
+    const query: StatsQuery =
+      range === 'custom'
+        ? {
+            range,
+            startMs: new Date(customStart).getTime(),
+            endMs: new Date(customEnd).getTime() + 24 * 60 * 60 * 1000 - 1,
+            category
+          }
+        : { range, category }
+    window.api.stats.get(query).then((result) => {
       if (!cancelled) {
         setStats(result)
         setLoading(false)
@@ -42,7 +62,12 @@ export default function Stats(): JSX.Element {
     return () => {
       cancelled = true
     }
-  }, [range])
+  }, [range, category, customStart, customEnd])
+
+  function applyCustomRange(): void {
+    setRange('custom')
+    setShowCalendar(false)
+  }
 
   return (
     <>
@@ -62,6 +87,73 @@ export default function Stats(): JSX.Element {
                   {r.label}
                 </button>
               ))}
+              <div className="stats-popover-anchor">
+                <button
+                  type="button"
+                  className={
+                    'stats-range__option stats-range__option--icon' +
+                    (range === 'custom' ? ' stats-range__option--active' : '')
+                  }
+                  onClick={() => setShowCalendar((v) => !v)}
+                  aria-label="Custom date range"
+                >
+                  <CalendarIcon size={15} />
+                </button>
+                {showCalendar && (
+                  <div className="stats-popover">
+                    <p className="stats-popover__title">Custom range</p>
+                    <label className="stats-popover__field">
+                      Start
+                      <input type="date" value={customStart} onChange={(e) => setCustomStart(e.target.value)} />
+                    </label>
+                    <label className="stats-popover__field">
+                      End
+                      <input type="date" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} />
+                    </label>
+                    <button type="button" className="stats-popover__apply" onClick={applyCustomRange}>
+                      Apply
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="stats-popover-anchor">
+                <button
+                  type="button"
+                  className={'stats-range__option stats-range__option--icon' + (category ? ' stats-range__option--active' : '')}
+                  onClick={() => setShowCategoryMenu((v) => !v)}
+                  aria-label="Filter by category"
+                >
+                  <FilterIcon size={15} />
+                </button>
+                {showCategoryMenu && (
+                  <div className="stats-popover">
+                    <p className="stats-popover__title">Category</p>
+                    <button
+                      type="button"
+                      className={'stats-popover__option' + (category === null ? ' stats-popover__option--active' : '')}
+                      onClick={() => {
+                        setCategory(null)
+                        setShowCategoryMenu(false)
+                      }}
+                    >
+                      All categories
+                    </button>
+                    {(stats?.availableCategories ?? []).map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        className={'stats-popover__option' + (category === c ? ' stats-popover__option--active' : '')}
+                        onClick={() => {
+                          setCategory(c)
+                          setShowCategoryMenu(false)
+                        }}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="stats-range">
               {VIEWS.map((v) => (
@@ -78,6 +170,8 @@ export default function Stats(): JSX.Element {
           </div>
         }
       />
+
+      {category && <p className="stats-active-filter">Filtering apps by category: {category}</p>}
 
       {!loading && stats && (
         <>
@@ -113,19 +207,26 @@ export default function Stats(): JSX.Element {
 
             <Card>
               <h2 className="stats-section-title">By category</h2>
-              {!stats.categorySupport ? (
+              {!stats.categorySupport && (
                 <p className="stats-note">
-                  App categories aren't available on this platform yet — macOS exposes an app's
-                  category via its bundle metadata, but Windows has no equivalent for arbitrary
-                  installed programs.
+                  Automatic category detection is macOS-only — categories shown here (and on Windows)
+                  come from a locally-known list of common apps, so less common apps may show as
+                  Uncategorized.
                 </p>
-              ) : stats.categories.length === 0 ? (
+              )}
+              {stats.categories.length === 0 ? (
                 <EmptyState title="No categorized app activity in this range" />
               ) : (
                 <ul className="stats-list">
                   {stats.categories.map((entry) => (
                     <li key={entry.key} className="stats-list__row">
-                      <div className="stats-list__label">{entry.label}</div>
+                      <button
+                        type="button"
+                        className="stats-list__label stats-list__label--button"
+                        onClick={() => setCategory(entry.key === category ? null : entry.key)}
+                      >
+                        {entry.label}
+                      </button>
                       <div className="stats-list__bar-track">
                         <div
                           className="stats-list__bar-fill"
