@@ -24,7 +24,8 @@ export const FONT_LABELS: Record<FontChoice, string> = {
 const DEFAULT_SETTINGS: AppSettings = {
   backgroundGradient: DEFAULT_GRADIENT_ID,
   font: 'system',
-  textColor: null
+  textColor: null,
+  launchAtLogin: false
 }
 
 type ThemeContextValue = {
@@ -36,6 +37,7 @@ type ThemeContextValue = {
   setBackgroundGradient: (id: string) => void
   setFont: (font: FontChoice) => void
   setTextColor: (color: string | null) => void
+  setLaunchAtLogin: (enabled: boolean) => void
   reloadSettings: () => void
 }
 
@@ -146,6 +148,7 @@ export function ThemeProvider({ children }: { children: ReactNode }): JSX.Elemen
       setBackgroundGradient: (id) => updateSetting({ backgroundGradient: id }),
       setFont: (font) => updateSetting({ font }),
       setTextColor: (color) => updateSetting({ textColor: color }),
+      setLaunchAtLogin: (enabled) => updateSetting({ launchAtLogin: enabled }),
       reloadSettings: load
     }),
     [settings, loaded, unlockedAchievementIds]

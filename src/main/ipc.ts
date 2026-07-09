@@ -5,6 +5,7 @@ import { getAppDetail } from './appDetailStats'
 import { exportData, importData } from './dataTransfer'
 import { getHomeSummary } from './homeSummary'
 import { deleteImageIfExists, saveImage } from './images'
+import { applyLoginItemSetting } from './loginItem'
 import { getStats } from './stats'
 import { getAchievementProgress, recordTaskCompleted, recordTaskUncompleted, recordTimerCreated } from './store/achievements'
 import { getSettings, updateSettings } from './store/settings'
@@ -77,7 +78,11 @@ export function registerIpcHandlers(): void {
 
   // ---- Settings ----
   ipcMain.handle('settings:get', () => getSettings())
-  ipcMain.handle('settings:update', (_event, patch: Partial<AppSettings>) => updateSettings(patch))
+  ipcMain.handle('settings:update', (_event, patch: Partial<AppSettings>) => {
+    const updated = updateSettings(patch)
+    if (patch.launchAtLogin !== undefined) applyLoginItemSetting(updated.launchAtLogin)
+    return updated
+  })
 
   // ---- Achievements ----
   ipcMain.handle('achievements:get', () => getAchievementProgress())

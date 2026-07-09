@@ -13,7 +13,7 @@ import './Settings.css'
 const FONT_CHOICES: FontChoice[] = ['system', 'serif', 'rounded', 'mono', 'comic', 'arial']
 
 export default function Settings(): JSX.Element {
-  const { settings, setBackgroundGradient, setFont, setTextColor } = useTheme()
+  const { settings, setBackgroundGradient, setFont, setTextColor, setLaunchAtLogin } = useTheme()
   const [exportStatus, setExportStatus] = useState<string | null>(null)
   const [confirmingImport, setConfirmingImport] = useState(false)
   const [importing, setImporting] = useState(false)
@@ -91,6 +91,26 @@ export default function Settings(): JSX.Element {
             </Button>
           )}
         </div>
+      </Card>
+
+      <Card className="settings__card">
+        <h2 className="settings__section-title">Startup</h2>
+        <p className="settings__section-description">
+          When on, Shiba Track launches automatically when you log in and keeps tracking your app
+          usage in the background — closing the window just hides it to the system tray/menu bar
+          instead of quitting. Use the tray icon's "Quit" to actually exit.
+        </p>
+        <button
+          type="button"
+          className={'settings__toggle-row' + (settings.launchAtLogin ? ' settings__toggle-row--on' : '')}
+          onClick={() => setLaunchAtLogin(!settings.launchAtLogin)}
+          aria-pressed={settings.launchAtLogin}
+        >
+          <span className="settings__toggle-label">Launch at login</span>
+          <span className="settings__toggle-switch">
+            <span className="settings__toggle-knob" />
+          </span>
+        </button>
       </Card>
 
       <Card className="settings__card">

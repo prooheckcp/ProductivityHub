@@ -90,6 +90,7 @@ export type AppSettings = {
   backgroundGradient: string
   font: FontChoice
   textColor: string | null
+  launchAtLogin: boolean
 }
 
 // ---- To-Do ----

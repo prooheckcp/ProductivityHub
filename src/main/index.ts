@@ -4,6 +4,9 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc'
 import { startAppTracker, stopAppTracker } from './appTracker'
 import { startDeadlineNotifier, stopDeadlineNotifier } from './deadlineNotifier'
+import { applyLoginItemSetting, wasLaunchedHidden } from './loginItem'
+import { createTray } from './tray'
+import { getSettings } from './store/settings'
 
 const APP_NAME = 'Shiba Track'
 
@@ -27,8 +30,11 @@ const iconPath = app.isPackaged
   ? join(process.resourcesPath, 'icon.png')
   : join(__dirname, '../../resources/icon.png')
 
-function createWindow(): void {
-  const mainWindow = new BrowserWindow({
+let mainWindow: BrowserWindow | null = null
+let isQuitting = false
+
+function createWindow(showImmediately: boolean): void {
+  mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     minWidth: 860,
@@ -45,7 +51,19 @@ function createWindow(): void {
   })
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+    if (showImmediately) mainWindow?.show()
+  })
+
+  // The app keeps running in the background (tracking other apps' usage) once
+  // the window is closed — so a click on the close button hides it instead of
+  // destroying it. Chromium automatically throttles/stops compositing hidden
+  // windows, so this is much lighter than a visible-but-idle window. The only
+  // way to actually quit is the tray menu (or the OS quit shortcut), which set
+  // `isQuitting` first via the 'before-quit' handler below.
+  mainWindow.on('close', (event) => {
+    if (isQuitting) return
+    event.preventDefault()
+    mainWindow?.hide()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -57,6 +75,15 @@ function createWindow(): void {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+  }
+}
+
+function showMainWindow(): void {
+  if (mainWindow) {
+    mainWindow.show()
+    mainWindow.focus()
+  } else {
+    createWindow(true)
   }
 }
 
@@ -77,21 +104,19 @@ app.whenReady().then(() => {
   registerIpcHandlers()
   startAppTracker()
   startDeadlineNotifier()
+  applyLoginItemSetting(getSettings().launchAtLogin)
+  createTray(iconPath, showMainWindow)
 
-  createWindow()
+  createWindow(!wasLaunchedHidden())
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) createWindow(true)
+    else showMainWindow()
   })
 })
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-})
-
 app.on('before-quit', () => {
+  isQuitting = true
   stopAppTracker()
   stopDeadlineNotifier()
 })
