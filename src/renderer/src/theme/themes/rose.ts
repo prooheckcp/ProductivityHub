@@ -8,5 +8,5 @@ export const rose: Gradient = {
   kind: 'color',
   decoration: null,
   unlockedBy: null,
-  cardTint: '#fdeef0'
+  cardTint: '#fbd4da'
 }

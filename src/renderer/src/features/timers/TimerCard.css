@@ -1,52 +1,75 @@
 .timer-card {
   position: relative;
-  /* A real dark card, tinted by the current theme's accent hue, instead of a
-     flat white/near-white rectangle — text below switches to light colors to
-     match. */
-  background: color-mix(in srgb, var(--accent) 20%, #14151a);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: color-mix(in srgb, var(--accent) 22%, #14151a);
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 20px;
-  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 180ms ease;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 220ms ease, border-color 220ms ease;
 }
 
 .timer-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-5px);
+  border-color: color-mix(in srgb, var(--accent) 65%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent), 0 16px 32px rgba(0, 0, 0, 0.35);
   z-index: 1;
 }
 
 .timer-card__body {
   display: flex;
-  align-items: center;
-  gap: 14px;
+  flex-direction: column;
   width: 100%;
-  padding: 16px 18px;
   text-align: left;
   min-width: 0;
+  background: transparent;
+  border: none;
+  appearance: none;
 }
 
-.timer-card__thumb {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.55);
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
+.timer-card__cover {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: rgba(255, 255, 255, 0.06);
   overflow: hidden;
 }
 
-.timer-card__thumb img {
+.timer-card__cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
+.timer-card__cover-fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.65), transparent 60%);
+}
+
+.timer-card__clock {
+  position: absolute;
+  left: 14px;
+  bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.timer-card__clock-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
 .timer-card__info {
-  min-width: 0;
-  flex: 1;
-  padding-right: 20px;
+  padding: 14px 16px 16px;
 }
 
 .timer-card__name {
@@ -59,7 +82,7 @@
 }
 
 .timer-card__description {
-  margin-top: 2px;
+  margin-top: 3px;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.5);
   white-space: nowrap;
@@ -67,31 +90,21 @@
   text-overflow: ellipsis;
 }
 
-.timer-card__clock {
-  margin-top: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: rgba(255, 255, 255, 0.55);
-}
-
-.timer-card__clock--running {
-  color: var(--accent);
-}
-
 .timer-card__edit {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 26px;
-  height: 26px;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
   display: grid;
   place-items: center;
   border-radius: 999px;
-  color: rgba(255, 255, 255, 0.55);
-  background: transparent;
+  border: none;
+  appearance: none;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.4);
   opacity: 0;
-  transition: opacity 120ms ease, background-color 120ms ease, color 120ms ease;
+  transition: opacity 120ms ease, background-color 120ms ease;
 }
 
 .timer-card:hover .timer-card__edit,
@@ -100,6 +113,5 @@
 }
 
 .timer-card__edit:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
+  background: rgba(0, 0, 0, 0.6);
 }

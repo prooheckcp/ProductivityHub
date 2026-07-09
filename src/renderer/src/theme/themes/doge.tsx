@@ -43,6 +43,6 @@ export const doge: Gradient = {
   kind: 'effect',
   decoration: 'doge',
   unlockedBy: null,
-  cardTint: '#fff8e6',
+  cardTint: '#fbe6a8',
   Decoration: DogeDecoration
 }

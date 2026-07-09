@@ -60,8 +60,25 @@
 
 .decoration-overlay__tree {
   position: absolute;
-  bottom: -2%;
-  opacity: 0.55;
+  bottom: -3%;
+}
+
+.decoration-overlay__tree--back {
+  opacity: 0.45;
+}
+
+.decoration-overlay__tree--front {
+  opacity: 0.85;
+  bottom: -6%;
+}
+
+.decoration-overlay__ground {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 14%;
+  background: linear-gradient(to top, rgba(10, 40, 20, 0.4), transparent);
 }
 
 @keyframes decoration-fall {

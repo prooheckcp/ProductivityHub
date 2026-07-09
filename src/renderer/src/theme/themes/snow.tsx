@@ -51,6 +51,6 @@ export const snow: Gradient = {
   kind: 'effect',
   decoration: 'snow',
   unlockedBy: null,
-  cardTint: '#f3f9ff',
+  cardTint: '#d5eaff',
   Decoration: SnowDecoration
 }

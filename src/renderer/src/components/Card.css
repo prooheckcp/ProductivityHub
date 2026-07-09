@@ -1,8 +1,11 @@
 .card {
   background: var(--surface);
-  border: 1px solid var(--border);
+  /* A stroke derived from the card's own (now more saturated) tint, rather
+     than the flat neutral --border — that stayed visible as a defined edge
+     regardless of how close the page background's hue is. */
+  border: 1px solid color-mix(in srgb, var(--surface) 75%, black);
   border-radius: var(--radius-lg);
-  box-shadow: none;
+  box-shadow: var(--shadow-sm);
   padding: 20px 22px;
   position: relative;
   transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 180ms ease, z-index 0ms;

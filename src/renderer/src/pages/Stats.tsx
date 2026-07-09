@@ -176,7 +176,7 @@ export default function Stats(): JSX.Element {
                 <EmptyState title="No app activity tracked yet" />
               ) : (
                 <ol className="leaderboard">
-                  {stats.appsAllTime.slice(0, 10).map((entry, index) => (
+                  {stats.appsAllTime.map((entry, index) => (
                     <li key={entry.key} className="leaderboard__row">
                       <span className="leaderboard__rank">{MEDALS[index] ?? index + 1}</span>
                       <AppIcon path={entry.appPath} label={entry.label} category={entry.category} />

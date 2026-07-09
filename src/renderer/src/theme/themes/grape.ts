@@ -8,5 +8,5 @@ export const grape: Gradient = {
   kind: 'color',
   decoration: null,
   unlockedBy: null,
-  cardTint: '#f7f0fc'
+  cardTint: '#e8d4f7'
 }

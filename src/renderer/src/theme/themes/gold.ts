@@ -8,5 +8,5 @@ export const gold: Gradient = {
   kind: 'color',
   decoration: null,
   unlockedBy: null,
-  cardTint: '#fdf3e7'
+  cardTint: '#fbe3bd'
 }

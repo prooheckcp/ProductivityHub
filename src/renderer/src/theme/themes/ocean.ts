@@ -8,5 +8,5 @@ export const ocean: Gradient = {
   kind: 'color',
   decoration: null,
   unlockedBy: null,
-  cardTint: '#eef8fc'
+  cardTint: '#cbedf8'
 }

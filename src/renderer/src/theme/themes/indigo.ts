@@ -8,5 +8,5 @@ export const indigo: Gradient = {
   kind: 'color',
   decoration: null,
   unlockedBy: null,
-  cardTint: '#f5f4fe'
+  cardTint: '#e2defb'
 }

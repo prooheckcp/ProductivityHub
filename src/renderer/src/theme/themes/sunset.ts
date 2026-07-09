@@ -8,5 +8,5 @@ export const sunset: Gradient = {
   kind: 'color',
   decoration: null,
   unlockedBy: null,
-  cardTint: '#fdf1ea'
+  cardTint: '#fce0cd'
 }

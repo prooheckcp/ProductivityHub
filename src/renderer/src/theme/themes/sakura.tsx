@@ -54,6 +54,6 @@ export const sakura: Gradient = {
   kind: 'effect',
   decoration: 'sakura',
   unlockedBy: null,
-  cardTint: '#fff3f8',
+  cardTint: '#fcd3e4',
   Decoration: SakuraDecoration
 }

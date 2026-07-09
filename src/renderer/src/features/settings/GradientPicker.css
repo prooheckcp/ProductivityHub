@@ -15,8 +15,13 @@
   gap: 10px;
 }
 
+.gradient-swatch-wrap {
+  position: relative;
+}
+
 .gradient-swatch {
   position: relative;
+  width: 100%;
   height: 60px;
   border-radius: var(--radius-lg);
   border: 2px solid transparent;
@@ -112,8 +117,8 @@
   border-top-color: #17171a;
 }
 
-.gradient-swatch--locked:hover .gradient-swatch__tooltip,
-.gradient-swatch--locked:focus-visible .gradient-swatch__tooltip {
+.gradient-swatch-wrap:hover .gradient-swatch__tooltip,
+.gradient-swatch-wrap:focus-within .gradient-swatch__tooltip {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }

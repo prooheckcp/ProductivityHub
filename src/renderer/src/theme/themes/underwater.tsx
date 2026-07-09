@@ -37,6 +37,6 @@ export const underwater: Gradient = {
   kind: 'effect',
   decoration: 'underwater',
   unlockedBy: null,
-  cardTint: '#eafbfd',
+  cardTint: '#bceef4',
   Decoration: UnderwaterDecoration
 }

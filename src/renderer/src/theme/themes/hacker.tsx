@@ -43,6 +43,6 @@ export const hacker: Gradient = {
   decoration: 'hacker',
   // Unlocked by the 250-hour developer-tools achievement (src/shared/achievements.ts).
   unlockedBy: 'devtools-250h',
-  cardTint: '#eefcf3',
+  cardTint: '#b8f0cd',
   Decoration: HackerDecoration
 }

@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import { NAV_ITEMS, SECONDARY_NAV_ITEMS, type NavItem } from '../navigation'
 import logo from '../assets/logo.png'
 import logoText from '../assets/logo-text.png'
@@ -27,10 +27,10 @@ function NavList({ items }: { items: NavItem[] }): JSX.Element {
 export default function Sidebar(): JSX.Element {
   return (
     <nav className="sidebar">
-      <div className="sidebar__brand">
+      <Link to="/" className="sidebar__brand">
         <img className="sidebar__brand-mark" src={logo} alt="" />
         <img className="sidebar__brand-name" src={logoText} alt="Shiba Tracker" />
-      </div>
+      </Link>
 
       <NavList items={NAV_ITEMS} />
 

@@ -8,5 +8,5 @@ export const midnight: Gradient = {
   kind: 'color',
   decoration: null,
   unlockedBy: null,
-  cardTint: '#eef0f7'
+  cardTint: '#d3d8ec'
 }

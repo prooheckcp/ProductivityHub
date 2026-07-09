@@ -28,34 +28,36 @@ export default function GradientPicker({ label, value, onChange, options = GRADI
           const isActive = gradient.id === value
           const unlocked = isGradientUnlocked(gradient, unlockedAchievementIds)
           return (
-            <button
-              key={gradient.id}
-              type="button"
-              className={
-                'gradient-swatch' +
-                (isActive ? ' gradient-swatch--active' : '') +
-                (unlocked ? '' : ' gradient-swatch--locked')
-              }
-              style={{ background: `linear-gradient(135deg, ${gradient.stops[0]}, ${gradient.stops[1]})` }}
-              onClick={() => unlocked && onChange(gradient.id)}
-              disabled={!unlocked}
-              aria-pressed={isActive}
-            >
-              {isActive && (
-                <span className="gradient-swatch__check">
-                  <CheckIcon size={12} />
-                </span>
-              )}
-              {!unlocked && (
-                <>
+            <div key={gradient.id} className="gradient-swatch-wrap">
+              <button
+                type="button"
+                className={
+                  'gradient-swatch' +
+                  (isActive ? ' gradient-swatch--active' : '') +
+                  (unlocked ? '' : ' gradient-swatch--locked')
+                }
+                style={{ background: `linear-gradient(135deg, ${gradient.stops[0]}, ${gradient.stops[1]})` }}
+                onClick={() => unlocked && onChange(gradient.id)}
+                aria-disabled={!unlocked}
+                aria-pressed={isActive}
+              >
+                {isActive && (
+                  <span className="gradient-swatch__check">
+                    <CheckIcon size={12} />
+                  </span>
+                )}
+                {!unlocked && (
                   <span className="gradient-swatch__lock">
                     <LockIcon size={16} />
                   </span>
-                  <span className="gradient-swatch__tooltip">{unlockHint(gradient)}</span>
-                </>
-              )}
-              <span className="gradient-swatch__label">{gradient.name}</span>
-            </button>
+                )}
+                <span className="gradient-swatch__label">{gradient.name}</span>
+              </button>
+              {/* Rendered outside the button: the button has overflow:hidden
+                  (to clip its gradient background to the rounded corners),
+                  which was silently clipping this tooltip when it lived inside. */}
+              {!unlocked && <span className="gradient-swatch__tooltip">{unlockHint(gradient)}</span>}
+            </div>
           )
         })}
       </div>

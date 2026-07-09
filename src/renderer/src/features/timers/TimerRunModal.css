@@ -8,10 +8,11 @@
 }
 
 .timer-run__image {
-  width: 140px;
-  height: 140px;
+  width: 220px;
+  height: 220px;
   border-radius: var(--radius-lg);
   object-fit: cover;
+  box-shadow: var(--shadow-md);
 }
 
 .timer-run__description {

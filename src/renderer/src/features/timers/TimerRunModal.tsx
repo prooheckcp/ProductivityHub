@@ -3,6 +3,7 @@ import type { JSX } from 'react'
 import Modal from '../../components/Modal'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import { CheckIcon, CloseIcon, PauseIcon, PlayIcon } from '../../components/icons'
+import defaultCover from '../../assets/shiba-clock.png'
 import { toFileUrl } from '../../utils/fileUrl'
 import { clockToMs, formatClock, formatClockWithCentis } from '../../utils/format'
 import type { ClockParts } from '../../utils/format'
@@ -95,7 +96,11 @@ export default function TimerRunModal({
   return (
     <Modal title={timer.name} onClose={onClose} width={620}>
       <div className="timer-run">
-        {timer.imagePath && <img className="timer-run__image" src={toFileUrl(timer.imagePath)} alt="" />}
+        <img
+          className="timer-run__image"
+          src={timer.imagePath ? toFileUrl(timer.imagePath) : defaultCover}
+          alt=""
+        />
         {timer.description && <p className="timer-run__description">{timer.description}</p>}
 
         {!editing ? (

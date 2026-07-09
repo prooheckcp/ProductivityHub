@@ -10,8 +10,13 @@ const APP_NAME = 'Shiba Track'
 // Electron derives the default userData path from app.getName(), so renaming
 // the app would otherwise fork all user data (timers, tasks, stats, etc.) into
 // a brand-new folder. Pin it to the original folder name before changing the
-// name, so existing installs keep reading/writing the same data.
-app.setPath('userData', join(app.getPath('appData'), 'productivityhub'))
+// name, so existing installs keep reading/writing the same data — but only
+// when the path wasn't already explicitly overridden (e.g. --user-data-dir,
+// used to run an isolated instance for testing), or that override would be
+// silently ignored and tests would hit the real user data folder instead.
+if (!app.commandLine.hasSwitch('user-data-dir')) {
+  app.setPath('userData', join(app.getPath('appData'), 'productivityhub'))
+}
 
 // Set the app name before whenReady so the macOS menu bar and notifications use
 // it instead of the default "Electron" (productName in electron-builder only

@@ -80,8 +80,12 @@ function applyToDocument(settings: AppSettings): void {
   // scrim layered on top (see Sidebar.css) so its fixed light nav text stays
   // readable no matter how pale the theme is.
   const gradientCss = background.backgroundCss ?? `linear-gradient(135deg, ${background.stops[0]}, ${background.stops[1]})`
-  root.style.setProperty('--bg-gradient', gradientCss)
-  root.style.setProperty('--bg', background.stops[1])
+  // A very slight (8%) darkening so cards — which got noticeably more
+  // colorful — still read as sitting on top of the background instead of
+  // blending into it. The sidebar keeps the undarkened gradient; it already
+  // layers its own separate scrim on top for nav-text contrast.
+  root.style.setProperty('--bg-gradient', `linear-gradient(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.08)), ${gradientCss}`)
+  root.style.setProperty('--bg', `color-mix(in srgb, ${background.stops[1]} 92%, black)`)
   root.style.setProperty('--sidebar-bg', gradientCss)
 
   // Cards stay light (so text inside them can stay a fixed dark color), but
