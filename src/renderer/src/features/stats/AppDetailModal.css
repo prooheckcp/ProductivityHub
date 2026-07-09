@@ -1,0 +1,31 @@
+.app-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.app-detail__header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 4px 2px 4px;
+}
+
+.app-detail__total {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.app-detail__total-label {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.app-detail__section-title {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+}

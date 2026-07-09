@@ -61,6 +61,27 @@ export type StatsResult = {
   availableCategories: string[]
 }
 
+// ---- Per-app detail (weekday / month / daily-average breakdown) ----
+
+export type AppDetailQuery = {
+  appName: string
+}
+
+export type AppDetailBucket = {
+  key: string
+  label: string
+  ms: number
+}
+
+export type AppDetailResult = {
+  appName: string
+  appPath: string | null
+  totalMs: number
+  averagePerDayMs: number
+  byWeekday: AppDetailBucket[]
+  byMonth: AppDetailBucket[]
+}
+
 // ---- Settings ----
 
 export type FontChoice = 'system' | 'serif' | 'rounded' | 'mono' | 'comic' | 'arial'

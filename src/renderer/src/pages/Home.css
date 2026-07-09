@@ -103,6 +103,7 @@
 }
 
 .home__achievement-icon {
+  position: relative;
   width: 28px;
   height: 28px;
   flex-shrink: 0;
@@ -116,6 +117,19 @@
 .home__achievement-icon--unlocked {
   background: var(--accent-gradient);
   color: var(--accent-contrast);
+}
+
+.home__achievement-icon-badge {
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  width: 14px;
+  height: 14px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--success);
+  color: #ffffff;
 }
 
 .home__achievement-name {

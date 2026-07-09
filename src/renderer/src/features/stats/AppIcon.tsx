@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import type { JSX } from 'react'
+import { getCachedIcon, resolveAppIcon } from './appIconCache'
 import { getCategoryIcon } from './categoryIcons'
 import './AppIcon.css'
-
-const iconCache = new Map<string, string | null>()
 
 type AppIconProps = {
   path: string | null | undefined
@@ -13,21 +12,19 @@ type AppIconProps = {
 }
 
 export default function AppIcon({ path, label, category, size = 18 }: AppIconProps): JSX.Element {
-  const [icon, setIcon] = useState<string | null>(path ? iconCache.get(path) ?? null : null)
+  const [icon, setIcon] = useState<string | null>(path ? getCachedIcon(path) ?? null : null)
 
   useEffect(() => {
     if (!path) {
       setIcon(null)
       return
     }
-    if (iconCache.has(path)) {
-      setIcon(iconCache.get(path) ?? null)
+    const cached = getCachedIcon(path)
+    if (cached !== undefined) {
+      setIcon(cached)
       return
     }
-    window.api.apps.getIcon(path).then((dataUrl) => {
-      iconCache.set(path, dataUrl)
-      setIcon(dataUrl)
-    })
+    resolveAppIcon(path).then(setIcon)
   }, [path])
 
   const style = { width: size, height: size }

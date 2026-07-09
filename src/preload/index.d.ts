@@ -1,6 +1,7 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
 import type {
   AchievementProgress,
+  AppDetailResult,
   AppSettings,
   Category,
   CategoryFormInput,
@@ -32,6 +33,7 @@ export type Api = {
   }
   stats: {
     get: (query: StatsQuery) => Promise<StatsResult>
+    getAppDetail: (appName: string) => Promise<AppDetailResult>
   }
   apps: {
     getIcon: (path: string | null) => Promise<string | null>

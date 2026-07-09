@@ -8,9 +8,17 @@ type ModalProps = {
   children: ReactNode
   footer?: ReactNode
   width?: number
+  titleClassName?: string
 }
 
-export default function Modal({ title, onClose, children, footer, width = 480 }: ModalProps): JSX.Element {
+export default function Modal({
+  title,
+  onClose,
+  children,
+  footer,
+  width = 480,
+  titleClassName
+}: ModalProps): JSX.Element {
   useEffect(() => {
     const handleKey = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') onClose()
@@ -31,7 +39,7 @@ export default function Modal({ title, onClose, children, footer, width = 480 }:
         onMouseDown={(event) => event.stopPropagation()}
       >
         <div className="modal-panel__header">
-          <h2 className="modal-panel__title">{title}</h2>
+          <h2 className={'modal-panel__title' + (titleClassName ? ` ${titleClassName}` : '')}>{title}</h2>
           <button type="button" className="modal-panel__close" onClick={onClose} aria-label="Close">
             ×
           </button>

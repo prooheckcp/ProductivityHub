@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import type { JSX } from 'react'
 import PageHeader from '../components/PageHeader'
 import Card from '../components/Card'
-import { CheckIcon, ChecklistIcon, ChartIcon, CodeIcon, GiftIcon, TimerIcon } from '../components/icons'
+import { CheckIcon, GiftIcon } from '../components/icons'
 import { ACHIEVEMENT_DEFS, describeAchievements } from '@shared/achievements'
 import type { AchievementCategory, AchievementProgress, AchievementSummary } from '@shared/types'
 import { formatDuration } from '../utils/format'
 import { GRADIENTS } from '../theme/gradients'
+import { ACHIEVEMENT_CATEGORY_ICONS } from '../features/achievements/categoryIcons'
 import './Achievements.css'
 
 const SECTIONS: { key: AchievementCategory; title: string }[] = [
@@ -15,13 +16,6 @@ const SECTIONS: { key: AchievementCategory; title: string }[] = [
   { key: 'tasks', title: 'Tasks' },
   { key: 'devtools', title: 'Developer Tools' }
 ]
-
-const CATEGORY_ICONS: Record<AchievementCategory, (props: { size?: number }) => JSX.Element> = {
-  timers: TimerIcon,
-  timerUsage: ChartIcon,
-  tasks: ChecklistIcon,
-  devtools: CodeIcon
-}
 
 const DURATION_CATEGORIES: AchievementCategory[] = ['devtools', 'timerUsage']
 
@@ -59,7 +53,7 @@ export default function Achievements(): JSX.Element {
               {items.map((achievement: AchievementSummary) => {
                 const isUnlocked = achievement.unlockedAt !== null
                 const percent = Math.round(achievement.progress * 100)
-                const CategoryIcon = CATEGORY_ICONS[achievement.category]
+                const CategoryIcon = ACHIEVEMENT_CATEGORY_ICONS[achievement.category]
                 const reward = rewardFor(achievement.id)
 
                 return (

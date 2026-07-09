@@ -94,7 +94,7 @@ export default function TimerRunModal({
   }
 
   return (
-    <Modal title={timer.name} onClose={onClose} width={620}>
+    <Modal title={timer.name} onClose={onClose} width={620} titleClassName="timer-run__title">
       <div className="timer-run">
         <img
           className="timer-run__image"

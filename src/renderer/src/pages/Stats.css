@@ -166,6 +166,20 @@
   flex-shrink: 0;
 }
 
+.leaderboard__app {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  border-radius: var(--radius-sm);
+}
+
+.leaderboard__app:hover .leaderboard__label {
+  color: var(--accent);
+}
+
 .leaderboard__label {
   flex: 1;
   min-width: 0;
@@ -174,6 +188,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 120ms ease;
 }
 
 .leaderboard__value {

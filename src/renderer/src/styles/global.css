@@ -69,13 +69,15 @@ textarea {
 
 button {
   cursor: pointer;
-  /* Every custom button in this app sets its own background/border where it
-     wants one — this baseline just stops the browser's native button chrome
-     (a light bevel/gradient plus a border) from ever showing through on ones
-     that forget to. Component styles with higher specificity still win. */
+  /* Every custom button in this app sets its own background/border/padding
+     where it wants one — this baseline just stops the browser's native button
+     chrome (a light bevel/gradient plus a border and default padding) from
+     ever showing through on ones that forget to. Component styles with higher
+     specificity still win. */
   background: transparent;
   border: none;
   appearance: none;
+  padding: 0;
   color: inherit;
   font: inherit;
 }

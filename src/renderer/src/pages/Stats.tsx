@@ -7,6 +7,7 @@ import { CalendarIcon, FilterIcon } from '../components/icons'
 import type { StatsQuery, StatsRangeKey, StatsResult } from '@shared/types'
 import { formatDuration } from '../utils/format'
 import AppIcon from '../features/stats/AppIcon'
+import AppDetailModal from '../features/stats/AppDetailModal'
 import { getCategoryIcon } from '../features/stats/categoryIcons'
 import StatsChart, { type ChartView } from '../features/stats/StatsChart'
 import './Stats.css'
@@ -20,8 +21,7 @@ const RANGES: { key: StatsRangeKey; label: string }[] = [
 
 const VIEWS: { key: ChartView; label: string }[] = [
   { key: 'bar', label: 'Bar' },
-  { key: 'pie', label: 'Pie' },
-  { key: 'line', label: 'Line' }
+  { key: 'pie', label: 'Pie' }
 ]
 
 const MEDALS = ['🥇', '🥈', '🥉']
@@ -36,6 +36,7 @@ export default function Stats(): JSX.Element {
   const [category, setCategory] = useState<string | null>(null)
   const [stats, setStats] = useState<StatsResult | null>(null)
   const [showCalendar, setShowCalendar] = useState(false)
+  const [selectedApp, setSelectedApp] = useState<string | null>(null)
   const now = Date.now()
   const [customStart, setCustomStart] = useState(() => toDateInputValue(now - 7 * 24 * 60 * 60 * 1000))
   const [customEnd, setCustomEnd] = useState(() => toDateInputValue(now))
@@ -165,7 +166,7 @@ export default function Stats(): JSX.Element {
             </Card>
             <Card>
               <h2 className="stats-section-title">Apps</h2>
-              <StatsChart entries={stats.apps} view={view} />
+              <StatsChart entries={stats.apps} view={view} onSelect={setSelectedApp} />
             </Card>
           </div>
 
@@ -179,8 +180,14 @@ export default function Stats(): JSX.Element {
                   {stats.appsAllTime.map((entry, index) => (
                     <li key={entry.key} className="leaderboard__row">
                       <span className="leaderboard__rank">{MEDALS[index] ?? index + 1}</span>
-                      <AppIcon path={entry.appPath} label={entry.label} category={entry.category} />
-                      <span className="leaderboard__label">{entry.label}</span>
+                      <button
+                        type="button"
+                        className="leaderboard__app"
+                        onClick={() => setSelectedApp(entry.key)}
+                      >
+                        <AppIcon path={entry.appPath} label={entry.label} category={entry.category} />
+                        <span className="leaderboard__label">{entry.label}</span>
+                      </button>
                       <span className="leaderboard__value">{formatDuration(entry.ms)}</span>
                     </li>
                   ))}
@@ -225,6 +232,8 @@ export default function Stats(): JSX.Element {
           </div>
         </>
       )}
+
+      {selectedApp && <AppDetailModal appName={selectedApp} onClose={() => setSelectedApp(null)} />}
     </>
   )
 }

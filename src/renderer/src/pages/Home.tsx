@@ -4,10 +4,12 @@ import { useNavigate } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import Card from '../components/Card'
 import EmptyState from '../components/EmptyState'
-import { TimerIcon, TrophyIcon } from '../components/icons'
+import { CheckIcon } from '../components/icons'
 import type { HomeSummary } from '@shared/types'
 import { formatDuration } from '../utils/format'
 import { toFileUrl } from '../utils/fileUrl'
+import defaultCover from '../assets/shiba-clock.png'
+import { ACHIEVEMENT_CATEGORY_ICONS } from '../features/achievements/categoryIcons'
 import LiveClock from '../features/home/LiveClock'
 import './Home.css'
 
@@ -55,7 +57,14 @@ export default function Home(): JSX.Element {
               onClick={() => navigate('/time-tracker', { state: { openTimerId: timer.id } })}
             >
               <span className="home__quick-link-thumb">
-                {timer.imagePath ? <img src={toFileUrl(timer.imagePath)} alt="" /> : <TimerIcon size={16} />}
+                <img
+                  src={timer.imagePath ? toFileUrl(timer.imagePath) : defaultCover}
+                  onError={(event) => {
+                    event.currentTarget.onerror = null
+                    event.currentTarget.src = defaultCover
+                  }}
+                  alt=""
+                />
               </span>
               <span>
                 <span className="home__quick-link-title">{timer.name}</span>
@@ -91,19 +100,25 @@ export default function Home(): JSX.Element {
             <Card className="home__achievements-card">
               <h2 className="home__achievements-title">Recently unlocked</h2>
               <ul className="home__achievements-list">
-                {summary.recentAchievements.map((a) => (
-                  <li key={a.id} className="home__achievement-row">
-                    <span className="home__achievement-icon home__achievement-icon--unlocked">
-                      <TrophyIcon size={16} />
-                    </span>
-                    <span>
-                      <span className="home__achievement-name">{a.title}</span>
-                      <span className="home__achievement-meta">
-                        {new Date(a.unlockedAt ?? 0).toLocaleDateString()}
+                {summary.recentAchievements.map((a) => {
+                  const CategoryIcon = ACHIEVEMENT_CATEGORY_ICONS[a.category]
+                  return (
+                    <li key={a.id} className="home__achievement-row">
+                      <span className="home__achievement-icon home__achievement-icon--unlocked">
+                        <CategoryIcon size={16} />
+                        <span className="home__achievement-icon-badge">
+                          <CheckIcon size={9} />
+                        </span>
                       </span>
-                    </span>
-                  </li>
-                ))}
+                      <span>
+                        <span className="home__achievement-name">{a.title}</span>
+                        <span className="home__achievement-meta">
+                          {new Date(a.unlockedAt ?? 0).toLocaleDateString()}
+                        </span>
+                      </span>
+                    </li>
+                  )
+                })}
               </ul>
             </Card>
           )}
@@ -112,22 +127,25 @@ export default function Home(): JSX.Element {
             <Card className="home__achievements-card">
               <h2 className="home__achievements-title">Almost there</h2>
               <ul className="home__achievements-list">
-                {summary.closeAchievements.map((a) => (
-                  <li key={a.id} className="home__achievement-row">
-                    <span className="home__achievement-icon">
-                      <TrophyIcon size={16} />
-                    </span>
-                    <span className="home__achievement-progress">
-                      <span className="home__achievement-name">{a.title}</span>
-                      <span className="home__achievement-progress-track">
-                        <span
-                          className="home__achievement-progress-fill"
-                          style={{ width: `${Math.round(a.progress * 100)}%` }}
-                        />
+                {summary.closeAchievements.map((a) => {
+                  const CategoryIcon = ACHIEVEMENT_CATEGORY_ICONS[a.category]
+                  return (
+                    <li key={a.id} className="home__achievement-row">
+                      <span className="home__achievement-icon">
+                        <CategoryIcon size={16} />
                       </span>
-                    </span>
-                  </li>
-                ))}
+                      <span className="home__achievement-progress">
+                        <span className="home__achievement-name">{a.title}</span>
+                        <span className="home__achievement-progress-track">
+                          <span
+                            className="home__achievement-progress-fill"
+                            style={{ width: `${Math.round(a.progress * 100)}%` }}
+                          />
+                        </span>
+                      </span>
+                    </li>
+                  )
+                })}
               </ul>
             </Card>
           )}

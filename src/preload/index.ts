@@ -25,7 +25,8 @@ const api = {
     delete: (path: string) => ipcRenderer.invoke('images:delete', path)
   },
   stats: {
-    get: (query: StatsQuery) => ipcRenderer.invoke('stats:get', query)
+    get: (query: StatsQuery) => ipcRenderer.invoke('stats:get', query),
+    getAppDetail: (appName: string) => ipcRenderer.invoke('stats:getAppDetail', appName)
   },
   apps: {
     getIcon: (path: string | null) => ipcRenderer.invoke('apps:getIcon', path)

@@ -7,6 +7,11 @@
   padding: 12px 8px 20px;
 }
 
+.timer-run__title {
+  font-size: 22px;
+  font-weight: 700;
+}
+
 .timer-run__image {
   width: 220px;
   height: 220px;
