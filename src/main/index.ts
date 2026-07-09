@@ -5,6 +5,13 @@ import { registerIpcHandlers } from './ipc'
 import { startAppTracker, stopAppTracker } from './appTracker'
 import { startDeadlineNotifier, stopDeadlineNotifier } from './deadlineNotifier'
 
+const APP_NAME = 'Shiba Track'
+
+// Set the app name before whenReady so the macOS menu bar and notifications use
+// it instead of the default "Electron" (productName in electron-builder only
+// applies to packaged builds — this is what fixes the name while running/dev).
+app.setName(APP_NAME)
+
 const iconPath = app.isPackaged
   ? join(process.resourcesPath, 'icon.png')
   : join(__dirname, '../../resources/icon.png')
@@ -18,7 +25,7 @@ function createWindow(): void {
     show: false,
     autoHideMenuBar: true,
     titleBarStyle: 'hiddenInset',
-    title: 'Shiba Tracker',
+    title: APP_NAME,
     icon: iconPath,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -44,6 +51,13 @@ function createWindow(): void {
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.shibatracker.app')
+
+  // In dev the process runs under the stock Electron binary, so the dock shows
+  // Electron's default icon. Packaged builds get the icon from electron-builder,
+  // but setting it here makes dev match too.
+  if (process.platform === 'darwin' && app.dock) {
+    app.dock.setIcon(iconPath)
+  }
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)

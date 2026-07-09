@@ -9,6 +9,4 @@
   place-items: center;
   background: var(--surface-sunken);
   color: var(--text-tertiary);
-  font-size: 10px;
-  font-weight: 700;
 }

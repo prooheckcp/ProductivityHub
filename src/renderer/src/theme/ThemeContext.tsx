@@ -51,9 +51,6 @@ const ThemeContext = createContext<ThemeContextValue | null>(null)
 // gradient wash still rendered as "dark with a faint tint" no matter which
 // theme was picked.
 const LIGHT_CHROME = {
-  '--surface': '#ffffff',
-  '--surface-hover': '#eeeef0',
-  '--surface-active': '#e8e8ec',
   '--border': '#e5e5e8',
   '--text-secondary': '#6b6b74',
   '--text-tertiary': '#9a9aa2',
@@ -75,21 +72,34 @@ function applyToDocument(settings: AppSettings): void {
   root.style.setProperty('--accent-gradient', `linear-gradient(135deg, ${button.stops[0]}, ${button.stops[1]})`)
   root.style.setProperty('--accent-contrast', button.contrast)
 
-  // The page background IS the theme's own gradient — no dark/white overlay
-  // diluting it — so what you pick in Settings is what you actually see.
-  // `--surface-sunken` (input backgrounds, subtle fills) picks up a whisper
-  // of the theme too, kept mostly neutral since a lot of small UI chrome
-  // reads off it.
-  const gradientCss = `linear-gradient(135deg, ${background.stops[0]}, ${background.stops[1]})`
+  // The page background IS the theme's own gradient (or, for scenes like
+  // Summer's sky/ocean/sand, its own hand-authored backgroundCss) — no
+  // dark/white overlay diluting it, so what you pick in Settings is what you
+  // actually see. The sidebar reuses the same background and gets a dark
+  // scrim layered on top (see Sidebar.css) so its fixed light nav text stays
+  // readable no matter how pale the theme is.
+  const gradientCss = background.backgroundCss ?? `linear-gradient(135deg, ${background.stops[0]}, ${background.stops[1]})`
   root.style.setProperty('--bg-gradient', gradientCss)
   root.style.setProperty('--bg', background.stops[1])
   root.style.setProperty('--sidebar-bg', gradientCss)
-  root.style.setProperty('--surface-sunken', `color-mix(in srgb, ${background.stops[0]} 6%, #f7f7f8)`)
+
+  // Cards stay light (so text inside them can stay a fixed dark color), but
+  // are tinted per-theme instead of flat white — `cardTint` is hand-picked
+  // per theme file to actually match its personality rather than a generic
+  // formula. Hover/active/sunken states are derived from it.
+  root.style.setProperty('--surface', background.cardTint)
+  root.style.setProperty('--surface-sunken', `color-mix(in srgb, ${background.cardTint} 97%, black)`)
+  root.style.setProperty('--surface-hover', `color-mix(in srgb, ${background.cardTint} 94%, black)`)
+  root.style.setProperty('--surface-active', `color-mix(in srgb, ${background.cardTint} 90%, black)`)
 
   root.style.setProperty('--font-family', FONT_STACKS[settings.font])
-  root.setAttribute('data-decoration', background.decoration ?? 'none')
 
   root.style.setProperty('--text-primary', settings.textColor ?? '#17171a')
+  // For the few spots that render straight on the themed background instead
+  // of a card — page titles, the sidebar — dark text can disappear on a dark
+  // theme like Midnight. `background.contrast` is authored per-theme
+  // specifically to read well against its own stops.
+  root.style.setProperty('--on-bg-text', settings.textColor ?? background.contrast)
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }): JSX.Element {

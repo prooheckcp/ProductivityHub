@@ -7,6 +7,7 @@ import { CalendarIcon, FilterIcon } from '../components/icons'
 import type { StatsQuery, StatsRangeKey, StatsResult } from '@shared/types'
 import { formatDuration } from '../utils/format'
 import AppIcon from '../features/stats/AppIcon'
+import { getCategoryIcon } from '../features/stats/categoryIcons'
 import StatsChart, { type ChartView } from '../features/stats/StatsChart'
 import './Stats.css'
 
@@ -36,7 +37,6 @@ export default function Stats(): JSX.Element {
   const [stats, setStats] = useState<StatsResult | null>(null)
   const [loading, setLoading] = useState(true)
   const [showCalendar, setShowCalendar] = useState(false)
-  const [showCategoryMenu, setShowCategoryMenu] = useState(false)
   const now = Date.now()
   const [customStart, setCustomStart] = useState(() => toDateInputValue(now - 7 * 24 * 60 * 60 * 1000))
   const [customEnd, setCustomEnd] = useState(() => toDateInputValue(now))
@@ -116,44 +116,6 @@ export default function Stats(): JSX.Element {
                   </div>
                 )}
               </div>
-              <div className="stats-popover-anchor">
-                <button
-                  type="button"
-                  className={'stats-range__option stats-range__option--icon' + (category ? ' stats-range__option--active' : '')}
-                  onClick={() => setShowCategoryMenu((v) => !v)}
-                  aria-label="Filter by category"
-                >
-                  <FilterIcon size={15} />
-                </button>
-                {showCategoryMenu && (
-                  <div className="stats-popover">
-                    <p className="stats-popover__title">Category</p>
-                    <button
-                      type="button"
-                      className={'stats-popover__option' + (category === null ? ' stats-popover__option--active' : '')}
-                      onClick={() => {
-                        setCategory(null)
-                        setShowCategoryMenu(false)
-                      }}
-                    >
-                      All categories
-                    </button>
-                    {(stats?.availableCategories ?? []).map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        className={'stats-popover__option' + (category === c ? ' stats-popover__option--active' : '')}
-                        onClick={() => {
-                          setCategory(c)
-                          setShowCategoryMenu(false)
-                        }}
-                      >
-                        {c}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
             <div className="stats-range">
               {VIEWS.map((v) => (
@@ -171,7 +133,30 @@ export default function Stats(): JSX.Element {
         }
       />
 
-      {category && <p className="stats-active-filter">Filtering apps by category: {category}</p>}
+      <div className="stats-category-row">
+        <button
+          type="button"
+          className={'stats-category-pill' + (category === null ? ' stats-category-pill--active' : '')}
+          onClick={() => setCategory(null)}
+        >
+          <FilterIcon size={14} />
+          All apps
+        </button>
+        {(stats?.availableCategories ?? []).map((c) => {
+          const Icon = getCategoryIcon(c)
+          return (
+            <button
+              key={c}
+              type="button"
+              className={'stats-category-pill' + (category === c ? ' stats-category-pill--active' : '')}
+              onClick={() => setCategory(c === category ? null : c)}
+            >
+              <Icon size={14} />
+              {c}
+            </button>
+          )
+        })}
+      </div>
 
       {!loading && stats && (
         <>
@@ -196,7 +181,7 @@ export default function Stats(): JSX.Element {
                   {stats.appsAllTime.slice(0, 10).map((entry, index) => (
                     <li key={entry.key} className="leaderboard__row">
                       <span className="leaderboard__rank">{MEDALS[index] ?? index + 1}</span>
-                      <AppIcon path={entry.appPath} label={entry.label} />
+                      <AppIcon path={entry.appPath} label={entry.label} category={entry.category} />
                       <span className="leaderboard__label">{entry.label}</span>
                       <span className="leaderboard__value">{formatDuration(entry.ms)}</span>
                     </li>

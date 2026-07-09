@@ -35,7 +35,7 @@
   },
   "build": {
     "appId": "com.shibatracker.app",
-    "productName": "Shiba Tracker",
+    "productName": "Shiba Track",
     "icon": "build/icon.png",
     "extraResources": [
       {

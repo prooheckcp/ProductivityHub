@@ -3,6 +3,13 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 180ms ease;
+}
+
+.timer-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  z-index: 1;
 }
 
 .timer-card__body {

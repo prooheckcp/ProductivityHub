@@ -27,11 +27,25 @@
   animation-iteration-count: infinite;
 }
 
+.decoration-overlay__item--pop {
+  bottom: -8%;
+  animation-name: decoration-bubble-pop;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
 .decoration-overlay__item--fade {
   animation-name: decoration-fade;
   animation-duration: 6s;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
+}
+
+.decoration-overlay__item--float {
+  animation-name: decoration-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  opacity: 0.92;
 }
 
 @keyframes decoration-fall {
@@ -68,6 +82,36 @@
   }
 }
 
+/* Rises like a normal bubble, then bulges and bursts near the top instead of
+   just quietly fading out — each bubble has its own randomized duration/delay
+   so the "pop" moment lands at a different point on screen for every one. */
+@keyframes decoration-bubble-pop {
+  0% {
+    transform: translate(0, 0) scale(0.55);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  78% {
+    opacity: 0.85;
+    transform: translate(var(--drift), -88vh) scale(1);
+  }
+  86% {
+    opacity: 1;
+    transform: translate(var(--drift), -93vh) scale(1.7);
+  }
+  91% {
+    opacity: 0;
+    transform: translate(var(--drift), -95vh) scale(0.3);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--drift), -100vh) scale(0.3);
+  }
+}
+
 @keyframes decoration-fade {
   0%,
   100% {
@@ -77,6 +121,16 @@
   50% {
     opacity: 0.24;
     transform: scale(1);
+  }
+}
+
+@keyframes decoration-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-4deg);
+  }
+  50% {
+    transform: translateY(-16px) rotate(4deg);
   }
 }
 
@@ -100,12 +154,28 @@
   }
 }
 
-.decoration-overlay__sand {
+.decoration-overlay__wave {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: -5%;
+  right: -5%;
   bottom: 0;
-  height: 10%;
-  background: linear-gradient(to top, color-mix(in srgb, currentColor 35%, transparent), transparent);
-  opacity: 0.5;
+  height: 18%;
+  min-height: 90px;
+  animation: decoration-wave-sway 7s ease-in-out infinite;
+}
+
+.decoration-overlay__wave svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+@keyframes decoration-wave-sway {
+  0%,
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    transform: translateX(-1.5%) translateY(4px);
+  }
 }

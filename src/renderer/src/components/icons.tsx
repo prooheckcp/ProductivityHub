@@ -158,6 +158,85 @@ export function SakuraFlowerIcon({ size = 18 }: IconProps): JSX.Element {
   )
 }
 
+export function CodeIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path d="M9 8 4.5 12 9 16M15 8l4.5 4-4.5 4" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function GlobeIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <circle cx="12" cy="12" r="8" strokeWidth="1.7" />
+      <path d="M4 12h16M12 4a11 11 0 0 1 0 16M12 4a11 11 0 0 0 0 16" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function ChatIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path
+        d="M4 5.5h16v10H9l-4 3.5v-3.5H4v-10Z"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+export function PaletteIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path
+        d="M12 4.5c-4.4 0-8 3.4-8 7.5s3.4 7.5 8 7.5c1 0 1.6-.7 1.6-1.5 0-.4-.2-.8-.4-1.1-.2-.3-.4-.6-.4-1 0-.7.6-1.2 1.3-1.2h1.5c2.5 0 4.4-2 4.4-4.5 0-3.1-3.5-5.7-8-5.7Z"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <circle cx="8.2" cy="10.5" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="11.5" cy="8" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="15.2" cy="9.5" r="1.1" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+export function WrenchIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path
+        d="M14.5 6.5a3.5 3.5 0 0 0-4.6 4.6L4.5 16.5v3h3l5.4-5.4a3.5 3.5 0 0 0 4.6-4.6l-2 2-2-2 2-2Z"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+export function TagIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path
+        d="M11.5 4.5H6a1.5 1.5 0 0 0-1.5 1.5v5.5a1.5 1.5 0 0 0 .44 1.06l7 7a1.5 1.5 0 0 0 2.12 0l5.5-5.5a1.5 1.5 0 0 0 0-2.12l-7-7a1.5 1.5 0 0 0-1.06-.44Z"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+      <circle cx="8.2" cy="8.2" r="1.1" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+export function ChevronDownIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path d="M6 9.5 12 15.5 18 9.5" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 export function LockIcon({ size = 18 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -181,6 +260,18 @@ export function FilterIcon({ size = 18 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
       <path d="M4 5.5h16L14 13v6l-4 2v-8L4 5.5Z" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function BeachBallIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9.5" fill="#ffffff" />
+      <path d="M12 2.5A9.5 9.5 0 0 1 21.5 12h-9.5Z" fill="#ef4444" />
+      <path d="M12 12h9.5A9.5 9.5 0 0 1 12 21.5Z" fill="#f59e0b" />
+      <path d="M12 21.5A9.5 9.5 0 0 1 2.5 12H12Z" fill="#3b82f6" />
+      <circle cx="12" cy="12" r="9.5" fill="none" stroke="#00000022" strokeWidth="0.6" />
     </svg>
   )
 }

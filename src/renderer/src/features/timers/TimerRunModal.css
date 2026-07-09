@@ -2,62 +2,61 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 22px;
   text-align: center;
+  padding: 12px 8px 20px;
 }
 
 .timer-run__image {
-  width: 88px;
-  height: 88px;
+  width: 140px;
+  height: 140px;
   border-radius: var(--radius-lg);
   object-fit: cover;
 }
 
 .timer-run__description {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-secondary);
-  max-width: 320px;
+  max-width: 420px;
 }
 
 .timer-run__clock {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   color: var(--text-primary);
-  background: var(--surface-sunken);
-  border: 1px solid var(--border);
-  padding: 14px 22px;
+  background: transparent;
+  padding: 6px 10px;
   border-radius: var(--radius-lg);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .timer-run__clock-main {
-  font-size: 40px;
+  font-size: 76px;
   font-weight: 700;
 }
 
 .timer-run__clock-centis {
-  font-size: 18px;
+  font-size: 28px;
   font-weight: 600;
   color: var(--text-tertiary);
 }
 
 .timer-run__clock:hover:not(:disabled) {
-  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  background: var(--surface-hover);
 }
 
 .timer-run__clock-edit {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .timer-run__clock-input {
-  width: 56px;
-  font-size: 28px;
+  width: 76px;
+  font-size: 42px;
   font-weight: 700;
   text-align: center;
   font-variant-numeric: tabular-nums;
@@ -69,8 +68,8 @@
 }
 
 .timer-run__clock-action {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
   border-radius: 999px;
@@ -84,5 +83,33 @@
 
 .timer-run__actions {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.timer-run__toggle {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--accent-gradient);
+  color: var(--accent-contrast);
+}
+
+.timer-run__toggle:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.timer-run__reset {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  background: transparent;
+  padding: 4px 8px;
+}
+
+.timer-run__reset:hover:not(:disabled) {
+  color: var(--danger);
 }

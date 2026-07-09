@@ -7,7 +7,10 @@
   /* Extra top padding clears the macOS traffic-light buttons, which overlay
      the top-left of the window (titleBarStyle: 'hiddenInset'). */
   padding: 36px 12px 20px;
-  background: var(--sidebar-bg);
+  /* A flat dark scrim under the theme gradient keeps every theme — from
+     pale Snow to punchy Gold — dark enough that the fixed light nav text
+     below reads clearly, without needing per-theme text-color logic. */
+  background: linear-gradient(rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0.32)), var(--sidebar-bg);
   border-right: 1px solid var(--border);
   -webkit-app-region: drag;
 }
@@ -46,7 +49,7 @@
 .sidebar__secondary {
   margin-top: auto;
   padding-top: 12px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
 }
 
 .sidebar__link {
@@ -55,7 +58,7 @@
   gap: 10px;
   padding: 8px 10px;
   border-radius: 8px;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.72);
   text-decoration: none;
   font-size: 13.5px;
   font-weight: 500;
@@ -63,13 +66,13 @@
 }
 
 .sidebar__link:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 
 .sidebar__link--active {
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
-  color: var(--accent);
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
 }
 
 .sidebar__link svg {

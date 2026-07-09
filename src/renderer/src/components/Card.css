@@ -4,4 +4,14 @@
   border-radius: var(--radius-lg);
   box-shadow: none;
   padding: 20px 22px;
+  position: relative;
+  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 180ms ease, z-index 0ms;
+}
+
+/* The "overlap" effect: on hover a card lifts just enough, with a real
+   shadow, to visually sit above its neighbors instead of just tinting. */
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  z-index: 1;
 }

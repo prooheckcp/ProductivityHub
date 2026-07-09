@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import type { JSX } from 'react'
-import Card from '../../components/Card'
-import ProgressBar from '../../components/ProgressBar'
-import { CloseIcon, PlusIcon } from '../../components/icons'
+import { ChevronDownIcon, CloseIcon, PlusIcon } from '../../components/icons'
 import type { Category, Task } from '@shared/types'
 import TaskRow from './TaskRow'
 import './CategorySection.css'
@@ -25,6 +23,8 @@ export default function CategorySection({
   onDeleteCategory
 }: CategorySectionProps): JSX.Element {
   const [newTaskName, setNewTaskName] = useState('')
+  const [adding, setAdding] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
   const topLevel = tasks.filter((task) => task.parentTaskId === null)
   const allInCategory = tasks
   const completedCount = allInCategory.filter((task) => task.completed).length
@@ -37,50 +37,72 @@ export default function CategorySection({
   }
 
   return (
-    <Card className="category-section">
-      <div className="category-section__header">
-        <div className="category-section__heading">
-          <p className="category-section__name">{category.name}</p>
-          <span className="category-section__count">
-            {completedCount}/{allInCategory.length}
+    <div className="category-group">
+      <div className="category-group__header">
+        <button
+          type="button"
+          className="category-group__collapse"
+          onClick={() => setCollapsed((v) => !v)}
+          aria-label={collapsed ? 'Expand category' : 'Collapse category'}
+        >
+          <span className={'category-group__chevron' + (collapsed ? ' category-group__chevron--collapsed' : '')}>
+            <ChevronDownIcon size={14} />
           </span>
+          <span className="category-group__name">{category.name}</span>
+          <span className="category-group__count">{completedCount}/{allInCategory.length}</span>
+        </button>
+        <span className="category-group__progress-track">
+          <span className="category-group__progress-fill" style={{ width: `${percent}%` }} />
+        </span>
+        <button type="button" className="category-group__delete" onClick={onDeleteCategory} aria-label="Delete category">
+          <CloseIcon size={13} />
+        </button>
+      </div>
+
+      {!collapsed && (
+        <div className="category-group__tasks">
+          {topLevel.map((task) => (
+            <TaskRow
+              key={task.id}
+              task={task}
+              subtaskCount={tasks.filter((t) => t.parentTaskId === task.id).length}
+              onOpen={() => onOpenTask(task)}
+              onToggleCompleted={() => onToggleCompleted(task.id, !task.completed)}
+            />
+          ))}
+
+          {adding ? (
+            <div className="category-group__add-row category-group__add-row--editing">
+              <input
+                autoFocus
+                type="text"
+                className="category-group__add-input"
+                value={newTaskName}
+                onChange={(event) => setNewTaskName(event.target.value)}
+                placeholder="Task name…"
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    handleAdd()
+                  }
+                  if (event.key === 'Escape') setAdding(false)
+                }}
+                onBlur={() => {
+                  if (!newTaskName.trim()) setAdding(false)
+                }}
+              />
+              <button type="button" className="category-group__add-confirm" onClick={handleAdd}>
+                Add
+              </button>
+            </div>
+          ) : (
+            <button type="button" className="category-group__add-row" onClick={() => setAdding(true)}>
+              <PlusIcon size={13} />
+              Add task
+            </button>
+          )}
         </div>
-        <button type="button" className="category-section__delete" onClick={onDeleteCategory} aria-label="Delete category">
-          <CloseIcon size={14} />
-        </button>
-      </div>
-      <ProgressBar percent={percent} />
-
-      <div className="category-section__tasks">
-        {topLevel.map((task) => (
-          <TaskRow
-            key={task.id}
-            task={task}
-            subtaskCount={tasks.filter((t) => t.parentTaskId === task.id).length}
-            onOpen={() => onOpenTask(task)}
-            onToggleCompleted={() => onToggleCompleted(task.id, !task.completed)}
-          />
-        ))}
-      </div>
-
-      <div className="category-section__add-task">
-        <input
-          type="text"
-          className="category-section__input"
-          value={newTaskName}
-          onChange={(event) => setNewTaskName(event.target.value)}
-          placeholder="Add a task…"
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              event.preventDefault()
-              handleAdd()
-            }
-          }}
-        />
-        <button type="button" className="category-section__add-button" onClick={handleAdd} aria-label="Add task">
-          <PlusIcon size={14} />
-        </button>
-      </div>
-    </Card>
+      )}
+    </div>
   )
 }

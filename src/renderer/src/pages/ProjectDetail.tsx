@@ -3,6 +3,7 @@ import type { JSX } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import Button from '../components/Button'
+import Card from '../components/Card'
 import ProgressBar from '../components/ProgressBar'
 import ConfirmDialog from '../components/ConfirmDialog'
 import EmptyState from '../components/EmptyState'
@@ -95,21 +96,23 @@ export default function ProjectDetail(): JSX.Element {
         </div>
       )}
 
-      {!loading && projectCategories.length === 0 && (
+      {!loading && projectCategories.length === 0 ? (
         <EmptyState title="No categories yet" description="Add a category to start organizing tasks." />
+      ) : (
+        <Card className="todo-list-card">
+          {projectCategories.map((category) => (
+            <CategorySection
+              key={category.id}
+              category={category}
+              tasks={projectTasks.filter((t) => t.categoryId === category.id)}
+              onOpenTask={(task) => setTaskStack([task.id])}
+              onToggleCompleted={setTaskCompleted}
+              onAddTask={(name) => handleAddTaskInCategory(category.id, name)}
+              onDeleteCategory={() => setDeletingCategoryId(category.id)}
+            />
+          ))}
+        </Card>
       )}
-
-      {projectCategories.map((category) => (
-        <CategorySection
-          key={category.id}
-          category={category}
-          tasks={projectTasks.filter((t) => t.categoryId === category.id)}
-          onOpenTask={(task) => setTaskStack([task.id])}
-          onToggleCompleted={setTaskCompleted}
-          onAddTask={(name) => handleAddTaskInCategory(category.id, name)}
-          onDeleteCategory={() => setDeletingCategoryId(category.id)}
-        />
-      ))}
 
       <div className="project-detail__add-category">
         <input

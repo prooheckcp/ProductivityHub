@@ -10,13 +10,14 @@
   font-size: 22px;
   font-weight: 650;
   letter-spacing: -0.015em;
-  color: var(--text-primary);
+  color: var(--on-bg-text);
 }
 
 .page-header__subtitle {
   margin-top: 4px;
   font-size: 13.5px;
-  color: var(--text-secondary);
+  color: var(--on-bg-text);
+  opacity: 0.75;
 }
 
 .page-header__actions {
