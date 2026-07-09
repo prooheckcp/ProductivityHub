@@ -7,6 +7,12 @@ import { startDeadlineNotifier, stopDeadlineNotifier } from './deadlineNotifier'
 
 const APP_NAME = 'Shiba Track'
 
+// Electron derives the default userData path from app.getName(), so renaming
+// the app would otherwise fork all user data (timers, tasks, stats, etc.) into
+// a brand-new folder. Pin it to the original folder name before changing the
+// name, so existing installs keep reading/writing the same data.
+app.setPath('userData', join(app.getPath('appData'), 'productivityhub'))
+
 // Set the app name before whenReady so the macOS menu bar and notifications use
 // it instead of the default "Electron" (productName in electron-builder only
 // applies to packaged builds — this is what fixes the name while running/dev).

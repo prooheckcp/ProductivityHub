@@ -1,6 +1,6 @@
 import type { JSX } from 'react'
 
-export type Decoration = 'doge' | 'sakura' | 'underwater' | 'snow' | 'summer' | null
+export type Decoration = 'doge' | 'sakura' | 'underwater' | 'snow' | 'summer' | 'hacker' | null
 
 export type GradientKind = 'color' | 'effect'
 

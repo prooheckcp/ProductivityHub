@@ -14,6 +14,7 @@ import { sakura } from './sakura'
 import { underwater } from './underwater'
 import { snow } from './snow'
 import { summer } from './summer'
+import { hacker } from './hacker'
 import type { Gradient } from './types'
 
 export const THEMES: Gradient[] = [
@@ -29,7 +30,8 @@ export const THEMES: Gradient[] = [
   sakura,
   underwater,
   snow,
-  summer
+  summer,
+  hacker
 ]
 
 export type { Decoration, DecorationProps, Gradient, GradientKind } from './types'

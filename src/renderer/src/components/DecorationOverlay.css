@@ -2,7 +2,11 @@
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
+  /* Negative, not 0: a z-index of 0 still creates a stacking context that
+     paints above ordinary non-positioned content (like the Sidebar), even
+     though it comes first in the DOM — that's what let the summer wave visibly
+     cover the sidebar's nav links. Negative keeps it behind all normal UI. */
+  z-index: -1;
   overflow: hidden;
   color: var(--accent);
 }
@@ -46,6 +50,12 @@
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
   opacity: 0.92;
+}
+
+.decoration-overlay__item--glyph {
+  font-family: 'SF Mono', Menlo, Consolas, monospace;
+  font-weight: 700;
+  line-height: 1;
 }
 
 @keyframes decoration-fall {
