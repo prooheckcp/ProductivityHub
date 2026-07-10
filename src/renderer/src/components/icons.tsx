@@ -351,6 +351,14 @@ export function SearchIcon({ size = 18 }: IconProps): JSX.Element {
   )
 }
 
+export function ArrowLeftIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path d="M19 12H5M11 6l-6 6 6 6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 export function EyeIcon({ size = 18 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">

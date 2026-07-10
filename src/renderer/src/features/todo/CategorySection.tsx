@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { JSX } from 'react'
 import { ChevronDownIcon, CloseIcon, PlusIcon } from '../../components/icons'
 import type { Category, Task, TaskStatus } from '@shared/types'
-import TaskRow from './TaskRow'
+import TaskTree from './TaskTree'
 import './CategorySection.css'
 
 type CategorySectionProps = {
@@ -62,12 +62,13 @@ export default function CategorySection({
       {!collapsed && (
         <div className="category-group__tasks">
           {topLevel.map((task) => (
-            <TaskRow
+            <TaskTree
               key={task.id}
               task={task}
-              subtaskCount={tasks.filter((t) => t.parentTaskId === task.id).length}
-              onOpen={() => onOpenTask(task)}
-              onChangeStatus={(status) => onChangeTaskStatus(task.id, status)}
+              allTasks={tasks}
+              depth={0}
+              onOpen={onOpenTask}
+              onChangeStatus={onChangeTaskStatus}
             />
           ))}
 

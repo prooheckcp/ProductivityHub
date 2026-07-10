@@ -31,6 +31,8 @@ const BLANK_TASK: TaskFormInput = {
 
 const PRIORITY_RANK: Record<Task['priority'], number> = { urgent: 0, high: 1, medium: 2, low: 3 }
 
+type SortOption = 'none' | 'priority' | 'deadline' | 'sprint'
+
 export default function ProjectDetail(): JSX.Element {
   const { projectId } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
@@ -58,7 +60,7 @@ export default function ProjectDetail(): JSX.Element {
   const [editingSettings, setEditingSettings] = useState(false)
   const [deletingProject, setDeletingProject] = useState(false)
   const [search, setSearch] = useState('')
-  const [sortByPriority, setSortByPriority] = useState(false)
+  const [sortBy, setSortBy] = useState<SortOption>('none')
   const [sprintFilter, setSprintFilter] = useState<'all' | 'backlog' | number>('all')
 
   const project = projects.find((p) => p.id === projectId)
@@ -91,11 +93,25 @@ export default function ProjectDetail(): JSX.Element {
     } else if (sprintFilter !== 'all') {
       result = result.filter((t) => t.sprintNumber === sprintFilter)
     }
-    if (sortByPriority) {
+    if (sortBy === 'priority') {
       result = [...result].sort((a, b) => PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority])
+    } else if (sortBy === 'deadline') {
+      result = [...result].sort((a, b) => {
+        if (a.deadline === null && b.deadline === null) return 0
+        if (a.deadline === null) return 1
+        if (b.deadline === null) return -1
+        return a.deadline - b.deadline
+      })
+    } else if (sortBy === 'sprint') {
+      result = [...result].sort((a, b) => {
+        if (a.sprintNumber === null && b.sprintNumber === null) return 0
+        if (a.sprintNumber === null) return 1
+        if (b.sprintNumber === null) return -1
+        return a.sprintNumber - b.sprintNumber
+      })
     }
     return result
-  }, [projectTasks, search, sprintFilter, sortByPriority])
+  }, [projectTasks, search, sprintFilter, sortBy])
 
   const currentTaskId = taskStack[taskStack.length - 1] ?? null
   const currentTask = currentTaskId ? tasks.find((t) => t.id === currentTaskId) : undefined
@@ -168,13 +184,16 @@ export default function ProjectDetail(): JSX.Element {
             placeholder="Search tasks…"
           />
         </div>
-        <button
-          type="button"
-          className={'project-detail__toggle' + (sortByPriority ? ' project-detail__toggle--active' : '')}
-          onClick={() => setSortByPriority((v) => !v)}
+        <select
+          className="project-detail__sort-select"
+          value={sortBy}
+          onChange={(event) => setSortBy(event.target.value as SortOption)}
         >
-          Sort by priority
-        </button>
+          <option value="none">Sort by…</option>
+          <option value="priority">Priority</option>
+          <option value="deadline">Deadline</option>
+          <option value="sprint">Sprint</option>
+        </select>
         {sprintNumbers.length > 0 && (
           <select
             className="project-detail__sprint-select"
@@ -235,11 +254,16 @@ export default function ProjectDetail(): JSX.Element {
 
       {currentTask && project && (
         <TaskModal
+          key={currentTask.id}
           task={currentTask}
           project={project}
           now={now}
           subtasks={tasks.filter((t) => t.parentTaskId === currentTask.id)}
+          parentTask={currentTask.parentTaskId ? tasks.find((t) => t.id === currentTask.parentTaskId) : undefined}
           onClose={() => setTaskStack((stack) => stack.slice(0, -1))}
+          onGoToParent={() => {
+            if (currentTask.parentTaskId) setTaskStack([currentTask.parentTaskId])
+          }}
           onCreate={async (input) => createTask(currentTask.categoryId, null, input)}
           onUpdate={updateTask}
           onDelete={async (id) => {

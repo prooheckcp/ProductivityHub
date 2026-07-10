@@ -1,0 +1,4 @@
+.task-tree__children {
+  border-left: 1px solid var(--border);
+  margin-left: 10px;
+}

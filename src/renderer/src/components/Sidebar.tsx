@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { JSX } from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { ChevronDownIcon } from './icons'
 import { NAV_ITEMS, SECONDARY_NAV_ITEMS, type NavItem } from '../navigation'
 import logo from '../assets/logo.png'
@@ -9,6 +9,7 @@ import './Sidebar.css'
 
 function NavList({ items }: { items: NavItem[] }): JSX.Element {
   const location = useLocation()
+  const navigate = useNavigate()
   const [manuallyToggled, setManuallyToggled] = useState<Record<string, boolean>>({})
 
   return (
@@ -23,12 +24,21 @@ function NavList({ items }: { items: NavItem[] }): JSX.Element {
               <button
                 type="button"
                 className={'sidebar__link sidebar__link--toggle' + (isSectionActive ? ' sidebar__link--active' : '')}
-                onClick={() => setManuallyToggled((prev) => ({ ...prev, [path]: !expanded }))}
+                onClick={() => {
+                  setManuallyToggled((prev) => ({ ...prev, [path]: true }))
+                  navigate(children[0].path)
+                }}
                 aria-expanded={expanded}
               >
                 <Icon size={18} />
                 <span>{label}</span>
-                <span className={'sidebar__chevron' + (expanded ? ' sidebar__chevron--open' : '')}>
+                <span
+                  className={'sidebar__chevron' + (expanded ? ' sidebar__chevron--open' : '')}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    setManuallyToggled((prev) => ({ ...prev, [path]: !expanded }))
+                  }}
+                >
                   <ChevronDownIcon size={13} />
                 </span>
               </button>

@@ -39,7 +39,7 @@ export default function Stats(): JSX.Element {
   const { category: categoryParam } = useParams<{ category?: string }>()
   const activeCategory: StatsCategoryParam = VALID_CATEGORIES.includes(categoryParam as StatsCategoryParam)
     ? (categoryParam as StatsCategoryParam)
-    : 'apps'
+    : 'timers'
   const [range, setRange] = useState<StatsRangeKey>('7d')
   const [view, setView] = useState<ChartView>('bar')
   const [category, setCategory] = useState<string | null>(null)

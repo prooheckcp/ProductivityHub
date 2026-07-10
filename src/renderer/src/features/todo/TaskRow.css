@@ -61,3 +61,34 @@
   font-size: 11px;
   color: var(--text-tertiary);
 }
+
+.task-row__expand {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--text-tertiary);
+  background: transparent;
+  transition: transform 140ms ease, background-color 120ms ease;
+}
+
+.task-row__expand:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.task-row__expand--open {
+  transform: rotate(180deg);
+}
+
+.task-row__expand-spacer {
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.task-row__progress {
+  max-width: 220px;
+  margin-top: 2px;
+}

@@ -3,7 +3,7 @@ import type { JSX } from 'react'
 import Modal from '../../components/Modal'
 import Button from '../../components/Button'
 import ConfirmDialog from '../../components/ConfirmDialog'
-import { PauseIcon, PlayIcon, PlusIcon } from '../../components/icons'
+import { ArrowLeftIcon, PauseIcon, PlayIcon, PlusIcon } from '../../components/icons'
 import { currentElapsedMs } from '@shared/timeMath'
 import type { Project, Task, TaskFormInput, TaskPriority } from '@shared/types'
 import { formatClock } from '../../utils/format'
@@ -21,6 +21,8 @@ type TaskModalProps = {
   project: Project
   now: number
   subtasks: Task[]
+  parentTask?: Task
+  onGoToParent?: () => void
   onClose: () => void
   onCreate: (input: TaskFormInput) => Promise<Task>
   onUpdate: (id: string, input: TaskFormInput) => Promise<Task>
@@ -37,6 +39,8 @@ export default function TaskModal({
   project,
   now,
   subtasks,
+  parentTask,
+  onGoToParent,
   onClose,
   onCreate,
   onUpdate,
@@ -143,6 +147,13 @@ export default function TaskModal({
       }
     >
       <div className="task-modal">
+        {parentTask && (
+          <button type="button" className="task-modal__parent-link" onClick={onGoToParent}>
+            <ArrowLeftIcon size={13} />
+            Go to parent task
+          </button>
+        )}
+
         <div className="task-modal__row">
           {task && (
             <TaskStatusControl priority={task.priority} status={task.status} onChange={(status) => onSetStatus(task.id, status)} />
