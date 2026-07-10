@@ -47,6 +47,7 @@ export type Api = {
   }
   code: {
     getStatus: () => Promise<CodeTrackerStatus>
+    resetStats: () => Promise<void>
   }
   apps: {
     getIcon: (path: string | null) => Promise<string | null>

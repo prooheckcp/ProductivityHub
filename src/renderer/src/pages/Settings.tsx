@@ -7,15 +7,14 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import { useTheme, FONT_LABELS, FONT_STACKS } from '../theme/ThemeContext'
 import { COLOR_GRADIENTS, EFFECT_GRADIENTS } from '../theme/gradients'
 import type { CodeTrackerStatus, FontChoice } from '@shared/types'
+import { CODE_TRACKER_CONNECTED_WINDOW_MS, CODE_TRACKER_MARKETPLACE_URL } from '@shared/codeTrackerConfig'
 import GradientPicker from '../features/settings/GradientPicker'
 import shibaArtist from '../assets/shiba-artist.png'
+import extensionIcon from '../assets/vscode-extension-icon.png'
 import './Settings.css'
 
 const FONT_CHOICES: FontChoice[] = ['system', 'serif', 'rounded', 'mono', 'comic', 'arial']
 const STATUS_POLL_MS = 4000
-// If no heartbeat has arrived in this long, treat the extension as "not
-// connected" rather than just "idle" — matches the tracker's own idle window.
-const CONNECTED_WINDOW_MS = 5 * 60 * 1000
 
 export default function Settings(): JSX.Element {
   const { settings, setBackgroundGradient, setFont, setTextColor, setLaunchAtLogin } = useTheme()
@@ -23,6 +22,8 @@ export default function Settings(): JSX.Element {
   const [confirmingImport, setConfirmingImport] = useState(false)
   const [importing, setImporting] = useState(false)
   const [codeStatus, setCodeStatus] = useState<CodeTrackerStatus | null>(null)
+  const [confirmingCodeReset, setConfirmingCodeReset] = useState(false)
+  const [codeResetStatus, setCodeResetStatus] = useState<string | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -42,6 +43,17 @@ export default function Settings(): JSX.Element {
   async function handleExport(): Promise<void> {
     const result = await window.api.data.export()
     setExportStatus(result.canceled ? null : `Exported to ${result.path}`)
+  }
+
+  const codeRecentlyConnected =
+    codeStatus !== null &&
+    codeStatus.lastHeartbeatAt !== null &&
+    Date.now() - codeStatus.lastHeartbeatAt < CODE_TRACKER_CONNECTED_WINDOW_MS
+
+  async function handleCodeResetConfirmed(): Promise<void> {
+    setConfirmingCodeReset(false)
+    await window.api.code.resetStats()
+    setCodeResetStatus('Code stats cleared')
   }
 
   async function handleImportConfirmed(): Promise<void> {
@@ -143,18 +155,13 @@ export default function Settings(): JSX.Element {
         </p>
         {codeStatus && (
           <div
-            className={
-              'settings__toggle-row' +
-              (codeStatus.lastHeartbeatAt !== null && Date.now() - codeStatus.lastHeartbeatAt < CONNECTED_WINDOW_MS
-                ? ' settings__toggle-row--on'
-                : '')
-            }
+            className={'settings__toggle-row' + (codeRecentlyConnected ? ' settings__toggle-row--on' : '')}
             style={{ cursor: 'default' }}
           >
             <span className="settings__toggle-label">
               {codeStatus.lastHeartbeatAt === null
                 ? `Listening on port ${codeStatus.port} — no connection from the extension yet`
-                : Date.now() - codeStatus.lastHeartbeatAt < CONNECTED_WINDOW_MS
+                : codeRecentlyConnected
                   ? `Connected — currently tracking ${codeStatus.current?.fileName ?? 'idle'}`
                   : `Listening on port ${codeStatus.port} — last seen ${new Date(codeStatus.lastHeartbeatAt).toLocaleTimeString()}`}
             </span>
@@ -163,6 +170,28 @@ export default function Settings(): JSX.Element {
             </span>
           </div>
         )}
+        {!codeRecentlyConnected && (
+          <div className="settings__extension-prompt">
+            <img src={extensionIcon} alt="" className="settings__extension-prompt-icon" />
+            <div>
+              <p className="settings__extension-prompt-text">Don't have it yet?</p>
+              <a
+                href={CODE_TRACKER_MARKETPLACE_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="settings__extension-button"
+              >
+                Get the extension
+              </a>
+            </div>
+          </div>
+        )}
+        <div className="settings__data-actions">
+          <Button variant="secondary" onClick={() => setConfirmingCodeReset(true)}>
+            Reset code stats
+          </Button>
+        </div>
+        {codeResetStatus && <p className="settings__status">{codeResetStatus}</p>}
       </Card>
 
       <Card className="settings__card">
@@ -181,6 +210,16 @@ export default function Settings(): JSX.Element {
         </div>
         {exportStatus && <p className="settings__status">{exportStatus}</p>}
       </Card>
+
+      {confirmingCodeReset && (
+        <ConfirmDialog
+          title="Reset code stats?"
+          description="This clears all recorded coding time, per-language/project/file breakdowns, and coding achievement progress. This can't be undone."
+          confirmLabel="Reset"
+          onConfirm={handleCodeResetConfirmed}
+          onCancel={() => setConfirmingCodeReset(false)}
+        />
+      )}
 
       {confirmingImport && (
         <ConfirmDialog

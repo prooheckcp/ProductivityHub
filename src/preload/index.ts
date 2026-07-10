@@ -34,7 +34,8 @@ const api = {
     getAppDetail: (appName: string) => ipcRenderer.invoke('stats:getAppDetail', appName)
   },
   code: {
-    getStatus: () => ipcRenderer.invoke('code:getStatus')
+    getStatus: () => ipcRenderer.invoke('code:getStatus'),
+    resetStats: () => ipcRenderer.invoke('code:resetStats')
   },
   apps: {
     getIcon: (path: string | null) => ipcRenderer.invoke('apps:getIcon', path)

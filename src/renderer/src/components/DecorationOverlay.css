@@ -175,6 +175,69 @@
   }
 }
 
+/* Doge theme -------------------------------------------------------------- */
+
+/* The actual doge, parked bottom-right, gently bobbing like it's very chill. */
+.decoration-overlay__doge {
+  position: absolute;
+  right: 2%;
+  bottom: -2%;
+  width: clamp(140px, 18vw, 240px);
+  height: auto;
+  opacity: 0.9;
+  filter: drop-shadow(0 8px 16px rgba(74, 46, 0, 0.25));
+  transform-origin: bottom center;
+  animation: decoration-doge-bob 3.4s ease-in-out infinite;
+}
+
+@keyframes decoration-doge-bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1.5deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(1.5deg);
+  }
+}
+
+/* Meme phrases: bold Comic Sans that pop in, drift up, and fade out. */
+.decoration-overlay__doge-text {
+  position: absolute;
+  font-family: 'Comic Sans MS', 'Comic Sans', 'Chalkboard SE', cursive;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+  text-shadow:
+    0 1px 2px rgba(255, 255, 255, 0.7),
+    0 0 1px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: decoration-doge-phrase 3.6s ease-out forwards;
+}
+
+@keyframes decoration-doge-phrase {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.6) rotate(var(--doge-rotate, 0deg));
+  }
+  18% {
+    opacity: 0.95;
+    transform: translateY(0) scale(1.05) rotate(var(--doge-rotate, 0deg));
+  }
+  30% {
+    transform: translateY(-2px) scale(1) rotate(var(--doge-rotate, 0deg));
+  }
+  75% {
+    opacity: 0.9;
+    transform: translateY(-16px) scale(1) rotate(var(--doge-rotate, 0deg));
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-34px) scale(0.95) rotate(var(--doge-rotate, 0deg));
+  }
+}
+
 .decoration-overlay__sun {
   position: absolute;
   top: 6%;

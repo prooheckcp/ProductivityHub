@@ -12,13 +12,20 @@ import type {
 } from '../shared/types'
 import { getAppIconDataUrl } from './appIcons'
 import { getAppDetail } from './appDetailStats'
-import { getCodeTrackerStatus } from './codeTracker'
+import { getCodeTrackerStatus, resetCodeTracking } from './codeTracker'
 import { exportData, importData } from './dataTransfer'
 import { getHomeSummary } from './homeSummary'
 import { deleteImageIfExists, saveImage } from './images'
 import { applyLoginItemSetting } from './loginItem'
 import { getCodeStats, getStats, getTodoStats } from './stats'
-import { getAchievementProgress, recordTaskCompleted, recordTaskUncompleted, recordTimerCreated } from './store/achievements'
+import {
+  getAchievementProgress,
+  recordTaskCompleted,
+  recordTaskUncompleted,
+  recordTimerCreated,
+  resetCodingProgress
+} from './store/achievements'
+import { resetCodingSessions } from './store/codeSessions'
 import {
   createAlarm,
   createCountdownTimer,
@@ -100,6 +107,11 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('stats:getCode', (_event, query: StatsQuery) => getCodeStats(query))
   ipcMain.handle('stats:getAppDetail', (_event, appName: string) => getAppDetail(appName))
   ipcMain.handle('code:getStatus', () => getCodeTrackerStatus())
+  ipcMain.handle('code:resetStats', () => {
+    resetCodingSessions()
+    resetCodingProgress()
+    resetCodeTracking()
+  })
   ipcMain.handle('apps:getIcon', (_event, path: string | null) => getAppIconDataUrl(path))
 
   // ---- Settings ----

@@ -230,6 +230,18 @@
   text-overflow: ellipsis;
 }
 
+.stats-list__label--with-icon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stats-list__label-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .stats-list__label--button {
   text-align: left;
   background: transparent;
@@ -239,6 +251,21 @@
 .stats-list__label--button:hover {
   color: var(--accent);
   text-decoration: underline;
+}
+
+.stats-list__row--button {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  border-radius: var(--radius-sm);
+}
+
+.stats-list__row--button:hover .stats-list__label {
+  color: var(--accent);
 }
 
 .stats-list__bar-track {

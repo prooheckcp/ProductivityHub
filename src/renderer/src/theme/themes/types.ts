@@ -9,6 +9,8 @@ export type Decoration =
   | 'hacker'
   | 'forest'
   | 'antigravity'
+  | 'aquarium'
+  | 'blizzard'
   | null
 
 export type GradientKind = 'color' | 'effect'

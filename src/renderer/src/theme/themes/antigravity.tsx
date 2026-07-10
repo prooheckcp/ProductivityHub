@@ -9,8 +9,18 @@ const MAX_DISPLACEMENT = 22
 const EASE = 0.12
 const HUE_SPAN = 200
 const HUE_SPEED = 6 // degrees per second, slow drift across the whole field
+// Slow spiral swirl: every dot orbits the screen center, but inner dots turn
+// faster than outer ones (differential rotation), so the field winds up into
+// spiral arms over time. Radians per second, kept gentle.
+const SPIRAL_SPEED = 0.05
+// How much the orbit slows with distance from center — larger = tighter winding.
+const SPIRAL_FALLOFF = 420
 
 type Dot = {
+  // Polar anchor around the screen center; the live baseX/baseY are derived
+  // from these each frame as the spiral rotates.
+  angle: number
+  dist: number
   baseX: number
   baseY: number
   x: number
@@ -55,6 +65,8 @@ function AntigravityDecoration(_props: DecorationProps): JSX.Element {
 
       const cols = Math.ceil(width / CELL) + 1
       const rows = Math.ceil(height / CELL) + 1
+      const cx = width / 2
+      const cy = height / 2
       dots = []
       for (let row = 0; row < rows; row++) {
         for (let col = 0; col < cols; col++) {
@@ -62,7 +74,11 @@ function AntigravityDecoration(_props: DecorationProps): JSX.Element {
           const jitterY = (Math.random() - 0.5) * CELL * JITTER
           const x = col * CELL + jitterX
           const y = row * CELL + jitterY
+          const rx = x - cx
+          const ry = y - cy
           dots.push({
+            angle: Math.atan2(ry, rx),
+            dist: Math.hypot(rx, ry),
             baseX: x,
             baseY: y,
             x,
@@ -92,8 +108,16 @@ function AntigravityDecoration(_props: DecorationProps): JSX.Element {
     function tick(now: number): void {
       const elapsed = (now - startTime) / 1000
       const globalHue = elapsed * HUE_SPEED
+      const cx = width / 2
+      const cy = height / 2
       ctx!.clearRect(0, 0, width, height)
       for (const dot of dots) {
+        // Wind the dot around the center; inner dots turn faster than outer
+        // ones, so straight rows curl into slow spiral arms over time.
+        const spin = (elapsed * SPIRAL_SPEED * SPIRAL_FALLOFF) / (dot.dist + SPIRAL_FALLOFF)
+        dot.baseX = cx + Math.cos(dot.angle + spin) * dot.dist
+        dot.baseY = cy + Math.sin(dot.angle + spin) * dot.dist
+
         const dx = dot.baseX - mouse.x
         const dy = dot.baseY - mouse.y
         const dist = Math.hypot(dx, dy)

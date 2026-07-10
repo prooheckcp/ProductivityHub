@@ -1,0 +1,42 @@
+.install-extension-card {
+  margin-bottom: 16px;
+}
+
+.install-extension {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.install-extension__icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.install-extension__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-gradient);
+  color: var(--accent-contrast);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 160ms ease, opacity 120ms ease;
+}
+
+.install-extension__button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  opacity: 0.92;
+}
+
+.install-extension__button:active {
+  transform: translateY(0);
+}

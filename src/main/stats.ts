@@ -192,6 +192,37 @@ function sumCodeByKey(
     .sort((a, b) => b.ms - a.ms)
 }
 
+function sumCodeByProjectAndFile(
+  intervals: CodeInterval[],
+  rangeStart: number,
+  rangeEnd: number
+): Record<string, CodeStatsEntry[]> {
+  const byProject = new Map<string, Map<string, { label: string; ms: number; language: string }>>()
+  for (const interval of intervals) {
+    const clampedStart = Math.max(interval.startedAt, rangeStart)
+    const clampedEnd = Math.min(interval.endedAt, rangeEnd)
+    const ms = Math.max(0, clampedEnd - clampedStart)
+    if (ms <= 0) continue
+    const projectKey = interval.projectName ?? 'No project'
+    let files = byProject.get(projectKey)
+    if (!files) {
+      files = new Map()
+      byProject.set(projectKey, files)
+    }
+    const existing = files.get(interval.filePath)
+    if (existing) existing.ms += ms
+    else files.set(interval.filePath, { label: interval.fileName, ms, language: interval.language })
+  }
+
+  const result: Record<string, CodeStatsEntry[]> = {}
+  for (const [projectKey, files] of byProject.entries()) {
+    result[projectKey] = Array.from(files.entries())
+      .map(([key, v]) => ({ key, label: v.label, ms: v.ms, language: v.language }))
+      .sort((a, b) => b.ms - a.ms)
+  }
+  return result
+}
+
 export function getCodeStats(query: StatsQuery): CodeStatsResult {
   const now = Date.now()
   const { start, end } = resolveRange(query, now)
@@ -218,8 +249,8 @@ export function getCodeStats(query: StatsQuery): CodeStatsResult {
 
   const byLanguage = sumCodeByKey(intervals, start, end, (i) => i.language, (i) => i.language)
   const byProject = sumCodeByKey(intervals, start, end, (i) => i.projectName ?? 'No project', (i) => i.projectName ?? 'No project')
-  const byFile = sumCodeByKey(intervals, start, end, (i) => i.filePath, (i) => i.fileName)
+  const byProjectFile = sumCodeByProjectAndFile(intervals, start, end)
   const totalMs = byLanguage.reduce((sum, entry) => sum + entry.ms, 0)
 
-  return { totalMs, byLanguage, byProject, byFile: byFile.slice(0, 20) }
+  return { totalMs, byLanguage, byProject, byProjectFile }
 }

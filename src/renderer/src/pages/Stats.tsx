@@ -5,7 +5,14 @@ import PageHeader from '../components/PageHeader'
 import Card from '../components/Card'
 import EmptyState from '../components/EmptyState'
 import { CalendarIcon, FilterIcon } from '../components/icons'
-import type { CodeStatsResult, StatsQuery, StatsRangeKey, StatsResult, TodoStatsResult } from '@shared/types'
+import type {
+  CodeStatsResult,
+  CodeTrackerStatus,
+  StatsQuery,
+  StatsRangeKey,
+  StatsResult,
+  TodoStatsResult
+} from '@shared/types'
 import { formatDuration } from '../utils/format'
 import AppIcon from '../features/stats/AppIcon'
 import AppDetailModal from '../features/stats/AppDetailModal'
@@ -47,6 +54,7 @@ export default function Stats(): JSX.Element {
   const [stats, setStats] = useState<StatsResult | null>(null)
   const [todoStats, setTodoStats] = useState<TodoStatsResult | null>(null)
   const [codeStats, setCodeStats] = useState<CodeStatsResult | null>(null)
+  const [codeStatus, setCodeStatus] = useState<CodeTrackerStatus | null>(null)
   const [showCalendar, setShowCalendar] = useState(false)
   const [selectedApp, setSelectedApp] = useState<string | null>(null)
   const now = Date.now()
@@ -80,6 +88,21 @@ export default function Stats(): JSX.Element {
       cancelled = true
     }
   }, [range, category, customStart, customEnd])
+
+  useEffect(() => {
+    let cancelled = false
+    function poll(): void {
+      window.api.code.getStatus().then((status) => {
+        if (!cancelled) setCodeStatus(status)
+      })
+    }
+    poll()
+    const interval = setInterval(poll, 5000)
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
+  }, [])
 
   function applyCustomRange(): void {
     setRange('custom')
@@ -134,7 +157,7 @@ export default function Stats(): JSX.Element {
                 )}
               </div>
             </div>
-            {activeCategory !== 'todo' && activeCategory !== 'code' && (
+            {activeCategory !== 'todo' && (
               <div className="stats-range">
                 {VIEWS.map((v) => (
                   <button
@@ -262,7 +285,9 @@ export default function Stats(): JSX.Element {
 
           {activeCategory === 'todo' && todoStats && <TodoStatsPanel stats={todoStats} />}
 
-          {activeCategory === 'code' && codeStats && <CodeStatsPanel stats={codeStats} />}
+          {activeCategory === 'code' && codeStats && (
+            <CodeStatsPanel stats={codeStats} status={codeStatus} view={view} />
+          )}
       </>
 
       {selectedApp && <AppDetailModal appName={selectedApp} onClose={() => setSelectedApp(null)} />}

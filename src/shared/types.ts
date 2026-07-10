@@ -45,13 +45,16 @@ export type CodeStatsEntry = {
   key: string
   label: string
   ms: number
+  /** Only set on per-project file breakdown entries. */
+  language?: string
 }
 
 export type CodeStatsResult = {
   totalMs: number
   byLanguage: CodeStatsEntry[]
   byProject: CodeStatsEntry[]
-  byFile: CodeStatsEntry[]
+  /** Per-project file breakdown, keyed by the same key as byProject's entries. */
+  byProjectFile: Record<string, CodeStatsEntry[]>
 }
 
 export type CodeTrackerStatus = {

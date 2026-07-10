@@ -19,3 +19,7 @@ export function appendCodingSession(session: CodingSession): void {
 export function restoreCodingSessions(sessions: CodingSession[]): void {
   writeJsonFile(sessionsFile(), sessions)
 }
+
+export function resetCodingSessions(): void {
+  writeJsonFile(sessionsFile(), [])
+}

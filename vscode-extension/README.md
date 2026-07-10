@@ -16,10 +16,13 @@ shows up under **Stats → Code**.
   server-side, it just isn't recorded, and it'll resume the moment the app is
   running again.
 
-A small status bar item on the bottom-right shows the connection state:
+A status bar item on the bottom-right shows your rolling coding time:
 
-- `✓ Shiba Track` — connected, heartbeats are getting through
-- `⊘ Shiba Track` — the desktop app isn't reachable right now
+- `🐕 🕐 2h 14m` — total time coded in the last 24 hours, tracked by the app.
+  Refreshes every 15 seconds, so it stays live while you work.
+- `✓ Shiba Track` / `⊘ Shiba Track` — shown instead until the app has reported
+  a total at least once (e.g. right after installing), reflecting whether the
+  desktop app is reachable yet.
 
 ## Settings
 

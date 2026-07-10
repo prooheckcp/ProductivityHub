@@ -1,22 +1,40 @@
+import { useState } from 'react'
 import type { JSX } from 'react'
 import Card from '../../components/Card'
 import EmptyState from '../../components/EmptyState'
-import type { CodeStatsResult } from '@shared/types'
+import type { CodeStatsResult, CodeTrackerStatus } from '@shared/types'
+import { CODE_TRACKER_CONNECTED_WINDOW_MS } from '@shared/codeTrackerConfig'
 import { formatDuration } from '../../utils/format'
 import { getLanguageIcon } from './languageIcons'
+import CodeLanguageChart from './CodeLanguageChart'
+import CodeProjectFilesModal from './CodeProjectFilesModal'
+import InstallExtensionCard from './InstallExtensionCard'
+import type { ChartView } from './StatsChart'
 
 type CodeStatsPanelProps = {
   stats: CodeStatsResult
+  status: CodeTrackerStatus | null
+  view: ChartView
 }
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
-export default function CodeStatsPanel({ stats }: CodeStatsPanelProps): JSX.Element {
+export default function CodeStatsPanel({ stats, status, view }: CodeStatsPanelProps): JSX.Element {
+  const [selectedProject, setSelectedProject] = useState<string | null>(null)
   const topProjectMs = stats.byProject[0]?.ms ?? 0
-  const topFileMs = stats.byFile[0]?.ms ?? 0
+
+  const recentlyConnected =
+    status !== null &&
+    status.lastHeartbeatAt !== null &&
+    Date.now() - status.lastHeartbeatAt < CODE_TRACKER_CONNECTED_WINDOW_MS
+  const showInstallCard = !recentlyConnected
+
+  const selectedProjectEntry = stats.byProject.find((entry) => entry.key === selectedProject)
 
   return (
     <>
+      {showInstallCard && <InstallExtensionCard />}
+
       <div className="stats-columns">
         <Card>
           <h2 className="stats-section-title">Total coding time</h2>
@@ -50,45 +68,43 @@ export default function CodeStatsPanel({ stats }: CodeStatsPanelProps): JSX.Elem
 
       <div className="stats-columns">
         <Card>
+          <h2 className="stats-section-title">By language (chart)</h2>
+          <CodeLanguageChart entries={stats.byLanguage} view={view} />
+        </Card>
+
+        <Card>
           <h2 className="stats-section-title">By project</h2>
           {stats.byProject.length === 0 ? (
             <EmptyState title="No coding activity tracked in this range" />
           ) : (
             <ul className="stats-list">
               {stats.byProject.map((entry) => (
-                <li key={entry.key} className="stats-list__row">
-                  <span className="stats-list__label">{entry.label}</span>
-                  <div className="stats-list__bar-track">
-                    <div className="stats-list__bar-fill" style={{ width: `${(entry.ms / topProjectMs) * 100}%` }} />
-                  </div>
-                  <div className="stats-list__value">{formatDuration(entry.ms)}</div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        <Card>
-          <h2 className="stats-section-title">By file</h2>
-          {stats.byFile.length === 0 ? (
-            <EmptyState title="No coding activity tracked in this range" />
-          ) : (
-            <ul className="stats-list">
-              {stats.byFile.map((entry) => (
-                <li key={entry.key} className="stats-list__row">
-                  <span className="stats-list__label" title={entry.key}>
-                    {entry.label}
-                  </span>
-                  <div className="stats-list__bar-track">
-                    <div className="stats-list__bar-fill" style={{ width: `${(entry.ms / topFileMs) * 100}%` }} />
-                  </div>
-                  <div className="stats-list__value">{formatDuration(entry.ms)}</div>
+                <li key={entry.key}>
+                  <button
+                    type="button"
+                    className="stats-list__row stats-list__row--button"
+                    onClick={() => setSelectedProject(entry.key)}
+                  >
+                    <span className="stats-list__label">{entry.label}</span>
+                    <div className="stats-list__bar-track">
+                      <div className="stats-list__bar-fill" style={{ width: `${(entry.ms / topProjectMs) * 100}%` }} />
+                    </div>
+                    <div className="stats-list__value">{formatDuration(entry.ms)}</div>
+                  </button>
                 </li>
               ))}
             </ul>
           )}
         </Card>
       </div>
+
+      {selectedProjectEntry && (
+        <CodeProjectFilesModal
+          projectLabel={selectedProjectEntry.label}
+          files={stats.byProjectFile[selectedProjectEntry.key] ?? []}
+          onClose={() => setSelectedProject(null)}
+        />
+      )}
     </>
   )
 }

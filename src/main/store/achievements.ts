@@ -1,10 +1,23 @@
 import { Notification } from 'electron'
+import { is } from '@electron-toolkit/utils'
 import { ACHIEVEMENT_DEFS } from '../../shared/achievements'
 import type { AchievementDef, AchievementProgress } from '../../shared/types'
 import { dataFile } from './paths'
 import { readJsonFile, writeJsonFile } from './jsonFile'
 
 const progressFile = (): string => dataFile('achievements.json')
+
+// Testing convenience: in dev builds every achievement reads back as unlocked.
+// Applied only at return time, never written to disk, so the real save file
+// stays intact for production.
+function applyDevUnlocks(progress: AchievementProgress): AchievementProgress {
+  if (!is.dev) return progress
+  const unlocked = { ...progress.unlocked }
+  for (const def of ACHIEVEMENT_DEFS) {
+    if (!(def.id in unlocked)) unlocked[def.id] = Date.now()
+  }
+  return { ...progress, unlocked }
+}
 
 const DEFAULT_PROGRESS: AchievementProgress = {
   timersCreated: 0,
@@ -51,7 +64,7 @@ function unlockNewly(progress: AchievementProgress, category: AchievementDef['ca
 }
 
 export function getAchievementProgress(): AchievementProgress {
-  return loadProgress()
+  return applyDevUnlocks(loadProgress())
 }
 
 export function recordTimerCreated(): AchievementProgress {
@@ -59,7 +72,7 @@ export function recordTimerCreated(): AchievementProgress {
   progress.timersCreated += 1
   notifyUnlocked(unlockNewly(progress, 'timers'))
   saveProgress(progress)
-  return progress
+  return applyDevUnlocks(progress)
 }
 
 export function recordTaskCompleted(): AchievementProgress {
@@ -67,7 +80,7 @@ export function recordTaskCompleted(): AchievementProgress {
   progress.tasksCompleted += 1
   notifyUnlocked(unlockNewly(progress, 'tasks'))
   saveProgress(progress)
-  return progress
+  return applyDevUnlocks(progress)
 }
 
 /** A task was un-completed (checkbox toggled back off) — undo the lifetime count, but never revoke an unlocked achievement. */
@@ -75,7 +88,7 @@ export function recordTaskUncompleted(): AchievementProgress {
   const progress = loadProgress()
   progress.tasksCompleted = Math.max(0, progress.tasksCompleted - 1)
   saveProgress(progress)
-  return progress
+  return applyDevUnlocks(progress)
 }
 
 export function recordDevToolsUsage(deltaMs: number): AchievementProgress {
@@ -83,7 +96,7 @@ export function recordDevToolsUsage(deltaMs: number): AchievementProgress {
   progress.devToolsMs += deltaMs
   notifyUnlocked(unlockNewly(progress, 'devtools'))
   saveProgress(progress)
-  return progress
+  return applyDevUnlocks(progress)
 }
 
 export function recordTimerUsage(deltaMs: number): AchievementProgress {
@@ -91,7 +104,7 @@ export function recordTimerUsage(deltaMs: number): AchievementProgress {
   progress.timerUsageMs += deltaMs
   notifyUnlocked(unlockNewly(progress, 'timerUsage'))
   saveProgress(progress)
-  return progress
+  return applyDevUnlocks(progress)
 }
 
 export function recordCodingUsage(deltaMs: number): AchievementProgress {
@@ -99,9 +112,16 @@ export function recordCodingUsage(deltaMs: number): AchievementProgress {
   progress.codingMs += deltaMs
   notifyUnlocked(unlockNewly(progress, 'coding'))
   saveProgress(progress)
-  return progress
+  return applyDevUnlocks(progress)
 }
 
 export function restoreAchievementProgress(progress: AchievementProgress): void {
   saveProgress({ ...DEFAULT_PROGRESS, ...progress })
+}
+
+/** Zeroes the coding-time counter without revoking already-unlocked achievements. */
+export function resetCodingProgress(): void {
+  const progress = loadProgress()
+  progress.codingMs = 0
+  saveProgress(progress)
 }
