@@ -51,8 +51,8 @@ const ThemeContext = createContext<ThemeContextValue | null>(null)
 // theme was picked.
 const LIGHT_CHROME = {
   '--border': '#e5e5e8',
-  '--text-secondary': '#6b6b74',
-  '--text-tertiary': '#9a9aa2',
+  '--text-secondary': '#4b4b54',
+  '--text-tertiary': '#75757e',
   '--shadow-sm': '0 1px 2px rgba(15, 15, 20, 0.05)',
   '--shadow-md': '0 6px 20px rgba(15, 15, 20, 0.08)'
 }

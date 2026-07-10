@@ -3,6 +3,7 @@ import type { Timer, TimerFormInput, TimerSession } from '../../shared/types'
 import { dataFile } from './paths'
 import { readJsonFile, writeJsonFile } from './jsonFile'
 import { recordTimerUsage } from './achievements'
+import { checkTimerLinkedTasks } from './todo'
 
 const timersFile = (): string => dataFile('timers.json')
 const sessionsFile = (): string => dataFile('timer-sessions.json')
@@ -115,6 +116,7 @@ export function pauseTimer(id: string): Timer {
   finalizeRunningSession(timer, Date.now())
   timer.updatedAt = Date.now()
   saveTimers(timers)
+  checkTimerLinkedTasks(timer.id, timer.accumulatedMs)
   return timer
 }
 
@@ -139,5 +141,6 @@ export function setManualTime(id: string, ms: number): Timer {
   timer.accumulatedMs = Math.max(0, Math.round(ms))
   timer.updatedAt = now
   saveTimers(timers)
+  checkTimerLinkedTasks(timer.id, timer.accumulatedMs)
   return timer
 }

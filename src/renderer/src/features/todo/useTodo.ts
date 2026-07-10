@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { Category, CategoryFormInput, Project, ProjectFormInput, Task, TaskFormInput } from '@shared/types'
+import type { Category, CategoryFormInput, Project, ProjectFormInput, Task, TaskFormInput, TaskStatus } from '@shared/types'
 
 export function useTodo() {
   const [projects, setProjects] = useState<Project[]>([])
@@ -28,6 +28,18 @@ export function useTodo() {
     const hasRunning = tasks.some((task) => task.runningSince !== null)
     if (!hasRunning) return
     const interval = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(interval)
+  }, [tasks])
+
+  // A task linked to a timer can auto-finish in the main process (timerTaskWatcher)
+  // purely from that timer running elsewhere (e.g. the Home widget) — poll lightly
+  // so this task list picks up the status flip without the user touching anything.
+  useEffect(() => {
+    const hasLinkedTask = tasks.some((task) => task.linkedTimerId !== null)
+    if (!hasLinkedTask) return
+    const interval = setInterval(() => {
+      window.api.todo.tasks.list().then(setTasks)
+    }, 5000)
     return () => clearInterval(interval)
   }, [tasks])
 
@@ -89,8 +101,8 @@ export function useTodo() {
     setTasks((prev) => prev.filter((t) => t.id !== id && t.parentTaskId !== id))
   }, [])
 
-  const setTaskCompleted = useCallback(async (id: string, completed: boolean) => {
-    const task = await window.api.todo.tasks.setCompleted(id, completed)
+  const setTaskStatus = useCallback(async (id: string, status: TaskStatus) => {
+    const task = await window.api.todo.tasks.setStatus(id, status)
     setTasks((prev) => prev.map((t) => (t.id === id ? task : t)))
     return task
   }, [])
@@ -122,7 +134,7 @@ export function useTodo() {
     createTask,
     updateTask,
     removeTask,
-    setTaskCompleted,
+    setTaskStatus,
     startTask,
     pauseTask
   }

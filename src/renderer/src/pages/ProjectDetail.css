@@ -20,6 +20,80 @@
   max-width: 420px;
 }
 
+.project-detail__cover {
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  margin-bottom: 16px;
+}
+
+.project-detail__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.project-detail__search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-tertiary);
+  max-width: 240px;
+  flex: 1;
+}
+
+.project-detail__search input {
+  flex: 1;
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.project-detail__search input:focus {
+  outline: none;
+}
+
+.project-detail__toggle {
+  font-size: 12.5px;
+  font-weight: 550;
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+}
+
+.project-detail__toggle:hover {
+  background: var(--surface-hover);
+}
+
+.project-detail__toggle--active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.project-detail__sprint-select {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 550;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+}
+
 .todo-list-card {
   padding: 4px 18px;
 }

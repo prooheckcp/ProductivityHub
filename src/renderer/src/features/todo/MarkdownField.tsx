@@ -11,7 +11,10 @@ type MarkdownFieldProps = {
 }
 
 export default function MarkdownField({ value, onChange, placeholder }: MarkdownFieldProps): JSX.Element {
-  const [previewing, setPreviewing] = useState(false)
+  // Opening an existing task should land on Preview (read the rendered
+  // description first); a brand-new task has nothing to preview yet, so
+  // start it in Write instead of showing an empty "nothing to preview" state.
+  const [previewing, setPreviewing] = useState(() => value.trim().length > 0)
 
   return (
     <div className="markdown-field">

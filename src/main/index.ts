@@ -4,6 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc'
 import { startAppTracker, stopAppTracker } from './appTracker'
 import { startDeadlineNotifier, stopDeadlineNotifier } from './deadlineNotifier'
+import { startTimerTaskWatcher, stopTimerTaskWatcher } from './timerTaskWatcher'
 import { applyLoginItemSetting, wasLaunchedHidden } from './loginItem'
 import { createTray } from './tray'
 import { getSettings } from './store/settings'
@@ -104,6 +105,7 @@ app.whenReady().then(() => {
   registerIpcHandlers()
   startAppTracker()
   startDeadlineNotifier()
+  startTimerTaskWatcher()
   applyLoginItemSetting(getSettings().launchAtLogin)
   createTray(iconPath, showMainWindow)
 
@@ -119,4 +121,5 @@ app.on('before-quit', () => {
   isQuitting = true
   stopAppTracker()
   stopDeadlineNotifier()
+  stopTimerTaskWatcher()
 })

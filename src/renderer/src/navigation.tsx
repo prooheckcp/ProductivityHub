@@ -8,11 +8,17 @@ import Stats from './pages/Stats'
 import Achievements from './pages/Achievements'
 import Settings from './pages/Settings'
 
+export type NavChild = {
+  path: string
+  label: string
+}
+
 export type NavItem = {
   path: string
   label: string
   icon: (props: { size?: number }) => JSX.Element
   element: JSX.Element
+  children?: NavChild[]
 }
 
 // Add a new page by appending one entry here — the sidebar and router
@@ -21,7 +27,17 @@ export const NAV_ITEMS: NavItem[] = [
   { path: '/', label: 'Home', icon: HomeIcon, element: <Home /> },
   { path: '/time-tracker', label: 'Time Tracker', icon: TimerIcon, element: <TimeTracker /> },
   { path: '/todo', label: 'To-Do', icon: ChecklistIcon, element: <Todo /> },
-  { path: '/stats', label: 'Stats', icon: ChartIcon, element: <Stats /> },
+  {
+    path: '/stats',
+    label: 'Stats',
+    icon: ChartIcon,
+    element: <Stats />,
+    children: [
+      { path: '/stats/timers', label: 'Timers' },
+      { path: '/stats/apps', label: 'Apps' },
+      { path: '/stats/todo', label: 'To-Do' }
+    ]
+  },
   { path: '/achievements', label: 'Achievements', icon: TrophyIcon, element: <Achievements /> }
 ]
 
@@ -33,5 +49,6 @@ export const SECONDARY_NAV_ITEMS: NavItem[] = [
 // Reachable by navigation (e.g. from within To-Do or a Home quick link), but
 // not shown as their own sidebar entry.
 export const EXTRA_ROUTES: { path: string; element: JSX.Element }[] = [
-  { path: '/todo/:projectId', element: <ProjectDetail /> }
+  { path: '/todo/:projectId', element: <ProjectDetail /> },
+  { path: '/stats/:category', element: <Stats /> }
 ]

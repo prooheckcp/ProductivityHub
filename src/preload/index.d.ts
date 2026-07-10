@@ -12,8 +12,10 @@ import type {
   StatsResult,
   Task,
   TaskFormInput,
+  TaskStatus,
   Timer,
-  TimerFormInput
+  TimerFormInput,
+  TodoStatsResult
 } from '../shared/types'
 
 export type Api = {
@@ -33,6 +35,7 @@ export type Api = {
   }
   stats: {
     get: (query: StatsQuery) => Promise<StatsResult>
+    getTodo: (query: StatsQuery) => Promise<TodoStatsResult>
     getAppDetail: (appName: string) => Promise<AppDetailResult>
   }
   apps: {
@@ -66,7 +69,7 @@ export type Api = {
       create: (categoryId: string, parentTaskId: string | null, input: TaskFormInput) => Promise<Task>
       update: (id: string, patch: TaskFormInput) => Promise<Task>
       remove: (id: string) => Promise<void>
-      setCompleted: (id: string, completed: boolean) => Promise<Task>
+      setStatus: (id: string, status: TaskStatus) => Promise<Task>
       start: (id: string) => Promise<Task>
       pause: (id: string) => Promise<Task>
     }

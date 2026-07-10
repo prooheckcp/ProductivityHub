@@ -3,25 +3,29 @@ import type { JSX } from 'react'
 import Modal from '../../components/Modal'
 import Button from '../../components/Button'
 import ConfirmDialog from '../../components/ConfirmDialog'
-import { CheckIcon, PauseIcon, PlayIcon, PlusIcon } from '../../components/icons'
+import { PauseIcon, PlayIcon, PlusIcon } from '../../components/icons'
 import { currentElapsedMs } from '@shared/timeMath'
-import type { Task, TaskFormInput, TaskPriority } from '@shared/types'
+import type { Project, Task, TaskFormInput, TaskPriority } from '@shared/types'
 import { formatClock } from '../../utils/format'
+import { useTimersContext } from '../timers/TimersContext'
 import { datetimeLocalToMs, msToDatetimeLocal } from './taskDates'
+import { hasSprintConfig } from './sprintMath'
 import ImageGallery from './ImageGallery'
 import MarkdownField from './MarkdownField'
 import PriorityBadge, { PRIORITIES } from './PriorityBadge'
+import TaskStatusControl from './TaskStatusControl'
 import './TaskModal.css'
 
 type TaskModalProps = {
   task?: Task
+  project: Project
   now: number
   subtasks: Task[]
   onClose: () => void
   onCreate: (input: TaskFormInput) => Promise<Task>
   onUpdate: (id: string, input: TaskFormInput) => Promise<Task>
   onDelete: (id: string) => Promise<void>
-  onSetCompleted: (id: string, completed: boolean) => Promise<Task>
+  onSetStatus: (id: string, status: Task['status']) => Promise<Task>
   onStart: (id: string) => Promise<Task>
   onPause: (id: string) => Promise<Task>
   onAddSubtask: (name: string) => Promise<void>
@@ -30,18 +34,20 @@ type TaskModalProps = {
 
 export default function TaskModal({
   task,
+  project,
   now,
   subtasks,
   onClose,
   onCreate,
   onUpdate,
   onDelete,
-  onSetCompleted,
+  onSetStatus,
   onStart,
   onPause,
   onAddSubtask,
   onOpenSubtask
 }: TaskModalProps): JSX.Element {
+  const { timers } = useTimersContext()
   const [name, setName] = useState(task?.name ?? '')
   const [description, setDescription] = useState(task?.description ?? '')
   const [images, setImages] = useState<string[]>(task?.images ?? [])
@@ -49,6 +55,11 @@ export default function TaskModal({
   const [deadline, setDeadline] = useState(msToDatetimeLocal(task?.deadline ?? null))
   const [estimateMinutes, setEstimateMinutes] = useState(
     task?.estimatedMs ? String(Math.round(task.estimatedMs / 60000)) : ''
+  )
+  const [sprintNumber, setSprintNumber] = useState(task?.sprintNumber?.toString() ?? '')
+  const [linkedTimerId, setLinkedTimerId] = useState(task?.linkedTimerId ?? '')
+  const [timerTargetMinutes, setTimerTargetMinutes] = useState(
+    task?.timerTargetMs ? String(Math.round(task.timerTargetMs / 60000)) : ''
   )
   const [saving, setSaving] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -59,13 +70,18 @@ export default function TaskModal({
   const elapsed = task ? formatClock(currentElapsedMs(task, now)) : null
 
   function buildInput(): TaskFormInput {
+    const parsedSprint = parseInt(sprintNumber, 10)
+    const parsedTarget = parseInt(timerTargetMinutes, 10)
     return {
       name: name.trim(),
       description,
       images,
       priority,
       deadline: datetimeLocalToMs(deadline),
-      estimatedMs: estimateMinutes.trim() ? Number(estimateMinutes) * 60000 : null
+      estimatedMs: estimateMinutes.trim() ? Number(estimateMinutes) * 60000 : null,
+      sprintNumber: Number.isFinite(parsedSprint) && parsedSprint > 0 ? parsedSprint : null,
+      linkedTimerId: linkedTimerId || null,
+      timerTargetMs: linkedTimerId && Number.isFinite(parsedTarget) && parsedTarget > 0 ? parsedTarget * 60000 : null
     }
   }
 
@@ -87,16 +103,6 @@ export default function TaskModal({
     try {
       if (isRunning) await onPause(task.id)
       else await onStart(task.id)
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  async function handleToggleCompleted(): Promise<void> {
-    if (!task) return
-    setBusy(true)
-    try {
-      await onSetCompleted(task.id, !task.completed)
     } finally {
       setBusy(false)
     }
@@ -139,15 +145,7 @@ export default function TaskModal({
       <div className="task-modal">
         <div className="task-modal__row">
           {task && (
-            <button
-              type="button"
-              className={'task-modal__complete' + (task.completed ? ' task-modal__complete--done' : '')}
-              onClick={handleToggleCompleted}
-              disabled={busy}
-              aria-label="Toggle completed"
-            >
-              {task.completed && <CheckIcon size={14} />}
-            </button>
+            <TaskStatusControl priority={task.priority} status={task.status} onChange={(status) => onSetStatus(task.id, status)} />
           )}
           <input
             type="text"
@@ -205,6 +203,20 @@ export default function TaskModal({
             />
           </div>
 
+          {hasSprintConfig(project) && (
+            <div className="task-modal__field">
+              <p className="task-modal__label">Sprint</p>
+              <input
+                type="number"
+                min={1}
+                className="task-modal__input"
+                value={sprintNumber}
+                onChange={(event) => setSprintNumber(event.target.value)}
+                placeholder="Backlog"
+              />
+            </div>
+          )}
+
           {task && (
             <div className="task-modal__field">
               <p className="task-modal__label">Time spent</p>
@@ -226,19 +238,52 @@ export default function TaskModal({
           )}
         </div>
 
+        <div className="task-modal__field">
+          <p className="task-modal__label">Linked timer</p>
+          <p className="task-modal__hint">
+            Pick a timer and a target — once it accumulates that much time, this task auto-finishes.
+          </p>
+          <div className="task-modal__timer-link-row">
+            <select
+              className="task-modal__input"
+              value={linkedTimerId}
+              onChange={(event) => setLinkedTimerId(event.target.value)}
+            >
+              <option value="">No linked timer</option>
+              {timers.map((timer) => (
+                <option key={timer.id} value={timer.id}>
+                  {timer.name}
+                </option>
+              ))}
+            </select>
+            {linkedTimerId && (
+              <input
+                type="number"
+                min={1}
+                className="task-modal__input"
+                value={timerTargetMinutes}
+                onChange={(event) => setTimerTargetMinutes(event.target.value)}
+                placeholder="Target minutes"
+              />
+            )}
+          </div>
+        </div>
+
         {task && (
           <div className="task-modal__field">
             <p className="task-modal__label">Subtasks</p>
             <ul className="task-modal__subtasks">
               {subtasks.map((subtask) => (
                 <li key={subtask.id}>
+                  <TaskStatusControl
+                    priority={subtask.priority}
+                    status={subtask.status}
+                    onChange={(status) => onSetStatus(subtask.id, status)}
+                  />
                   <button type="button" className="task-modal__subtask" onClick={() => onOpenSubtask(subtask)}>
-                    <span
-                      className={'task-modal__subtask-check' + (subtask.completed ? ' task-modal__subtask-check--done' : '')}
-                    >
-                      {subtask.completed && <CheckIcon size={11} />}
+                    <span className={subtask.status === 'finished' ? 'task-modal__subtask-name--done' : ''}>
+                      {subtask.name}
                     </span>
-                    <span className={subtask.completed ? 'task-modal__subtask-name--done' : ''}>{subtask.name}</span>
                   </button>
                 </li>
               ))}

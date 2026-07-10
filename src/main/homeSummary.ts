@@ -40,14 +40,14 @@ export function getHomeSummary(): HomeSummary {
   }
 
   const tasksCompletedToday = listTasks().filter(
-    (task) => task.completed && task.completedAt !== null && task.completedAt >= dayStart
+    (task) => task.status === 'finished' && task.statusChangedAt !== null && task.statusChangedAt >= dayStart
   ).length
 
   const recentTimers = [...listTimers()].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 3)
 
   const lastCompletedTask = [...listTasks()]
-    .filter((task) => task.completed && task.completedAt !== null)
-    .sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0))[0]
+    .filter((task) => task.status === 'finished' && task.statusChangedAt !== null)
+    .sort((a, b) => (b.statusChangedAt ?? 0) - (a.statusChangedAt ?? 0))[0]
 
   let recentProject: HomeSummary['recentProject'] = null
   if (lastCompletedTask) {
@@ -58,7 +58,7 @@ export function getHomeSummary(): HomeSummary {
         projectId: project.id,
         projectName: project.name,
         taskName: lastCompletedTask.name,
-        completedAt: lastCompletedTask.completedAt ?? 0
+        completedAt: lastCompletedTask.statusChangedAt ?? 0
       }
     }
   }

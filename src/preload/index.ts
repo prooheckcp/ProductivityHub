@@ -6,6 +6,7 @@ import type {
   ProjectFormInput,
   StatsQuery,
   TaskFormInput,
+  TaskStatus,
   TimerFormInput
 } from '../shared/types'
 
@@ -26,6 +27,7 @@ const api = {
   },
   stats: {
     get: (query: StatsQuery) => ipcRenderer.invoke('stats:get', query),
+    getTodo: (query: StatsQuery) => ipcRenderer.invoke('stats:getTodo', query),
     getAppDetail: (appName: string) => ipcRenderer.invoke('stats:getAppDetail', appName)
   },
   apps: {
@@ -61,7 +63,7 @@ const api = {
         ipcRenderer.invoke('todo:tasks:create', categoryId, parentTaskId, input),
       update: (id: string, patch: TaskFormInput) => ipcRenderer.invoke('todo:tasks:update', id, patch),
       remove: (id: string) => ipcRenderer.invoke('todo:tasks:delete', id),
-      setCompleted: (id: string, completed: boolean) => ipcRenderer.invoke('todo:tasks:setCompleted', id, completed),
+      setStatus: (id: string, status: TaskStatus) => ipcRenderer.invoke('todo:tasks:setStatus', id, status),
       start: (id: string) => ipcRenderer.invoke('todo:tasks:start', id),
       pause: (id: string) => ipcRenderer.invoke('todo:tasks:pause', id)
     }

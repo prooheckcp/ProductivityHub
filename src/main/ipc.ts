@@ -1,12 +1,20 @@
 import { ipcMain } from 'electron'
-import type { AppSettings, CategoryFormInput, ProjectFormInput, StatsQuery, TaskFormInput, TimerFormInput } from '../shared/types'
+import type {
+  AppSettings,
+  CategoryFormInput,
+  ProjectFormInput,
+  StatsQuery,
+  TaskFormInput,
+  TaskStatus,
+  TimerFormInput
+} from '../shared/types'
 import { getAppIconDataUrl } from './appIcons'
 import { getAppDetail } from './appDetailStats'
 import { exportData, importData } from './dataTransfer'
 import { getHomeSummary } from './homeSummary'
 import { deleteImageIfExists, saveImage } from './images'
 import { applyLoginItemSetting } from './loginItem'
-import { getStats } from './stats'
+import { getStats, getTodoStats } from './stats'
 import { getAchievementProgress, recordTaskCompleted, recordTaskUncompleted, recordTimerCreated } from './store/achievements'
 import { getSettings, updateSettings } from './store/settings'
 import {
@@ -20,7 +28,7 @@ import {
   listProjects,
   listTasks,
   pauseTask,
-  setTaskCompleted,
+  setTaskStatus,
   startTask,
   updateCategory,
   updateProject,
@@ -73,6 +81,7 @@ export function registerIpcHandlers(): void {
 
   // ---- Stats ----
   ipcMain.handle('stats:get', (_event, query: StatsQuery) => getStats(query))
+  ipcMain.handle('stats:getTodo', (_event, query: StatsQuery) => getTodoStats(query))
   ipcMain.handle('stats:getAppDetail', (_event, appName: string) => getAppDetail(appName))
   ipcMain.handle('apps:getIcon', (_event, path: string | null) => getAppIconDataUrl(path))
 
@@ -125,10 +134,10 @@ export function registerIpcHandlers(): void {
     deleteTask(id)
     task?.images.forEach(deleteImageIfExists)
   })
-  ipcMain.handle('todo:tasks:setCompleted', (_event, id: string, completed: boolean) => {
-    const { task, changed } = setTaskCompleted(id, completed)
+  ipcMain.handle('todo:tasks:setStatus', (_event, id: string, status: TaskStatus) => {
+    const { task, changed } = setTaskStatus(id, status)
     if (changed) {
-      if (completed) recordTaskCompleted()
+      if (status === 'finished') recordTaskCompleted()
       else recordTaskUncompleted()
     }
     return task

@@ -262,6 +262,13 @@
   font-variant-numeric: tabular-nums;
 }
 
+.todo-stats__big-number {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
 @media (max-width: 780px) {
   .stats-columns {
     grid-template-columns: 1fr;

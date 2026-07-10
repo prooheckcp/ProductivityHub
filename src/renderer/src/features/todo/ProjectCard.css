@@ -25,6 +25,14 @@
   appearance: none;
 }
 
+.project-card__image {
+  width: calc(100% + 16px);
+  height: 90px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin: -6px -8px 0;
+}
+
 .project-card__name {
   font-size: 14.5px;
   font-weight: 650;

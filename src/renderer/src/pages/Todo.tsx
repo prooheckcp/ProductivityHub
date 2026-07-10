@@ -66,6 +66,7 @@ export default function Todo(): JSX.Element {
               key={project.id}
               name={project.name}
               description={project.description}
+              imagePath={project.imagePath}
               tasks={tasksForProject(project.id)}
               onOpen={() => navigate(`/todo/${project.id}`)}
               onEdit={() => setEditingId(project.id)}

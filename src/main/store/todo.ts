@@ -1,14 +1,46 @@
 import { randomUUID } from 'crypto'
-import type { Category, CategoryFormInput, Project, ProjectFormInput, Task, TaskFormInput } from '../../shared/types'
+import type {
+  Category,
+  CategoryFormInput,
+  Project,
+  ProjectFormInput,
+  Task,
+  TaskFormInput,
+  TaskStatus
+} from '../../shared/types'
 import { dataFile } from './paths'
 import { readJsonFile, writeJsonFile } from './jsonFile'
+import { recordTaskCompleted } from './achievements'
 
 const projectsFile = (): string => dataFile('projects.json')
 const categoriesFile = (): string => dataFile('categories.json')
 const tasksFile = (): string => dataFile('tasks.json')
 
+// Older saved projects/tasks predate sprintNumber/status/etc — default them on
+// read instead of a formal migration system, since this is the only install.
+function normalizeProject(project: Project): Project {
+  return {
+    ...project,
+    imagePath: project.imagePath ?? null,
+    sprintSizeDays: project.sprintSizeDays ?? null,
+    sprintStartDate: project.sprintStartDate ?? null
+  }
+}
+
+function normalizeTask(task: Task): Task {
+  const legacy = task as Task & { completed?: boolean; completedAt?: number | null }
+  return {
+    ...task,
+    sprintNumber: task.sprintNumber ?? null,
+    linkedTimerId: task.linkedTimerId ?? null,
+    timerTargetMs: task.timerTargetMs ?? null,
+    statusChangedAt: task.statusChangedAt ?? legacy.completedAt ?? null,
+    status: task.status ?? (legacy.completed ? 'finished' : 'todo')
+  }
+}
+
 function loadProjects(): Project[] {
-  return readJsonFile<Project[]>(projectsFile(), [])
+  return readJsonFile<Project[]>(projectsFile(), []).map(normalizeProject)
 }
 function saveProjects(projects: Project[]): void {
   writeJsonFile(projectsFile(), projects)
@@ -20,7 +52,7 @@ function saveCategories(categories: Category[]): void {
   writeJsonFile(categoriesFile(), categories)
 }
 function loadTasks(): Task[] {
-  return readJsonFile<Task[]>(tasksFile(), [])
+  return readJsonFile<Task[]>(tasksFile(), []).map(normalizeTask)
 }
 function saveTasks(tasks: Task[]): void {
   writeJsonFile(tasksFile(), tasks)
@@ -44,6 +76,9 @@ export function createProject(input: ProjectFormInput): Project {
     id: randomUUID(),
     name: input.name.trim() || 'Untitled project',
     description: input.description.trim(),
+    imagePath: input.imagePath,
+    sprintSizeDays: input.sprintSizeDays,
+    sprintStartDate: input.sprintStartDate,
     createdAt: now,
     updatedAt: now
   }
@@ -58,6 +93,9 @@ export function updateProject(id: string, patch: ProjectFormInput): Project {
   const project = mustFind(projects, id, 'Project')
   project.name = patch.name.trim() || project.name
   project.description = patch.description.trim()
+  project.imagePath = patch.imagePath
+  project.sprintSizeDays = patch.sprintSizeDays
+  project.sprintStartDate = patch.sprintStartDate
   project.updatedAt = Date.now()
   saveProjects(projects)
   return project
@@ -127,13 +165,16 @@ export function createTask(categoryId: string, parentTaskId: string | null, inpu
     description: input.description,
     images: input.images,
     priority: input.priority,
+    status: 'todo',
+    statusChangedAt: null,
     deadline: input.deadline,
     estimatedMs: input.estimatedMs,
     accumulatedMs: 0,
     runningSince: null,
-    completed: false,
-    completedAt: null,
     deadlineNotifiedAt: null,
+    sprintNumber: input.sprintNumber,
+    linkedTimerId: input.linkedTimerId,
+    timerTargetMs: input.timerTargetMs,
     order,
     createdAt: now,
     updatedAt: now
@@ -152,6 +193,9 @@ export function updateTask(id: string, patch: TaskFormInput): Task {
   task.priority = patch.priority
   task.deadline = patch.deadline
   task.estimatedMs = patch.estimatedMs
+  task.sprintNumber = patch.sprintNumber
+  task.linkedTimerId = patch.linkedTimerId
+  task.timerTargetMs = patch.timerTargetMs
   task.updatedAt = Date.now()
   if (task.deadline === null) task.deadlineNotifiedAt = null
   saveTasks(tasks)
@@ -175,14 +219,16 @@ export function deleteTask(id: string): void {
   saveTasks(tasks.filter((t) => !toDelete.has(t.id)))
 }
 
-/** Returns [task, becameCompleted] so callers can drive achievement counters correctly. */
-export function setTaskCompleted(id: string, completed: boolean): { task: Task; changed: boolean } {
+/** Returns [task, becameFinished/becameUnfinished] so callers can drive achievement counters correctly. */
+export function setTaskStatus(id: string, status: TaskStatus): { task: Task; changed: boolean } {
   const tasks = loadTasks()
   const task = mustFind(tasks, id, 'Task')
-  const changed = task.completed !== completed
-  task.completed = completed
-  task.completedAt = completed ? Date.now() : null
-  if (completed && task.runningSince !== null) {
+  const wasFinished = task.status === 'finished'
+  const isFinished = status === 'finished'
+  const changed = wasFinished !== isFinished
+  task.status = status
+  task.statusChangedAt = Date.now()
+  if (isFinished && task.runningSince !== null) {
     task.accumulatedMs += Math.max(0, Date.now() - task.runningSince)
     task.runningSince = null
   }
@@ -220,6 +266,27 @@ export function markTaskDeadlineNotified(id: string): void {
   if (!task) return
   task.deadlineNotifiedAt = Date.now()
   saveTasks(tasks)
+}
+
+/** Called whenever a Timer's accumulatedMs changes — auto-finishes any task linked to it whose target was reached. */
+export function checkTimerLinkedTasks(timerId: string, accumulatedMs: number): void {
+  const tasks = loadTasks()
+  let changed = false
+  for (const task of tasks) {
+    if (
+      task.linkedTimerId === timerId &&
+      task.timerTargetMs !== null &&
+      task.status !== 'finished' &&
+      accumulatedMs >= task.timerTargetMs
+    ) {
+      task.status = 'finished'
+      task.statusChangedAt = Date.now()
+      task.updatedAt = Date.now()
+      changed = true
+      recordTaskCompleted()
+    }
+  }
+  if (changed) saveTasks(tasks)
 }
 
 export function restoreTodoData(data: { projects: Project[]; categories: Category[]; tasks: Task[] }): void {

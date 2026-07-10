@@ -1,8 +1,9 @@
-import type { StatsEntry, StatsQuery, StatsResult } from '../shared/types'
+import type { StatsEntry, StatsQuery, StatsResult, TodoStatsResult } from '../shared/types'
 import { currentAppUsage } from './appTracker'
 import { CATEGORY_AUTO_DETECT_SUPPORTED, getAppCategory } from './appCategory'
 import { listAppUsageSessions } from './store/appUsage'
 import { listTimers, listTimerSessions } from './store/timers'
+import { listCategories, listProjects, listTasks } from './store/todo'
 
 const RANGE_MS: Record<string, number | null> = {
   '1d': 24 * 60 * 60 * 1000,
@@ -138,4 +139,28 @@ export async function getStats(query: StatsQuery): Promise<StatsResult> {
     categorySupport: CATEGORY_AUTO_DETECT_SUPPORTED,
     availableCategories
   }
+}
+
+export function getTodoStats(query: StatsQuery): TodoStatsResult {
+  const now = Date.now()
+  const { start, end } = resolveRange(query, now)
+
+  const categoryToProject = new Map(listCategories().map((c) => [c.id, c.projectId]))
+  const projectNames = new Map(listProjects().map((p) => [p.id, p.name]))
+
+  const finishedInRange = listTasks().filter(
+    (task) => task.status === 'finished' && task.statusChangedAt !== null && task.statusChangedAt >= start && task.statusChangedAt <= end
+  )
+
+  const counts = new Map<string, number>()
+  for (const task of finishedInRange) {
+    const projectId = categoryToProject.get(task.categoryId) ?? 'unknown'
+    counts.set(projectId, (counts.get(projectId) ?? 0) + 1)
+  }
+
+  const byProject = Array.from(counts.entries())
+    .map(([projectId, count]) => ({ key: projectId, label: projectNames.get(projectId) ?? 'Unknown project', count }))
+    .sort((a, b) => b.count - a.count)
+
+  return { totalCompleted: finishedInRange.length, byProject }
 }

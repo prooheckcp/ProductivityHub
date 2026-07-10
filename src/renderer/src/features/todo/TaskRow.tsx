@@ -1,36 +1,27 @@
 import type { JSX } from 'react'
-import { CheckIcon } from '../../components/icons'
-import type { Task } from '@shared/types'
+import type { Task, TaskStatus } from '@shared/types'
 import { formatDeadline } from './taskDates'
 import PriorityBadge from './PriorityBadge'
+import TaskStatusControl from './TaskStatusControl'
 import './TaskRow.css'
 
 type TaskRowProps = {
   task: Task
   subtaskCount: number
   onOpen: () => void
-  onToggleCompleted: () => void
+  onChangeStatus: (status: TaskStatus) => void
 }
 
-export default function TaskRow({ task, subtaskCount, onOpen, onToggleCompleted }: TaskRowProps): JSX.Element {
-  const isOverdue = task.deadline !== null && task.deadline < Date.now() && !task.completed
+export default function TaskRow({ task, subtaskCount, onOpen, onChangeStatus }: TaskRowProps): JSX.Element {
+  const isDone = task.status === 'finished'
+  const isOverdue = task.deadline !== null && task.deadline < Date.now() && !isDone
 
   return (
     <div className="task-row">
-      <button
-        type="button"
-        className={'task-row__check' + (task.completed ? ' task-row__check--done' : '')}
-        onClick={(event) => {
-          event.stopPropagation()
-          onToggleCompleted()
-        }}
-        aria-label="Toggle completed"
-      >
-        {task.completed && <CheckIcon size={12} />}
-      </button>
+      <TaskStatusControl priority={task.priority} status={task.status} onChange={onChangeStatus} />
 
       <button type="button" className="task-row__body" onClick={onOpen}>
-        <span className={'task-row__name' + (task.completed ? ' task-row__name--done' : '')}>{task.name}</span>
+        <span className={'task-row__name' + (isDone ? ' task-row__name--done' : '')}>{task.name}</span>
         <span className="task-row__meta">
           <PriorityBadge priority={task.priority} />
           {task.deadline !== null && (

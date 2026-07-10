@@ -1,0 +1,59 @@
+.project-form__file-input {
+  display: none;
+}
+
+.project-form__image-picker {
+  align-self: flex-start;
+  width: 84px;
+  height: 84px;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border);
+  background: var(--surface-sunken);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.project-form__image-picker:hover {
+  background: var(--surface-hover);
+}
+
+.project-form__image-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.project-form__image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  text-align: center;
+  padding: 6px;
+}
+
+.project-form__section-label {
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--text-primary);
+  margin-top: 4px;
+}
+
+.project-form__hint {
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+  margin-top: -8px;
+}
+
+.project-form__sprint-row {
+  display: flex;
+  gap: 12px;
+}
+
+.project-form__sprint-row .form-field {
+  flex: 1;
+}

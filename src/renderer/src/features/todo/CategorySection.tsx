@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { JSX } from 'react'
 import { ChevronDownIcon, CloseIcon, PlusIcon } from '../../components/icons'
-import type { Category, Task } from '@shared/types'
+import type { Category, Task, TaskStatus } from '@shared/types'
 import TaskRow from './TaskRow'
 import './CategorySection.css'
 
@@ -9,7 +9,7 @@ type CategorySectionProps = {
   category: Category
   tasks: Task[]
   onOpenTask: (task: Task) => void
-  onToggleCompleted: (id: string, completed: boolean) => void
+  onChangeTaskStatus: (id: string, status: TaskStatus) => void
   onAddTask: (name: string) => Promise<void>
   onDeleteCategory: () => void
 }
@@ -18,7 +18,7 @@ export default function CategorySection({
   category,
   tasks,
   onOpenTask,
-  onToggleCompleted,
+  onChangeTaskStatus,
   onAddTask,
   onDeleteCategory
 }: CategorySectionProps): JSX.Element {
@@ -27,7 +27,7 @@ export default function CategorySection({
   const [collapsed, setCollapsed] = useState(false)
   const topLevel = tasks.filter((task) => task.parentTaskId === null)
   const allInCategory = tasks
-  const completedCount = allInCategory.filter((task) => task.completed).length
+  const completedCount = allInCategory.filter((task) => task.status === 'finished').length
   const percent = allInCategory.length === 0 ? 0 : (completedCount / allInCategory.length) * 100
 
   async function handleAdd(): Promise<void> {
@@ -67,7 +67,7 @@ export default function CategorySection({
               task={task}
               subtaskCount={tasks.filter((t) => t.parentTaskId === task.id).length}
               onOpen={() => onOpenTask(task)}
-              onToggleCompleted={() => onToggleCompleted(task.id, !task.completed)}
+              onChangeStatus={(status) => onChangeTaskStatus(task.id, status)}
             />
           ))}
 

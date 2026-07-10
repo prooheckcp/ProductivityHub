@@ -10,8 +10,8 @@
   /* Soft shadow so title/back-link text on the themed page background stays
      readable over busy animated scenes (e.g. Underwater's white text). */
   --on-bg-text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-  --text-secondary: #6b6b74;
-  --text-tertiary: #9a9aa2;
+  --text-secondary: #4b4b54;
+  --text-tertiary: #75757e;
   --accent: #6366f1;
   --accent-2: #8b5cf6;
   --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));

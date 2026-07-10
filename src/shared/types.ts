@@ -67,6 +67,19 @@ export type AppDetailQuery = {
   appName: string
 }
 
+// ---- To-Do stats (completed tasks over a range) ----
+
+export type TodoStatsEntry = {
+  key: string
+  label: string
+  count: number
+}
+
+export type TodoStatsResult = {
+  totalCompleted: number
+  byProject: TodoStatsEntry[]
+}
+
 export type AppDetailBucket = {
   key: string
   label: string
@@ -99,6 +112,9 @@ export type Project = {
   id: string
   name: string
   description: string
+  imagePath: string | null
+  sprintSizeDays: number | null
+  sprintStartDate: number | null
   createdAt: number
   updatedAt: number
 }
@@ -106,6 +122,9 @@ export type Project = {
 export type ProjectFormInput = {
   name: string
   description: string
+  imagePath: string | null
+  sprintSizeDays: number | null
+  sprintStartDate: number | null
 }
 
 export type Category = {
@@ -123,6 +142,8 @@ export type CategoryFormInput = {
 
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent'
 
+export type TaskStatus = 'todo' | 'in_progress' | 'under_review' | 'finished'
+
 export type Task = {
   id: string
   categoryId: string
@@ -131,13 +152,16 @@ export type Task = {
   description: string
   images: string[]
   priority: TaskPriority
+  status: TaskStatus
+  statusChangedAt: number | null
   deadline: number | null
   estimatedMs: number | null
   accumulatedMs: number
   runningSince: number | null
-  completed: boolean
-  completedAt: number | null
   deadlineNotifiedAt: number | null
+  sprintNumber: number | null
+  linkedTimerId: string | null
+  timerTargetMs: number | null
   order: number
   createdAt: number
   updatedAt: number
@@ -150,6 +174,9 @@ export type TaskFormInput = {
   priority: TaskPriority
   deadline: number | null
   estimatedMs: number | null
+  sprintNumber: number | null
+  linkedTimerId: string | null
+  timerTargetMs: number | null
 }
 
 // ---- Achievements ----
