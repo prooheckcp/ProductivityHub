@@ -1,8 +1,10 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import type {
+  AlarmFormInput,
   AppSettings,
   CategoryFormInput,
+  CountdownTimerFormInput,
   ProjectFormInput,
   StatsQuery,
   TaskFormInput,
@@ -66,6 +68,22 @@ const api = {
       setStatus: (id: string, status: TaskStatus) => ipcRenderer.invoke('todo:tasks:setStatus', id, status),
       start: (id: string) => ipcRenderer.invoke('todo:tasks:start', id),
       pause: (id: string) => ipcRenderer.invoke('todo:tasks:pause', id)
+    }
+  },
+  clock: {
+    alarms: {
+      list: () => ipcRenderer.invoke('clock:alarms:list'),
+      create: (input: AlarmFormInput) => ipcRenderer.invoke('clock:alarms:create', input),
+      update: (id: string, patch: AlarmFormInput) => ipcRenderer.invoke('clock:alarms:update', id, patch),
+      remove: (id: string) => ipcRenderer.invoke('clock:alarms:delete', id)
+    },
+    timers: {
+      list: () => ipcRenderer.invoke('clock:timers:list'),
+      create: (input: CountdownTimerFormInput) => ipcRenderer.invoke('clock:timers:create', input),
+      remove: (id: string) => ipcRenderer.invoke('clock:timers:delete', id),
+      start: (id: string) => ipcRenderer.invoke('clock:timers:start', id),
+      pause: (id: string) => ipcRenderer.invoke('clock:timers:pause', id),
+      restart: (id: string) => ipcRenderer.invoke('clock:timers:restart', id)
     }
   },
   data: {

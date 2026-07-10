@@ -179,6 +179,52 @@ export type TaskFormInput = {
   timerTargetMs: number | null
 }
 
+// ---- Alarms & Countdown Timers ----
+
+export type AlarmRepeat = 'once' | 'weekly'
+
+export type Alarm = {
+  id: string
+  name: string
+  hour: number
+  minute: number
+  repeat: AlarmRepeat
+  /** 0 = Sunday .. 6 = Saturday. For 'weekly', the days it repeats on. For
+   *  'once', an optional target day (empty = next occurrence of this time). */
+  daysOfWeek: number[]
+  enabled: boolean
+  lastTriggeredAt: number | null
+  createdAt: number
+  updatedAt: number
+}
+
+export type AlarmFormInput = {
+  name: string
+  hour: number
+  minute: number
+  repeat: AlarmRepeat
+  daysOfWeek: number[]
+  enabled: boolean
+}
+
+export type CountdownTimerStatus = 'idle' | 'running' | 'paused' | 'finished'
+
+export type CountdownTimer = {
+  id: string
+  name: string
+  durationMs: number
+  remainingMs: number
+  status: CountdownTimerStatus
+  endsAt: number | null
+  createdAt: number
+  updatedAt: number
+}
+
+export type CountdownTimerFormInput = {
+  name: string
+  durationMs: number
+}
+
 // ---- Achievements ----
 
 export type AchievementCategory = 'timers' | 'tasks' | 'devtools' | 'timerUsage'
@@ -241,4 +287,6 @@ export type DataBundle = {
   categories: Category[]
   tasks: Task[]
   achievements: AchievementProgress
+  alarms: Alarm[]
+  countdownTimers: CountdownTimer[]
 }

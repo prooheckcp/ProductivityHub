@@ -1,10 +1,14 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
 import type {
   AchievementProgress,
+  Alarm,
+  AlarmFormInput,
   AppDetailResult,
   AppSettings,
   Category,
   CategoryFormInput,
+  CountdownTimer,
+  CountdownTimerFormInput,
   HomeSummary,
   Project,
   ProjectFormInput,
@@ -72,6 +76,22 @@ export type Api = {
       setStatus: (id: string, status: TaskStatus) => Promise<Task>
       start: (id: string) => Promise<Task>
       pause: (id: string) => Promise<Task>
+    }
+  }
+  clock: {
+    alarms: {
+      list: () => Promise<Alarm[]>
+      create: (input: AlarmFormInput) => Promise<Alarm>
+      update: (id: string, patch: AlarmFormInput) => Promise<Alarm>
+      remove: (id: string) => Promise<void>
+    }
+    timers: {
+      list: () => Promise<CountdownTimer[]>
+      create: (input: CountdownTimerFormInput) => Promise<CountdownTimer>
+      remove: (id: string) => Promise<void>
+      start: (id: string) => Promise<CountdownTimer>
+      pause: (id: string) => Promise<CountdownTimer>
+      restart: (id: string) => Promise<CountdownTimer>
     }
   }
   data: {

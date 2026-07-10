@@ -1,9 +1,10 @@
 import type { JSX } from 'react'
-import { ChartIcon, ChecklistIcon, HomeIcon, SettingsIcon, TimerIcon, TrophyIcon } from './components/icons'
+import { AlarmIcon, AppsIcon, ChartIcon, ChecklistIcon, HomeIcon, SettingsIcon, TimerIcon, TrophyIcon } from './components/icons'
 import Home from './pages/Home'
 import TimeTracker from './pages/TimeTracker'
 import Todo from './pages/Todo'
 import ProjectDetail from './pages/ProjectDetail'
+import Clock from './pages/Clock'
 import Stats from './pages/Stats'
 import Achievements from './pages/Achievements'
 import Settings from './pages/Settings'
@@ -11,6 +12,7 @@ import Settings from './pages/Settings'
 export type NavChild = {
   path: string
   label: string
+  icon: (props: { size?: number }) => JSX.Element
 }
 
 export type NavItem = {
@@ -28,14 +30,24 @@ export const NAV_ITEMS: NavItem[] = [
   { path: '/time-tracker', label: 'Time Tracker', icon: TimerIcon, element: <TimeTracker /> },
   { path: '/todo', label: 'To-Do', icon: ChecklistIcon, element: <Todo /> },
   {
+    path: '/clock',
+    label: 'Alarms & Timers',
+    icon: AlarmIcon,
+    element: <Clock />,
+    children: [
+      { path: '/clock/alarms', label: 'Alarms', icon: AlarmIcon },
+      { path: '/clock/timers', label: 'Timers', icon: TimerIcon }
+    ]
+  },
+  {
     path: '/stats',
     label: 'Stats',
     icon: ChartIcon,
     element: <Stats />,
     children: [
-      { path: '/stats/timers', label: 'Timers' },
-      { path: '/stats/apps', label: 'Apps' },
-      { path: '/stats/todo', label: 'To-Do' }
+      { path: '/stats/timers', label: 'Timers', icon: TimerIcon },
+      { path: '/stats/apps', label: 'Apps', icon: AppsIcon },
+      { path: '/stats/todo', label: 'To-Do', icon: ChecklistIcon }
     ]
   },
   { path: '/achievements', label: 'Achievements', icon: TrophyIcon, element: <Achievements /> }
@@ -50,5 +62,6 @@ export const SECONDARY_NAV_ITEMS: NavItem[] = [
 // not shown as their own sidebar entry.
 export const EXTRA_ROUTES: { path: string; element: JSX.Element }[] = [
   { path: '/todo/:projectId', element: <ProjectDetail /> },
-  { path: '/stats/:category', element: <Stats /> }
+  { path: '/stats/:category', element: <Stats /> },
+  { path: '/clock/:view', element: <Clock /> }
 ]

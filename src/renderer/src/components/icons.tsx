@@ -351,6 +351,45 @@ export function SearchIcon({ size = 18 }: IconProps): JSX.Element {
   )
 }
 
+export function AlarmIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path
+        d="M12 4.5a6.5 6.5 0 0 1 6.5 6.5v3.2l1.5 2.8H4l1.5-2.8V11A6.5 6.5 0 0 1 12 4.5Z"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M9.5 19.5a2.5 2.5 0 0 0 5 0" strokeWidth="1.7" strokeLinecap="round" />
+      <path d="M8 3.5 5 5.5M16 3.5l3 2" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function RestartIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path
+        d="M4.5 12a7.5 7.5 0 1 1 2.4 5.5M4.5 12V7M4.5 12h5"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+export function AppsIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <rect x="4" y="4" width="7" height="7" rx="1.5" strokeWidth="1.7" />
+      <rect x="13" y="4" width="7" height="7" rx="1.5" strokeWidth="1.7" />
+      <rect x="4" y="13" width="7" height="7" rx="1.5" strokeWidth="1.7" />
+      <rect x="13" y="13" width="7" height="7" rx="1.5" strokeWidth="1.7" />
+    </svg>
+  )
+}
+
 export function ArrowLeftIcon({ size = 18 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">

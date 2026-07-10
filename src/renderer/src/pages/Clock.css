@@ -1,0 +1,14 @@
+.clock-page__list {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 18px;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.clock-page__timer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}

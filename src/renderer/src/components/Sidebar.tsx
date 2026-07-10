@@ -65,7 +65,8 @@ function NavList({ items }: { items: NavItem[] }): JSX.Element {
                       to={child.path}
                       className={({ isActive }) => 'sidebar__sublink' + (isActive ? ' sidebar__sublink--active' : '')}
                     >
-                      {child.label}
+                      <child.icon size={14} />
+                      <span>{child.label}</span>
                     </NavLink>
                   </li>
                 ))}

@@ -1,0 +1,62 @@
+import type { JSX } from 'react'
+import { PauseIcon, PlayIcon, RestartIcon } from '../../components/icons'
+import ProgressBar from '../../components/ProgressBar'
+import type { CountdownTimer } from '@shared/types'
+import { currentRemainingMs } from '@shared/timeMath'
+import { formatClock } from '../../utils/format'
+import './CountdownTimerCard.css'
+
+type CountdownTimerCardProps = {
+  timer: CountdownTimer
+  now: number
+  onPlay: () => void
+  onPause: () => void
+  onRestart: () => void
+  onDelete: () => void
+}
+
+export default function CountdownTimerCard({
+  timer,
+  now,
+  onPlay,
+  onPause,
+  onRestart,
+  onDelete
+}: CountdownTimerCardProps): JSX.Element {
+  const remaining = currentRemainingMs(timer, now)
+  const clock = formatClock(remaining)
+  const percent = timer.durationMs > 0 ? ((timer.durationMs - remaining) / timer.durationMs) * 100 : 0
+  const isRunning = timer.status === 'running'
+  const isFinished = timer.status === 'finished'
+
+  return (
+    <div className={'countdown-card' + (isFinished ? ' countdown-card--finished' : '')}>
+      <div className="countdown-card__top">
+        <p className="countdown-card__name">{timer.name}</p>
+        <button type="button" className="countdown-card__delete" onClick={onDelete} aria-label="Delete timer">
+          ×
+        </button>
+      </div>
+
+      <p className="countdown-card__clock">
+        {clock.hh}:{clock.mm}:{clock.ss}
+      </p>
+
+      <ProgressBar percent={percent} label={isFinished ? "Time's up" : undefined} />
+
+      <div className="countdown-card__controls">
+        <button type="button" className="countdown-card__btn" onClick={onRestart} aria-label="Restart timer">
+          <RestartIcon size={16} />
+        </button>
+        <button
+          type="button"
+          className="countdown-card__btn countdown-card__btn--primary"
+          onClick={isRunning ? onPause : onPlay}
+          aria-label={isRunning ? 'Pause timer' : 'Play timer'}
+        >
+          {isRunning ? <PauseIcon size={16} /> : <PlayIcon size={16} />}
+        </button>
+      </div>
+    </div>
+  )
+}

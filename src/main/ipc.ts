@@ -1,7 +1,9 @@
 import { ipcMain } from 'electron'
 import type {
+  AlarmFormInput,
   AppSettings,
   CategoryFormInput,
+  CountdownTimerFormInput,
   ProjectFormInput,
   StatsQuery,
   TaskFormInput,
@@ -16,6 +18,18 @@ import { deleteImageIfExists, saveImage } from './images'
 import { applyLoginItemSetting } from './loginItem'
 import { getStats, getTodoStats } from './stats'
 import { getAchievementProgress, recordTaskCompleted, recordTaskUncompleted, recordTimerCreated } from './store/achievements'
+import {
+  createAlarm,
+  createCountdownTimer,
+  deleteAlarm,
+  deleteCountdownTimer,
+  listAlarms,
+  listCountdownTimers,
+  pauseCountdownTimer,
+  restartCountdownTimer,
+  startCountdownTimer,
+  updateAlarm
+} from './store/clock'
 import { getSettings, updateSettings } from './store/settings'
 import {
   createCategory,
@@ -144,6 +158,20 @@ export function registerIpcHandlers(): void {
   })
   ipcMain.handle('todo:tasks:start', (_event, id: string) => startTask(id))
   ipcMain.handle('todo:tasks:pause', (_event, id: string) => pauseTask(id))
+
+  // ---- Clock: alarms ----
+  ipcMain.handle('clock:alarms:list', () => listAlarms())
+  ipcMain.handle('clock:alarms:create', (_event, input: AlarmFormInput) => createAlarm(input))
+  ipcMain.handle('clock:alarms:update', (_event, id: string, patch: AlarmFormInput) => updateAlarm(id, patch))
+  ipcMain.handle('clock:alarms:delete', (_event, id: string) => deleteAlarm(id))
+
+  // ---- Clock: countdown timers ----
+  ipcMain.handle('clock:timers:list', () => listCountdownTimers())
+  ipcMain.handle('clock:timers:create', (_event, input: CountdownTimerFormInput) => createCountdownTimer(input))
+  ipcMain.handle('clock:timers:delete', (_event, id: string) => deleteCountdownTimer(id))
+  ipcMain.handle('clock:timers:start', (_event, id: string) => startCountdownTimer(id))
+  ipcMain.handle('clock:timers:pause', (_event, id: string) => pauseCountdownTimer(id))
+  ipcMain.handle('clock:timers:restart', (_event, id: string) => restartCountdownTimer(id))
 
   // ---- Data export/import ----
   ipcMain.handle('data:export', () => exportData())
