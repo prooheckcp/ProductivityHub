@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc'
+import { registerLocalImageProtocol } from './localImageProtocol'
 import { startAppTracker, stopAppTracker } from './appTracker'
 import { startDeadlineNotifier, stopDeadlineNotifier } from './deadlineNotifier'
 import { startTimerTaskWatcher, stopTimerTaskWatcher } from './timerTaskWatcher'
@@ -103,6 +104,7 @@ app.whenReady().then(() => {
   })
 
   registerIpcHandlers()
+  registerLocalImageProtocol()
   startAppTracker()
   startDeadlineNotifier()
   startTimerTaskWatcher()
