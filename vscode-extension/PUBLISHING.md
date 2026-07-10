@@ -25,11 +25,8 @@ Marketplace, if you ever want to.
    Microsoft account.
 2. Click **Create publisher**, pick an id (this becomes the `publisher` field
    in `package.json` — lowercase, no spaces, e.g. `prooheckcp`).
-3. Open `package.json` in this folder and change:
-   ```json
-   "publisher": "your-publisher-name"
-   ```
-   to your actual publisher id.
+3. `package.json` already has `"publisher": "VascoSoares"` set — make sure
+   that matches the publisher id you created exactly (case-sensitive).
 
 ## 2. Get a Personal Access Token (PAT)
 
@@ -49,7 +46,7 @@ PAT, not your Microsoft password:
 
 ```bash
 npm install -g @vscode/vsce   # or just use `npx vsce ...` without installing globally
-vsce login your-publisher-name
+vsce login VascoSoares
 ```
 
 Paste the PAT when prompted. This only needs to be done once per machine (the

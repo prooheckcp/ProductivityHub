@@ -3,7 +3,7 @@
   "displayName": "Shiba Track — Coding Tracker",
   "description": "Tracks how long you spend actively coding, per project, file, and language, and sends it to your local Shiba Track desktop app.",
   "version": "0.1.0",
-  "publisher": "your-publisher-name",
+  "publisher": "VascoSoares",
   "engines": {
     "vscode": "^1.85.0"
   },
