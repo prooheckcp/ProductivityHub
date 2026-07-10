@@ -13,7 +13,11 @@ function NavList({ items }: { items: NavItem[] }): JSX.Element {
           <NavLink
             to={path}
             end={path === '/'}
-            className={({ isActive }) => 'sidebar__link' + (isActive ? ' sidebar__link--active' : '')}
+            className={({ isActive }) =>
+              'sidebar__link' +
+              (isActive ? ' sidebar__link--active' : '') +
+              (path === '/settings' ? ' sidebar__link--gear' : '')
+            }
           >
             <Icon size={18} />
             <span>{label}</span>

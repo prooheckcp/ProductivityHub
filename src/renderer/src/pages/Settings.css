@@ -2,6 +2,30 @@
   margin-bottom: 16px;
 }
 
+.settings__card--appearance {
+  /* Without its own stacking context, this card's position:relative alone
+     doesn't contain the mascot's z-index:-1 — it competes in the page's
+     stacking context instead, so it can render behind sibling cards below
+     once their scroll-relative overlap changes. isolation:isolate scopes
+     z-index:-1 to just this card. overflow:hidden then clips the mascot to
+     the card's rounded border so it's always fully contained. */
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.settings__appearance-art {
+  position: absolute;
+  right: -14px;
+  bottom: -60px;
+  width: 190px;
+  height: auto;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.9;
+  -webkit-mask-image: radial-gradient(120% 120% at 65% 55%, black 45%, transparent 92%);
+  mask-image: radial-gradient(120% 120% at 65% 55%, black 45%, transparent 92%);
+}
+
 .settings__section-title {
   font-size: 14.5px;
   font-weight: 650;

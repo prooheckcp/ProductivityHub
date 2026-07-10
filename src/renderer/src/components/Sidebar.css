@@ -78,3 +78,13 @@
 .sidebar__link svg {
   flex-shrink: 0;
 }
+
+.sidebar__link--gear:hover svg {
+  animation: sidebar-gear-spin 600ms linear;
+}
+
+@keyframes sidebar-gear-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

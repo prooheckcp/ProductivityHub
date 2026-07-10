@@ -8,6 +8,7 @@ import { useTheme, FONT_LABELS, FONT_STACKS } from '../theme/ThemeContext'
 import { COLOR_GRADIENTS, EFFECT_GRADIENTS } from '../theme/gradients'
 import type { FontChoice } from '@shared/types'
 import GradientPicker from '../features/settings/GradientPicker'
+import shibaArtist from '../assets/shiba-artist.png'
 import './Settings.css'
 
 const FONT_CHOICES: FontChoice[] = ['system', 'serif', 'rounded', 'mono', 'comic', 'arial']
@@ -38,7 +39,8 @@ export default function Settings(): JSX.Element {
     <>
       <PageHeader title="Settings" subtitle="Personalize the look of your workspace." />
 
-      <Card className="settings__card">
+      <Card className="settings__card settings__card--appearance">
+        <img className="settings__appearance-art" src={shibaArtist} alt="" />
         <h2 className="settings__section-title">Appearance</h2>
         <p className="settings__section-description">
           The background theme is applied directly — no dimming or dark overlay — so what you
