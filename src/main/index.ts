@@ -5,6 +5,7 @@ import { registerIpcHandlers } from './ipc'
 import { registerLocalImageProtocol } from './localImageProtocol'
 import { startAppTracker, stopAppTracker } from './appTracker'
 import { startClockWatcher, stopClockWatcher } from './clockWatcher'
+import { startCodeTracker, stopCodeTracker } from './codeTracker'
 import { startDeadlineNotifier, stopDeadlineNotifier } from './deadlineNotifier'
 import { startTimerTaskWatcher, stopTimerTaskWatcher } from './timerTaskWatcher'
 import { applyLoginItemSetting, wasLaunchedHidden } from './loginItem'
@@ -110,6 +111,7 @@ app.whenReady().then(() => {
   startDeadlineNotifier()
   startTimerTaskWatcher()
   startClockWatcher()
+  startCodeTracker()
   applyLoginItemSetting(getSettings().launchAtLogin)
   createTray(iconPath, showMainWindow)
 
@@ -127,4 +129,5 @@ app.on('before-quit', () => {
   stopDeadlineNotifier()
   stopTimerTaskWatcher()
   stopClockWatcher()
+  stopCodeTracker()
 })

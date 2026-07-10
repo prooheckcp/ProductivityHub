@@ -11,6 +11,7 @@ const DEFAULT_PROGRESS: AchievementProgress = {
   tasksCompleted: 0,
   devToolsMs: 0,
   timerUsageMs: 0,
+  codingMs: 0,
   unlocked: {}
 }
 
@@ -33,6 +34,7 @@ function countFor(progress: AchievementProgress, category: AchievementDef['categ
   if (category === 'timers') return progress.timersCreated
   if (category === 'tasks') return progress.tasksCompleted
   if (category === 'timerUsage') return progress.timerUsageMs
+  if (category === 'coding') return progress.codingMs
   return progress.devToolsMs
 }
 
@@ -88,6 +90,14 @@ export function recordTimerUsage(deltaMs: number): AchievementProgress {
   const progress = loadProgress()
   progress.timerUsageMs += deltaMs
   notifyUnlocked(unlockNewly(progress, 'timerUsage'))
+  saveProgress(progress)
+  return progress
+}
+
+export function recordCodingUsage(deltaMs: number): AchievementProgress {
+  const progress = loadProgress()
+  progress.codingMs += deltaMs
+  notifyUnlocked(unlockNewly(progress, 'coding'))
   saveProgress(progress)
   return progress
 }

@@ -117,6 +117,55 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
     threshold: 500 * HOUR_MS,
     title: 'One With The Machine',
     description: 'Spend 500 hours in developer tools.'
+  },
+  {
+    id: 'coding-10m',
+    category: 'coding',
+    threshold: 10 * MIN_MS,
+    title: 'First Commit',
+    description: 'Spend 10 minutes actively typing code, tracked from your editor.'
+  },
+  {
+    id: 'coding-1h',
+    category: 'coding',
+    threshold: HOUR_MS,
+    title: 'Syntax Error',
+    description: 'Spend 1 hour actively coding.'
+  },
+  {
+    id: 'coding-10h',
+    category: 'coding',
+    threshold: 10 * HOUR_MS,
+    title: 'Ships It',
+    description: 'Spend 10 hours actively coding.'
+  },
+  {
+    id: 'coding-50h',
+    category: 'coding',
+    threshold: 50 * HOUR_MS,
+    title: 'Refactor King',
+    description: 'Spend 50 hours actively coding.'
+  },
+  {
+    id: 'coding-100h',
+    category: 'coding',
+    threshold: 100 * HOUR_MS,
+    title: 'Senior Engineer',
+    description: 'Spend 100 hours actively coding.'
+  },
+  {
+    id: 'coding-500h',
+    category: 'coding',
+    threshold: 500 * HOUR_MS,
+    title: 'Code Whisperer',
+    description: 'Spend 500 hours actively coding.'
+  },
+  {
+    id: 'coding-1000h',
+    category: 'coding',
+    threshold: 1000 * HOUR_MS,
+    title: '10x Engineer',
+    description: 'Spend 1000 hours actively coding.'
   }
 ]
 
@@ -124,6 +173,7 @@ function currentFor(progress: AchievementProgress, category: AchievementDef['cat
   if (category === 'timers') return progress.timersCreated
   if (category === 'tasks') return progress.tasksCompleted
   if (category === 'timerUsage') return progress.timerUsageMs
+  if (category === 'coding') return progress.codingMs
   return progress.devToolsMs
 }
 

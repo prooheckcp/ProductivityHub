@@ -28,6 +28,38 @@ export type AppUsageSession = {
   durationMs: number
 }
 
+// ---- Coding activity (VS Code extension) ----
+
+export type CodingSession = {
+  id: string
+  filePath: string
+  fileName: string
+  projectName: string | null
+  language: string
+  startedAt: number
+  endedAt: number
+  durationMs: number
+}
+
+export type CodeStatsEntry = {
+  key: string
+  label: string
+  ms: number
+}
+
+export type CodeStatsResult = {
+  totalMs: number
+  byLanguage: CodeStatsEntry[]
+  byProject: CodeStatsEntry[]
+  byFile: CodeStatsEntry[]
+}
+
+export type CodeTrackerStatus = {
+  port: number
+  current: { fileName: string; language: string; startedAt: number } | null
+  lastHeartbeatAt: number | null
+}
+
 export type TimerFormInput = {
   name: string
   description: string
@@ -227,7 +259,7 @@ export type CountdownTimerFormInput = {
 
 // ---- Achievements ----
 
-export type AchievementCategory = 'timers' | 'tasks' | 'devtools' | 'timerUsage'
+export type AchievementCategory = 'timers' | 'tasks' | 'devtools' | 'timerUsage' | 'coding'
 
 export type AchievementDef = {
   id: string
@@ -242,6 +274,7 @@ export type AchievementProgress = {
   tasksCompleted: number
   devToolsMs: number
   timerUsageMs: number
+  codingMs: number
   unlocked: Record<string, number>
 }
 
@@ -289,4 +322,5 @@ export type DataBundle = {
   achievements: AchievementProgress
   alarms: Alarm[]
   countdownTimers: CountdownTimer[]
+  codingSessions: CodingSession[]
 }

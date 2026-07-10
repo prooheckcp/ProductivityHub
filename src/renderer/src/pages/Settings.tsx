@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { JSX } from 'react'
 import PageHeader from '../components/PageHeader'
 import Card from '../components/Card'
@@ -6,18 +6,38 @@ import Button from '../components/Button'
 import ConfirmDialog from '../components/ConfirmDialog'
 import { useTheme, FONT_LABELS, FONT_STACKS } from '../theme/ThemeContext'
 import { COLOR_GRADIENTS, EFFECT_GRADIENTS } from '../theme/gradients'
-import type { FontChoice } from '@shared/types'
+import type { CodeTrackerStatus, FontChoice } from '@shared/types'
 import GradientPicker from '../features/settings/GradientPicker'
 import shibaArtist from '../assets/shiba-artist.png'
 import './Settings.css'
 
 const FONT_CHOICES: FontChoice[] = ['system', 'serif', 'rounded', 'mono', 'comic', 'arial']
+const STATUS_POLL_MS = 4000
+// If no heartbeat has arrived in this long, treat the extension as "not
+// connected" rather than just "idle" — matches the tracker's own idle window.
+const CONNECTED_WINDOW_MS = 5 * 60 * 1000
 
 export default function Settings(): JSX.Element {
   const { settings, setBackgroundGradient, setFont, setTextColor, setLaunchAtLogin } = useTheme()
   const [exportStatus, setExportStatus] = useState<string | null>(null)
   const [confirmingImport, setConfirmingImport] = useState(false)
   const [importing, setImporting] = useState(false)
+  const [codeStatus, setCodeStatus] = useState<CodeTrackerStatus | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    function poll(): void {
+      window.api.code.getStatus().then((status) => {
+        if (!cancelled) setCodeStatus(status)
+      })
+    }
+    poll()
+    const interval = setInterval(poll, STATUS_POLL_MS)
+    return () => {
+      cancelled = true
+      clearInterval(interval)
+    }
+  }, [])
 
   async function handleExport(): Promise<void> {
     const result = await window.api.data.export()
@@ -113,6 +133,36 @@ export default function Settings(): JSX.Element {
             <span className="settings__toggle-knob" />
           </span>
         </button>
+      </Card>
+
+      <Card className="settings__card">
+        <h2 className="settings__section-title">Coding tracker</h2>
+        <p className="settings__section-description">
+          Install the Shiba Track VS Code extension to track how long you spend coding, per project,
+          file, and language — see it under Stats → Code. It only counts time you're actively typing.
+        </p>
+        {codeStatus && (
+          <div
+            className={
+              'settings__toggle-row' +
+              (codeStatus.lastHeartbeatAt !== null && Date.now() - codeStatus.lastHeartbeatAt < CONNECTED_WINDOW_MS
+                ? ' settings__toggle-row--on'
+                : '')
+            }
+            style={{ cursor: 'default' }}
+          >
+            <span className="settings__toggle-label">
+              {codeStatus.lastHeartbeatAt === null
+                ? `Listening on port ${codeStatus.port} — no connection from the extension yet`
+                : Date.now() - codeStatus.lastHeartbeatAt < CONNECTED_WINDOW_MS
+                  ? `Connected — currently tracking ${codeStatus.current?.fileName ?? 'idle'}`
+                  : `Listening on port ${codeStatus.port} — last seen ${new Date(codeStatus.lastHeartbeatAt).toLocaleTimeString()}`}
+            </span>
+            <span className="settings__toggle-switch">
+              <span className="settings__toggle-knob" />
+            </span>
+          </div>
+        )}
       </Card>
 
       <Card className="settings__card">

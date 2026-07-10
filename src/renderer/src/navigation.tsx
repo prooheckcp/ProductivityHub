@@ -1,5 +1,15 @@
 import type { JSX } from 'react'
-import { AlarmIcon, AppsIcon, ChartIcon, ChecklistIcon, HomeIcon, SettingsIcon, TimerIcon, TrophyIcon } from './components/icons'
+import {
+  AlarmIcon,
+  AppsIcon,
+  ChartIcon,
+  ChecklistIcon,
+  CodeIcon,
+  HomeIcon,
+  SettingsIcon,
+  TimerIcon,
+  TrophyIcon
+} from './components/icons'
 import Home from './pages/Home'
 import TimeTracker from './pages/TimeTracker'
 import Todo from './pages/Todo'
@@ -47,7 +57,8 @@ export const NAV_ITEMS: NavItem[] = [
     children: [
       { path: '/stats/timers', label: 'Timers', icon: TimerIcon },
       { path: '/stats/apps', label: 'Apps', icon: AppsIcon },
-      { path: '/stats/todo', label: 'To-Do', icon: ChecklistIcon }
+      { path: '/stats/todo', label: 'To-Do', icon: ChecklistIcon },
+      { path: '/stats/code', label: 'Code', icon: CodeIcon }
     ]
   },
   { path: '/achievements', label: 'Achievements', icon: TrophyIcon, element: <Achievements /> }

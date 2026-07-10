@@ -1,7 +1,9 @@
-import type { StatsEntry, StatsQuery, StatsResult, TodoStatsResult } from '../shared/types'
+import type { CodeStatsEntry, CodeStatsResult, StatsEntry, StatsQuery, StatsResult, TodoStatsResult } from '../shared/types'
 import { currentAppUsage } from './appTracker'
 import { CATEGORY_AUTO_DETECT_SUPPORTED, getAppCategory } from './appCategory'
+import { currentCodingSession } from './codeTracker'
 import { listAppUsageSessions } from './store/appUsage'
+import { listCodingSessions } from './store/codeSessions'
 import { listTimers, listTimerSessions } from './store/timers'
 import { listCategories, listProjects, listTasks } from './store/todo'
 
@@ -163,4 +165,61 @@ export function getTodoStats(query: StatsQuery): TodoStatsResult {
     .sort((a, b) => b.count - a.count)
 
   return { totalCompleted: finishedInRange.length, byProject }
+}
+
+type CodeInterval = { startedAt: number; endedAt: number; language: string; projectName: string | null; filePath: string; fileName: string }
+
+function sumCodeByKey(
+  intervals: CodeInterval[],
+  rangeStart: number,
+  rangeEnd: number,
+  keyOf: (i: CodeInterval) => string,
+  labelOf: (i: CodeInterval) => string
+): CodeStatsEntry[] {
+  const totals = new Map<string, { label: string; ms: number }>()
+  for (const interval of intervals) {
+    const clampedStart = Math.max(interval.startedAt, rangeStart)
+    const clampedEnd = Math.min(interval.endedAt, rangeEnd)
+    const ms = Math.max(0, clampedEnd - clampedStart)
+    if (ms <= 0) continue
+    const key = keyOf(interval)
+    const existing = totals.get(key)
+    if (existing) existing.ms += ms
+    else totals.set(key, { label: labelOf(interval), ms })
+  }
+  return Array.from(totals.entries())
+    .map(([key, v]) => ({ key, label: v.label, ms: v.ms }))
+    .sort((a, b) => b.ms - a.ms)
+}
+
+export function getCodeStats(query: StatsQuery): CodeStatsResult {
+  const now = Date.now()
+  const { start, end } = resolveRange(query, now)
+
+  const intervals: CodeInterval[] = listCodingSessions().map((session) => ({
+    startedAt: session.startedAt,
+    endedAt: session.endedAt,
+    language: session.language,
+    projectName: session.projectName,
+    filePath: session.filePath,
+    fileName: session.fileName
+  }))
+  const live = currentCodingSession()
+  if (live) {
+    intervals.push({
+      startedAt: live.startedAt,
+      endedAt: now,
+      language: live.language,
+      projectName: live.projectName,
+      filePath: live.filePath,
+      fileName: live.fileName
+    })
+  }
+
+  const byLanguage = sumCodeByKey(intervals, start, end, (i) => i.language, (i) => i.language)
+  const byProject = sumCodeByKey(intervals, start, end, (i) => i.projectName ?? 'No project', (i) => i.projectName ?? 'No project')
+  const byFile = sumCodeByKey(intervals, start, end, (i) => i.filePath, (i) => i.fileName)
+  const totalMs = byLanguage.reduce((sum, entry) => sum + entry.ms, 0)
+
+  return { totalMs, byLanguage, byProject, byFile: byFile.slice(0, 20) }
 }

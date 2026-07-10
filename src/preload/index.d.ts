@@ -7,6 +7,8 @@ import type {
   AppSettings,
   Category,
   CategoryFormInput,
+  CodeStatsResult,
+  CodeTrackerStatus,
   CountdownTimer,
   CountdownTimerFormInput,
   HomeSummary,
@@ -40,7 +42,11 @@ export type Api = {
   stats: {
     get: (query: StatsQuery) => Promise<StatsResult>
     getTodo: (query: StatsQuery) => Promise<TodoStatsResult>
+    getCode: (query: StatsQuery) => Promise<CodeStatsResult>
     getAppDetail: (appName: string) => Promise<AppDetailResult>
+  }
+  code: {
+    getStatus: () => Promise<CodeTrackerStatus>
   }
   apps: {
     getIcon: (path: string | null) => Promise<string | null>

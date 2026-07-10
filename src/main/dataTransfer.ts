@@ -4,6 +4,7 @@ import type { DataBundle } from '../shared/types'
 import { getAchievementProgress, restoreAchievementProgress } from './store/achievements'
 import { listAppUsageSessions, restoreAppUsageSessions } from './store/appUsage'
 import { listAlarms, listCountdownTimers, restoreAlarms, restoreCountdownTimers } from './store/clock'
+import { listCodingSessions, restoreCodingSessions } from './store/codeSessions'
 import { getSettings, setSettings } from './store/settings'
 import { listCategories, listProjects, listTasks, restoreTodoData } from './store/todo'
 import { listTimers, listTimerSessions, restoreTimersData } from './store/timers'
@@ -20,7 +21,8 @@ function buildBundle(): DataBundle {
     tasks: listTasks(),
     achievements: getAchievementProgress(),
     alarms: listAlarms(),
-    countdownTimers: listCountdownTimers()
+    countdownTimers: listCountdownTimers(),
+    codingSessions: listCodingSessions()
   }
 }
 
@@ -58,6 +60,7 @@ export async function importData(): Promise<{ canceled: boolean }> {
   if (bundle.achievements) restoreAchievementProgress(bundle.achievements)
   if (bundle.alarms) restoreAlarms(bundle.alarms)
   if (bundle.countdownTimers) restoreCountdownTimers(bundle.countdownTimers)
+  if (bundle.codingSessions) restoreCodingSessions(bundle.codingSessions)
 
   return { canceled: false }
 }

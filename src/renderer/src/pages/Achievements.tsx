@@ -14,10 +14,11 @@ const SECTIONS: { key: AchievementCategory; title: string }[] = [
   { key: 'timers', title: 'Timers' },
   { key: 'timerUsage', title: 'Timer Usage' },
   { key: 'tasks', title: 'Tasks' },
-  { key: 'devtools', title: 'Developer Tools' }
+  { key: 'devtools', title: 'Developer Tools' },
+  { key: 'coding', title: 'Coding' }
 ]
 
-const DURATION_CATEGORIES: AchievementCategory[] = ['devtools', 'timerUsage']
+const DURATION_CATEGORIES: AchievementCategory[] = ['devtools', 'timerUsage', 'coding']
 
 function rewardFor(achievementId: string): string | null {
   return GRADIENTS.find((g) => g.unlockedBy === achievementId)?.name ?? null

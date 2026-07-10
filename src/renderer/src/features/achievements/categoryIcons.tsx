@@ -6,5 +6,6 @@ export const ACHIEVEMENT_CATEGORY_ICONS: Record<AchievementCategory, (props: { s
   timers: TimerIcon,
   timerUsage: ChartIcon,
   tasks: ChecklistIcon,
-  devtools: CodeIcon
+  devtools: CodeIcon,
+  coding: CodeIcon
 }

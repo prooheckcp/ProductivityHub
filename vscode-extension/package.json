@@ -1,0 +1,45 @@
+{
+  "name": "shiba-track-coding-tracker",
+  "displayName": "Shiba Track — Coding Tracker",
+  "description": "Tracks how long you spend actively coding, per project, file, and language, and sends it to your local Shiba Track desktop app.",
+  "version": "0.1.0",
+  "publisher": "your-publisher-name",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "keywords": ["time tracking", "productivity", "wakatime", "metrics", "shiba track"],
+  "icon": "icon.png",
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Shiba Track",
+      "properties": {
+        "shibaTrack.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Send coding-time heartbeats to the Shiba Track app."
+        },
+        "shibaTrack.port": {
+          "type": "number",
+          "default": 51820,
+          "description": "Local port the Shiba Track desktop app listens on. Only change this if you've changed it in the app too."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -w -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^2.24.0",
+    "typescript": "^5.4.0"
+  },
+  "license": "ISC"
+}
