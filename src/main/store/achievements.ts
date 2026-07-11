@@ -2,6 +2,7 @@ import { Notification } from 'electron'
 import { is } from '@electron-toolkit/utils'
 import { ACHIEVEMENT_DEFS } from '../../shared/achievements'
 import type { AchievementDef, AchievementProgress } from '../../shared/types'
+import { broadcast } from '../broadcast'
 import { dataFile } from './paths'
 import { readJsonFile, writeJsonFile } from './jsonFile'
 
@@ -37,6 +38,10 @@ function saveProgress(progress: AchievementProgress): void {
 }
 
 function notifyUnlocked(defs: AchievementDef[]): void {
+  if (defs.length === 0) return
+  // In-app animated popup (renderer listens on this channel).
+  broadcast('achievements:unlocked', defs)
+  // OS notification (kept alongside the in-app popup, per product decision).
   if (!Notification.isSupported()) return
   for (const def of defs) {
     new Notification({ title: 'Achievement unlocked', body: def.title }).show()

@@ -1,7 +1,171 @@
 .note-list {
   display: flex;
   flex-direction: column;
+  gap: 4px;
+}
+
+.note-list__search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  margin-bottom: 4px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  color: var(--text-tertiary);
+}
+
+.note-list__search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--text-primary);
+}
+
+.note-list__search input:focus {
+  outline: none;
+}
+
+.note-list__search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  background: transparent;
+}
+
+.note-list__search-clear:hover {
+  color: var(--text-primary);
+}
+
+.note-list__section {
+  display: flex;
+  flex-direction: column;
   gap: 2px;
+  min-height: 4px;
+}
+
+.note-list__group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.note-list__group-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-tertiary);
+  border-radius: 6px;
+}
+
+.note-list__group-header--ungrouped {
+  margin-top: 10px;
+}
+
+.note-list__group-header--drop {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+}
+
+.note-list__group-name {
+  flex: 1;
+  cursor: text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.note-list__chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--text-tertiary);
+  background: transparent;
+  transition: transform 140ms ease;
+  transform: rotate(-90deg);
+}
+
+.note-list__chevron--open {
+  transform: rotate(0deg);
+}
+
+.note-list__row-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.note-list__group-header:hover .note-list__row-action,
+.note-list__item:hover .note-list__row-action {
+  opacity: 1;
+}
+
+.note-list__row-action:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.note-list__dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.note-list__group-rename {
+  flex: 1;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 2px 5px;
+  font: inherit;
+  font-size: 11px;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--text-primary);
+  background: var(--surface);
+}
+
+.note-list__group-rename:focus {
+  outline: none;
+}
+
+.note-list__group-delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  background: transparent;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+
+.note-list__group-header:hover .note-list__group-delete {
+  opacity: 1;
+}
+
+.note-list__group-delete:hover {
+  color: var(--danger);
 }
 
 .note-list__item {
@@ -13,6 +177,7 @@
   border-radius: var(--radius-sm);
   text-align: left;
   background: transparent;
+  cursor: pointer;
 }
 
 .note-list__item:hover {
@@ -22,6 +187,10 @@
 .note-list__item--active {
   background: var(--surface-sunken);
   box-shadow: inset 0 0 0 1px var(--border);
+}
+
+.note-list__item--drop {
+  box-shadow: inset 0 2px 0 0 var(--accent);
 }
 
 .note-list__item-text {
@@ -60,4 +229,94 @@
 .note-list__item-delete:hover {
   background: var(--surface-hover);
   color: var(--text-primary);
+}
+
+/* ---- File rows ---- */
+
+.note-list__note-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.note-list__file {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: transparent;
+}
+
+.note-list__file:hover {
+  background: var(--surface-hover);
+}
+
+.note-list__file--nested {
+  margin-left: 18px;
+}
+
+.note-list__file-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.note-list__file-name {
+  flex: 1;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.note-list__file:hover .note-list__file-name {
+  color: var(--text-primary);
+}
+
+.note-list__new-group,
+.note-list__new-group-input {
+  margin-top: 8px;
+  width: 100%;
+}
+
+.note-list__new-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border: 1px dashed var(--border);
+  background: transparent;
+}
+
+.note-list__new-group:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.note-list__new-group-input {
+  padding: 7px 10px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--text-primary);
+  background: var(--surface);
+}
+
+.note-list__new-group-input:focus {
+  outline: none;
+}
+
+.note-list__empty {
+  padding: 8px;
+  font-size: 12px;
+  color: var(--text-tertiary);
 }

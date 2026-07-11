@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { JSX } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { ChevronDownIcon } from './icons'
+import { ChevronDownIcon, SidebarIcon } from './icons'
 import { NAV_ITEMS, SECONDARY_NAV_ITEMS, type NavItem } from '../navigation'
 import logo from '../assets/logo.png'
 import logoText from '../assets/logo-text.png'
@@ -79,13 +79,18 @@ function NavList({ items }: { items: NavItem[] }): JSX.Element {
   )
 }
 
-export default function Sidebar(): JSX.Element {
+export default function Sidebar({ onCollapse }: { onCollapse: () => void }): JSX.Element {
   return (
     <nav className="sidebar">
-      <Link to="/" className="sidebar__brand">
-        <img className="sidebar__brand-mark" src={logo} alt="" />
-        <img className="sidebar__brand-name" src={logoText} alt="Shiba Tracker" />
-      </Link>
+      <div className="sidebar__top">
+        <Link to="/" className="sidebar__brand">
+          <img className="sidebar__brand-mark" src={logo} alt="" />
+          <img className="sidebar__brand-name" src={logoText} alt="Shiba Tracker" />
+        </Link>
+        <button type="button" className="sidebar__collapse" onClick={onCollapse} aria-label="Hide sidebar" title="Hide sidebar">
+          <SidebarIcon size={16} />
+        </button>
+      </div>
 
       <NavList items={NAV_ITEMS} />
 

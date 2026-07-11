@@ -15,12 +15,38 @@
   -webkit-app-region: drag;
 }
 
+.sidebar__top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px 24px 10px;
+}
+
 .sidebar__brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 4px 10px 24px;
+  flex: 1;
+  min-width: 0;
   -webkit-app-region: no-drag;
+}
+
+.sidebar__collapse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 7px;
+  color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+  -webkit-app-region: no-drag;
+}
+
+.sidebar__collapse:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
 }
 
 .sidebar__brand-mark {

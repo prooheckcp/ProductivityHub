@@ -1,11 +1,15 @@
 import { contextBridge, ipcRenderer } from 'electron'
+import type { IpcRendererEvent } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import type {
+  AchievementDef,
   AlarmFormInput,
   AppSettings,
   CategoryFormInput,
   CountdownTimerFormInput,
+  NoteFileFormInput,
   NoteFormInput,
+  NoteGroupFormInput,
   ProjectFormInput,
   StatsQuery,
   TaskFormInput,
@@ -51,7 +55,12 @@ const api = {
     update: (patch: Partial<AppSettings>) => ipcRenderer.invoke('settings:update', patch)
   },
   achievements: {
-    get: () => ipcRenderer.invoke('achievements:get')
+    get: () => ipcRenderer.invoke('achievements:get'),
+    onUnlocked: (callback: (defs: AchievementDef[]) => void) => {
+      const listener = (_event: IpcRendererEvent, defs: AchievementDef[]): void => callback(defs)
+      ipcRenderer.on('achievements:unlocked', listener)
+      return () => ipcRenderer.removeListener('achievements:unlocked', listener)
+    }
   },
   home: {
     getSummary: () => ipcRenderer.invoke('home:getSummary')
@@ -105,7 +114,24 @@ const api = {
     list: () => ipcRenderer.invoke('notes:list'),
     create: (input: NoteFormInput) => ipcRenderer.invoke('notes:create', input),
     update: (id: string, patch: NoteFormInput) => ipcRenderer.invoke('notes:update', id, patch),
-    remove: (id: string) => ipcRenderer.invoke('notes:delete', id)
+    remove: (id: string) => ipcRenderer.invoke('notes:delete', id),
+    move: (id: string, groupId: string | null, order: number) =>
+      ipcRenderer.invoke('notes:move', id, groupId, order),
+    groups: {
+      list: () => ipcRenderer.invoke('notes:groups:list'),
+      create: (input: NoteGroupFormInput) => ipcRenderer.invoke('notes:groups:create', input),
+      update: (id: string, patch: NoteGroupFormInput) => ipcRenderer.invoke('notes:groups:update', id, patch),
+      remove: (id: string) => ipcRenderer.invoke('notes:groups:delete', id)
+    },
+    files: {
+      list: () => ipcRenderer.invoke('notes:files:list'),
+      create: (input: NoteFileFormInput) => ipcRenderer.invoke('notes:files:create', input),
+      update: (id: string, patch: { name: string }) => ipcRenderer.invoke('notes:files:update', id, patch),
+      remove: (id: string) => ipcRenderer.invoke('notes:files:delete', id),
+      move: (id: string, target: { groupId: string | null; parentNoteId: string | null }, order: number) =>
+        ipcRenderer.invoke('notes:files:move', id, target, order),
+      detach: (id: string) => ipcRenderer.invoke('notes:files:detach', id)
+    }
   }
 }
 

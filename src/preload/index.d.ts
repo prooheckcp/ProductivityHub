@@ -1,5 +1,6 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
 import type {
+  AchievementDef,
   AchievementProgress,
   Alarm,
   AlarmFormInput,
@@ -13,7 +14,11 @@ import type {
   CountdownTimerFormInput,
   HomeSummary,
   Note,
+  NoteFile,
+  NoteFileFormInput,
   NoteFormInput,
+  NoteGroup,
+  NoteGroupFormInput,
   Project,
   ProjectFormInput,
   StatsQuery,
@@ -65,6 +70,7 @@ export type Api = {
   }
   achievements: {
     get: () => Promise<AchievementProgress>
+    onUnlocked: (callback: (defs: AchievementDef[]) => void) => () => void
   }
   home: {
     getSummary: () => Promise<HomeSummary>
@@ -117,6 +123,25 @@ export type Api = {
     create: (input: NoteFormInput) => Promise<Note>
     update: (id: string, patch: NoteFormInput) => Promise<Note>
     remove: (id: string) => Promise<void>
+    move: (id: string, groupId: string | null, order: number) => Promise<Note[]>
+    groups: {
+      list: () => Promise<NoteGroup[]>
+      create: (input: NoteGroupFormInput) => Promise<NoteGroup>
+      update: (id: string, patch: NoteGroupFormInput) => Promise<NoteGroup>
+      remove: (id: string) => Promise<void>
+    }
+    files: {
+      list: () => Promise<NoteFile[]>
+      create: (input: NoteFileFormInput) => Promise<NoteFile>
+      update: (id: string, patch: { name: string }) => Promise<NoteFile>
+      remove: (id: string) => Promise<void>
+      move: (
+        id: string,
+        target: { groupId: string | null; parentNoteId: string | null },
+        order: number
+      ) => Promise<NoteFile[]>
+      detach: (id: string) => Promise<void>
+    }
   }
 }
 

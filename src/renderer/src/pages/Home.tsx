@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import Card from '../components/Card'
 import EmptyState from '../components/EmptyState'
-import { CheckIcon } from '../components/icons'
+import { CheckIcon, NoteIcon } from '../components/icons'
 import type { HomeSummary } from '@shared/types'
 import { formatDuration } from '../utils/format'
 import { toFileUrl } from '../utils/fileUrl'
@@ -26,7 +26,8 @@ export default function Home(): JSX.Element {
     return () => clearInterval(interval)
   }, [])
 
-  const hasQuickLinks = summary && (summary.recentTimers.length > 0 || summary.recentProject)
+  const hasQuickLinks =
+    summary && (summary.recentTimers.length > 0 || summary.recentProject || summary.recentNotes.length > 0)
 
   return (
     <>
@@ -86,6 +87,23 @@ export default function Home(): JSX.Element {
               </span>
             </button>
           )}
+
+          {summary?.recentNotes.map((note) => (
+            <button
+              key={note.id}
+              type="button"
+              className="home__quick-link"
+              onClick={() => navigate('/notes', { state: { openNoteId: note.id } })}
+            >
+              <span className="home__quick-link-thumb">
+                <NoteIcon size={18} />
+              </span>
+              <span>
+                <span className="home__quick-link-title">{note.title || 'Untitled note'}</span>
+                <span className="home__quick-link-subtitle">Recent note</span>
+              </span>
+            </button>
+          ))}
         </div>
       ) : (
         <EmptyState

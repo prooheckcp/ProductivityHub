@@ -1,60 +1,128 @@
 import { useEffect, useRef, useState } from 'react'
-import type { ChangeEvent, JSX } from 'react'
-import type { Note, NoteFormInput, NotePdf } from '@shared/types'
+import type { ChangeEvent, DragEvent, JSX } from 'react'
+import type { Note, NoteBlock, NoteFile, NoteFormInput } from '@shared/types'
 import Button from '../../components/Button'
-import { CloseIcon, FileIcon, PlusIcon } from '../../components/icons'
-import NoteBody from './NoteBody'
+import { CloseIcon, DrawIcon, FileIcon, ImageIcon, NoteIcon, PaletteIcon, TableIcon } from '../../components/icons'
+import NoteBlockView from './NoteBlockView'
 import './NoteEditor.css'
 
-function extractImagePaths(content: string): string[] {
-  const matches = content.matchAll(/!\[[^\]]*\]\(([^)]+)\)/g)
-  return [...new Set([...matches].map((m) => m[1]))]
+function newTableBlock(): NoteBlock {
+  return { id: crypto.randomUUID(), type: 'table', rows: [['Column 1', 'Column 2'], ['', '']] }
 }
+
+// Light pastel tints that read well as a note background across themes; null = default surface.
+const NOTE_COLORS: (string | null)[] = [null, '#fde7e9', '#fff4d6', '#e6f7ec', '#e5efff', '#f0e9ff']
 
 type NoteEditorProps = {
   note: Note
   onUpdate: (id: string, patch: NoteFormInput) => Promise<Note>
   onRequestDelete: () => void
+  /** Look up a sidebar file when one is dragged into the note body. */
+  resolveFile: (id: string) => NoteFile | undefined
+  /** Remove a sidebar file's tree record after it becomes a block here. */
+  onDetachFile: (id: string) => Promise<void> | void
 }
 
-export default function NoteEditor({ note, onUpdate, onRequestDelete }: NoteEditorProps): JSX.Element {
+export default function NoteEditor({
+  note,
+  onUpdate,
+  onRequestDelete,
+  resolveFile,
+  onDetachFile
+}: NoteEditorProps): JSX.Element {
   const [title, setTitle] = useState(note.title)
-  const [content, setContent] = useState(note.content)
-  const [pdfs, setPdfs] = useState<NotePdf[]>(note.pdfs)
+  const [color, setColor] = useState<string | null>(note.color)
+  const [blocks, setBlocks] = useState<NoteBlock[]>(note.blocks)
+  const [dragOver, setDragOver] = useState(false)
+  const [colorOpen, setColorOpen] = useState(false)
+  const imageInputRef = useRef<HTMLInputElement>(null)
   const pdfInputRef = useRef<HTMLInputElement>(null)
 
-  const latestRef = useRef({ title, content, pdfs })
-  latestRef.current = { title, content, pdfs }
+  // Autosave: keep the latest values in a ref so the debounce + unmount-flush
+  // always persist what's on screen (same pattern the first version used).
+  const latestRef = useRef({ title, color, blocks })
+  latestRef.current = { title, color, blocks }
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      const { title, content, pdfs } = latestRef.current
-      void onUpdate(note.id, { title, content, images: extractImagePaths(content), pdfs })
+      const { title, color, blocks } = latestRef.current
+      void onUpdate(note.id, { title, color, groupId: note.groupId, blocks })
     }, 600)
     return () => clearTimeout(timeout)
-  }, [title, content, pdfs, note.id, onUpdate])
+  }, [title, color, blocks, note.id, note.groupId, onUpdate])
 
   useEffect(() => {
     return () => {
-      const { title, content, pdfs } = latestRef.current
-      void onUpdate(note.id, { title, content, images: extractImagePaths(content), pdfs })
+      const { title, color, blocks } = latestRef.current
+      void onUpdate(note.id, { title, color, groupId: note.groupId, blocks })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  async function handlePdfInputChange(event: ChangeEvent<HTMLInputElement>): Promise<void> {
-    const files = Array.from(event.target.files ?? [])
-    event.target.value = ''
+  function replaceBlock(id: string, next: NoteBlock[]): void {
+    setBlocks((prev) => prev.flatMap((b) => (b.id === id ? next : [b])))
+  }
+
+  function appendBlock(block: NoteBlock): void {
+    setBlocks((prev) => [...prev, block])
+  }
+
+  async function handleImageFiles(files: File[]): Promise<void> {
     for (const file of files) {
       const buffer = await file.arrayBuffer()
-      const path = await window.api.attachments.save(file.name, new Uint8Array(buffer))
-      setPdfs((prev) => [...prev, { id: crypto.randomUUID(), name: file.name, path }])
+      const path = await window.api.images.save(file.name, new Uint8Array(buffer))
+      appendBlock({ id: crypto.randomUUID(), type: 'image', path })
     }
   }
 
-  function handleRemovePdf(pdf: NotePdf): void {
-    window.api.attachments.delete(pdf.path).catch(() => {})
-    setPdfs((prev) => prev.filter((p) => p.id !== pdf.id))
+  async function handlePdfFiles(files: File[]): Promise<void> {
+    for (const file of files) {
+      const buffer = await file.arrayBuffer()
+      const path = await window.api.attachments.save(file.name, new Uint8Array(buffer))
+      appendBlock({ id: crypto.randomUUID(), type: 'pdf', name: file.name, path })
+    }
+  }
+
+  async function onImageInput(event: ChangeEvent<HTMLInputElement>): Promise<void> {
+    const files = Array.from(event.target.files ?? [])
+    event.target.value = ''
+    await handleImageFiles(files)
+  }
+
+  async function onPdfInput(event: ChangeEvent<HTMLInputElement>): Promise<void> {
+    const files = Array.from(event.target.files ?? [])
+    event.target.value = ''
+    await handlePdfFiles(files)
+  }
+
+  async function onDrop(event: DragEvent<HTMLDivElement>): Promise<void> {
+    event.preventDefault()
+    setDragOver(false)
+
+    // Files dragged from the OS (Finder) or from the app's file inputs.
+    const files = Array.from(event.dataTransfer.files)
+    if (files.length > 0) {
+      const images = files.filter((f) => f.type.startsWith('image/'))
+      const pdfs = files.filter((f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'))
+      await handleImageFiles(images)
+      await handlePdfFiles(pdfs)
+      return
+    }
+
+    // A file dragged in from the notes sidebar tree — move it into the body as a
+    // block and drop its tree record (the block now owns the file on disk).
+    const payload = event.dataTransfer.getData('text/plain')
+    if (payload.startsWith('file:')) {
+      const file = resolveFile(payload.slice('file:'.length))
+      if (file) {
+        appendBlock(
+          file.kind === 'image'
+            ? { id: crypto.randomUUID(), type: 'image', path: file.path }
+            : { id: crypto.randomUUID(), type: 'pdf', name: file.name, path: file.path }
+        )
+        await onDetachFile(file.id)
+      }
+    }
   }
 
   return (
@@ -63,54 +131,93 @@ export default function NoteEditor({ note, onUpdate, onRequestDelete }: NoteEdit
         <input
           className="note-editor__title"
           value={title}
-          onChange={(event) => setTitle(event.target.value)}
+          onChange={(e) => setTitle(e.target.value)}
           placeholder="Untitled note"
         />
+        <div className="note-editor__color-picker">
+          <button
+            type="button"
+            className="note-editor__color-button"
+            onClick={() => setColorOpen((v) => !v)}
+            title="Note color"
+            aria-label="Note color"
+          >
+            <PaletteIcon size={15} />
+            <span className="note-editor__color-current" style={color ? { background: color } : undefined} />
+          </button>
+          {colorOpen && (
+            <>
+              <div className="note-editor__color-backdrop" onClick={() => setColorOpen(false)} />
+              <div className="note-editor__color-pop" role="group" aria-label="Choose note color">
+                {NOTE_COLORS.map((c) => (
+                  <button
+                    key={c ?? 'none'}
+                    type="button"
+                    className={
+                      'note-editor__color' +
+                      (c === null ? ' note-editor__color--none' : '') +
+                      (c === color ? ' note-editor__color--active' : '')
+                    }
+                    style={c ? { background: c } : undefined}
+                    onClick={() => {
+                      setColor(c)
+                      setColorOpen(false)
+                    }}
+                    aria-label={c ? `Color ${c}` : 'No color'}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
         <Button variant="ghost" onClick={onRequestDelete} title="Delete note">
           <CloseIcon size={14} />
         </Button>
       </div>
 
-      <div className="note-editor__pdfs">
-        {pdfs.map((pdf) => (
-          <div key={pdf.id} className="note-editor__pdf-chip">
-            <button
-              type="button"
-              className="note-editor__pdf-open"
-              onClick={() => window.api.attachments.open(pdf.path)}
-            >
-              <FileIcon size={14} />
-              {pdf.name}
-            </button>
-            <span
-              className="note-editor__pdf-remove"
-              role="button"
-              tabIndex={0}
-              aria-label="Remove PDF"
-              onClick={() => handleRemovePdf(pdf)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') handleRemovePdf(pdf)
-              }}
-            >
-              <CloseIcon size={11} />
-            </span>
-          </div>
-        ))}
-        <button type="button" className="note-editor__pdf-add" onClick={() => pdfInputRef.current?.click()}>
-          <PlusIcon size={13} />
-          Upload PDF
+      <div className="note-editor__toolbar">
+        <button type="button" onClick={() => appendBlock({ id: crypto.randomUUID(), type: 'markdown', text: '' })}>
+          <NoteIcon size={14} /> Text
         </button>
-        <input
-          ref={pdfInputRef}
-          type="file"
-          accept="application/pdf"
-          multiple
-          className="note-editor__file-input"
-          onChange={handlePdfInputChange}
-        />
+        <button type="button" onClick={() => appendBlock(newTableBlock())}>
+          <TableIcon size={14} /> Table
+        </button>
+        <button
+          type="button"
+          onClick={() => appendBlock({ id: crypto.randomUUID(), type: 'drawing', strokes: [], height: 240 })}
+        >
+          <DrawIcon size={14} /> Draw
+        </button>
+        <button type="button" onClick={() => imageInputRef.current?.click()}>
+          <ImageIcon size={14} /> Image
+        </button>
+        <button type="button" onClick={() => pdfInputRef.current?.click()}>
+          <FileIcon size={14} /> PDF
+        </button>
+        <input ref={imageInputRef} type="file" accept="image/*" multiple hidden onChange={onImageInput} />
+        <input ref={pdfInputRef} type="file" accept="application/pdf" multiple hidden onChange={onPdfInput} />
       </div>
 
-      <NoteBody content={content} onChange={setContent} onDropPdf={(pdf) => setPdfs((prev) => [...prev, pdf])} />
+      <div
+        className={'note-editor__blocks' + (dragOver ? ' note-editor__blocks--drag-over' : '')}
+        style={color ? { background: color } : undefined}
+        onDragOver={(e) => {
+          e.preventDefault()
+          setDragOver(true)
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={onDrop}
+      >
+        {blocks.length === 0 ? (
+          <p className="note-editor__empty">
+            This note is empty. Add a block above, or drag an image or PDF here.
+          </p>
+        ) : (
+          blocks.map((block) => (
+            <NoteBlockView key={block.id} block={block} onReplace={(next) => replaceBlock(block.id, next)} />
+          ))
+        )}
+      </div>
     </div>
   )
 }

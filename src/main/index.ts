@@ -3,6 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc'
 import { registerLocalImageProtocol } from './localImageProtocol'
+import { setBroadcastTarget } from './broadcast'
 import { startAppTracker, stopAppTracker } from './appTracker'
 import { startClockWatcher, stopClockWatcher } from './clockWatcher'
 import { startCodeTracker, stopCodeTracker } from './codeTracker'
@@ -53,6 +54,10 @@ function createWindow(showImmediately: boolean): void {
       sandbox: false
     }
   })
+
+  // Register this window as the target for main→renderer push events
+  // (e.g. achievement-unlock popups). See main/broadcast.ts.
+  setBroadcastTarget(mainWindow.webContents)
 
   mainWindow.on('ready-to-show', () => {
     if (showImmediately) mainWindow?.show()

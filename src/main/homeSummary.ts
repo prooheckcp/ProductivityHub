@@ -3,6 +3,7 @@ import type { HomeSummary } from '../shared/types'
 import { currentAppUsage } from './appTracker'
 import { listAppUsageSessions } from './store/appUsage'
 import { getAchievementProgress } from './store/achievements'
+import { listNotes } from './store/notes'
 import { listCategories, listProjects, listTasks } from './store/todo'
 import { listTimers, listTimerSessions } from './store/timers'
 
@@ -63,6 +64,11 @@ export function getHomeSummary(): HomeSummary {
     }
   }
 
+  const recentNotes = [...listNotes()]
+    .sort((a, b) => b.updatedAt - a.updatedAt)
+    .slice(0, 3)
+    .map((note) => ({ id: note.id, title: note.title, updatedAt: note.updatedAt }))
+
   const achievements = describeAchievements(getAchievementProgress())
   const recentAchievements = achievements
     .filter((a) => a.unlockedAt !== null)
@@ -79,6 +85,7 @@ export function getHomeSummary(): HomeSummary {
     tasksCompletedToday,
     recentTimers,
     recentProject,
+    recentNotes,
     recentAchievements,
     closeAchievements
   }

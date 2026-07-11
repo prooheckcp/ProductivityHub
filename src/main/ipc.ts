@@ -4,7 +4,9 @@ import type {
   AppSettings,
   CategoryFormInput,
   CountdownTimerFormInput,
+  NoteFileFormInput,
   NoteFormInput,
+  NoteGroupFormInput,
   ProjectFormInput,
   StatsQuery,
   TaskFormInput,
@@ -68,7 +70,24 @@ import {
   startTimer,
   updateTimer
 } from './store/timers'
-import { createNote, deleteNote, listNotes, updateNote } from './store/notes'
+import {
+  createNote,
+  createNoteFile,
+  createNoteGroup,
+  deleteNote,
+  deleteNoteFile,
+  deleteNoteGroup,
+  detachNoteFile,
+  listNoteFiles,
+  listNoteGroups,
+  listNotes,
+  moveNote,
+  moveNoteFile,
+  noteFilePaths,
+  updateNote,
+  updateNoteFile,
+  updateNoteGroup
+} from './store/notes'
 
 export function registerIpcHandlers(): void {
   // ---- Timers ----
@@ -202,20 +221,59 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('notes:update', (_event, id: string, patch: NoteFormInput) => {
     const existing = listNotes().find((n) => n.id === id)
     const updated = updateNote(id, patch)
-    const removedImages = (existing?.images ?? []).filter((path) => !patch.images.includes(path))
-    removedImages.forEach(deleteImageIfExists)
-    const removedPdfPaths = (existing?.pdfs ?? [])
-      .filter((pdf) => !patch.pdfs.some((p) => p.path === pdf.path))
-      .map((pdf) => pdf.path)
-    removedPdfPaths.forEach(deleteAttachmentIfExists)
+    // Delete files whose blocks were removed. Route each removed path to the
+    // right deleter based on the block type it came from.
+    const nextPaths = new Set(noteFilePaths(updated))
+    for (const block of existing?.blocks ?? []) {
+      if (block.type === 'image' && !nextPaths.has(block.path)) deleteImageIfExists(block.path)
+      if (block.type === 'pdf' && !nextPaths.has(block.path)) deleteAttachmentIfExists(block.path)
+    }
     return updated
   })
   ipcMain.handle('notes:delete', (_event, id: string) => {
     const note = listNotes().find((n) => n.id === id)
-    deleteNote(id)
-    note?.images.forEach(deleteImageIfExists)
-    note?.pdfs.forEach((pdf) => deleteAttachmentIfExists(pdf.path))
+    // deleteNote also removes files nested under the note, returning their paths.
+    const childFilePaths = deleteNote(id)
+    for (const block of note?.blocks ?? []) {
+      if (block.type === 'image') deleteImageIfExists(block.path)
+      if (block.type === 'pdf') deleteAttachmentIfExists(block.path)
+    }
+    // Child files may be images or PDFs/other. Both deleters are existence-checked
+    // and target different dirs, so trying both per path is safe.
+    for (const path of childFilePaths) {
+      deleteImageIfExists(path)
+      deleteAttachmentIfExists(path)
+    }
   })
+  ipcMain.handle('notes:move', (_event, id: string, groupId: string | null, order: number) =>
+    moveNote(id, groupId, order)
+  )
+
+  // ---- Note groups ----
+  ipcMain.handle('notes:groups:list', () => listNoteGroups())
+  ipcMain.handle('notes:groups:create', (_event, input: NoteGroupFormInput) => createNoteGroup(input))
+  ipcMain.handle('notes:groups:update', (_event, id: string, patch: NoteGroupFormInput) =>
+    updateNoteGroup(id, patch)
+  )
+  ipcMain.handle('notes:groups:delete', (_event, id: string) => deleteNoteGroup(id))
+
+  // ---- Note files (tree attachments) ----
+  ipcMain.handle('notes:files:list', () => listNoteFiles())
+  ipcMain.handle('notes:files:create', (_event, input: NoteFileFormInput) => createNoteFile(input))
+  ipcMain.handle('notes:files:update', (_event, id: string, patch: { name: string }) => updateNoteFile(id, patch))
+  ipcMain.handle('notes:files:delete', (_event, id: string) => {
+    const removed = deleteNoteFile(id)
+    if (removed) {
+      if (removed.kind === 'image') deleteImageIfExists(removed.path)
+      else deleteAttachmentIfExists(removed.path)
+    }
+  })
+  ipcMain.handle(
+    'notes:files:move',
+    (_event, id: string, target: { groupId: string | null; parentNoteId: string | null }, order: number) =>
+      moveNoteFile(id, target, order)
+  )
+  ipcMain.handle('notes:files:detach', (_event, id: string) => detachNoteFile(id))
 
   // ---- Data export/import ----
   ipcMain.handle('data:export', () => exportData())

@@ -5,8 +5,37 @@
   overflow: hidden;
 }
 
+/* Collapsing hides the nav entirely so the content reclaims the full width. */
+.app-layout--sidebar-collapsed .sidebar {
+  display: none;
+}
+
 .app-layout__content {
   flex: 1;
   overflow-y: auto;
   padding: 32px 40px;
+}
+
+/* Floating pill to re-open the sidebar; clears the macOS traffic lights. */
+.app-layout__sidebar-show {
+  position: fixed;
+  top: 14px;
+  left: 82px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 30px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  -webkit-app-region: no-drag;
+}
+
+.app-layout__sidebar-show:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }

@@ -16,6 +16,48 @@
   background: var(--surface);
 }
 
+.notes-page__list-header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 2px 4px;
+}
+
+.notes-page__list-hide,
+.notes-page__list-show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  color: var(--text-tertiary);
+  background: transparent;
+}
+
+.notes-page__list-hide {
+  width: 26px;
+  height: 26px;
+}
+
+.notes-page__list-hide:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+/* Slim vertical reopen tab shown when the list is minimized. */
+.notes-page__list-show {
+  width: 26px;
+  height: 44px;
+  flex-shrink: 0;
+  align-self: flex-start;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+}
+
+.notes-page__list-show:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
 .notes-page__editor {
   flex: 1;
   min-width: 0;

@@ -301,39 +301,90 @@ export type RecentProjectLink = {
   completedAt: number
 }
 
+export type RecentNoteLink = {
+  id: string
+  title: string
+  updatedAt: number
+}
+
 export type HomeSummary = {
   timerMsToday: number
   appMsToday: number
   tasksCompletedToday: number
   recentTimers: Timer[]
   recentProject: RecentProjectLink | null
+  recentNotes: RecentNoteLink[]
   recentAchievements: AchievementSummary[]
   closeAchievements: AchievementSummary[]
 }
 
 // ---- Notes ----
 
-export type NotePdf = {
+export type DrawingStroke = {
+  color: string
+  size: number
+  points: number[] // flattened x,y pairs
+}
+
+export type NoteBlock =
+  | { id: string; type: 'markdown'; text: string }
+  | { id: string; type: 'table'; rows: string[][] } // rows[0] is the header row
+  | { id: string; type: 'image'; path: string }
+  | { id: string; type: 'pdf'; name: string; path: string }
+  | { id: string; type: 'drawing'; strokes: DrawingStroke[]; height: number }
+
+export type NoteGroup = {
   id: string
   name: string
-  path: string
+  order: number
+  createdAt: number
+  updatedAt: number
 }
 
 export type Note = {
   id: string
   title: string
-  content: string
-  images: string[]
-  pdfs: NotePdf[]
+  color: string | null
+  groupId: string | null // null = ungrouped
+  order: number // within its group (or the ungrouped section)
+  blocks: NoteBlock[]
   createdAt: number
   updatedAt: number
 }
 
 export type NoteFormInput = {
   title: string
-  content: string
-  images: string[]
-  pdfs: NotePdf[]
+  color: string | null
+  groupId: string | null
+  blocks: NoteBlock[]
+}
+
+export type NoteGroupFormInput = {
+  name: string
+}
+
+export type NoteFileKind = 'image' | 'pdf' | 'other'
+
+// A file living in the notes tree: either loose in a group (parentNoteId null)
+// or nested under a specific note (parentNoteId set).
+export type NoteFile = {
+  id: string
+  name: string
+  path: string
+  kind: NoteFileKind
+  groupId: string | null
+  parentNoteId: string | null
+  order: number
+  createdAt: number
+  updatedAt: number
+}
+
+export type NoteFileFormInput = {
+  name: string
+  path: string
+  kind: NoteFileKind
+  groupId: string | null
+  parentNoteId: string | null
 }
 
 // ---- Export/Import ----
@@ -352,4 +403,6 @@ export type DataBundle = {
   countdownTimers: CountdownTimer[]
   codingSessions: CodingSession[]
   notes: Note[]
+  noteGroups: NoteGroup[]
+  noteFiles: NoteFile[]
 }
