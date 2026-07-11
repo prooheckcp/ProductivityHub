@@ -6,6 +6,7 @@ import {
   ChecklistIcon,
   CodeIcon,
   HomeIcon,
+  NoteIcon,
   SettingsIcon,
   TimerIcon,
   TrophyIcon
@@ -17,6 +18,7 @@ import ProjectDetail from './pages/ProjectDetail'
 import Clock from './pages/Clock'
 import Stats from './pages/Stats'
 import Achievements from './pages/Achievements'
+import Notes from './pages/Notes'
 import Settings from './pages/Settings'
 
 export type NavChild = {
@@ -39,6 +41,7 @@ export const NAV_ITEMS: NavItem[] = [
   { path: '/', label: 'Home', icon: HomeIcon, element: <Home /> },
   { path: '/time-tracker', label: 'Time Tracker', icon: TimerIcon, element: <TimeTracker /> },
   { path: '/todo', label: 'To-Do', icon: ChecklistIcon, element: <Todo /> },
+  { path: '/notes', label: 'Notes', icon: NoteIcon, element: <Notes /> },
   {
     path: '/clock',
     label: 'Alarms & Timers',

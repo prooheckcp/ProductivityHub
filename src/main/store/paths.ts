@@ -9,6 +9,10 @@ export function getImagesDir(): string {
   return join(app.getPath('userData'), 'images')
 }
 
+export function getAttachmentsDir(): string {
+  return join(app.getPath('userData'), 'attachments')
+}
+
 export function dataFile(name: string): string {
   return join(getDataDir(), name)
 }

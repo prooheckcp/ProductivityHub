@@ -5,6 +5,7 @@ import type {
   AppSettings,
   CategoryFormInput,
   CountdownTimerFormInput,
+  NoteFormInput,
   ProjectFormInput,
   StatsQuery,
   TaskFormInput,
@@ -26,6 +27,11 @@ const api = {
   images: {
     save: (fileName: string, data: Uint8Array) => ipcRenderer.invoke('images:save', fileName, data),
     delete: (path: string) => ipcRenderer.invoke('images:delete', path)
+  },
+  attachments: {
+    save: (fileName: string, data: Uint8Array) => ipcRenderer.invoke('attachments:save', fileName, data),
+    delete: (path: string) => ipcRenderer.invoke('attachments:delete', path),
+    open: (path: string) => ipcRenderer.invoke('attachments:open', path)
   },
   stats: {
     get: (query: StatsQuery) => ipcRenderer.invoke('stats:get', query),
@@ -94,6 +100,12 @@ const api = {
   data: {
     export: () => ipcRenderer.invoke('data:export'),
     import: () => ipcRenderer.invoke('data:import')
+  },
+  notes: {
+    list: () => ipcRenderer.invoke('notes:list'),
+    create: (input: NoteFormInput) => ipcRenderer.invoke('notes:create', input),
+    update: (id: string, patch: NoteFormInput) => ipcRenderer.invoke('notes:update', id, patch),
+    remove: (id: string) => ipcRenderer.invoke('notes:delete', id)
   }
 }
 

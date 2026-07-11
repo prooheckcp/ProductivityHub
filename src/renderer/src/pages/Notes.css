@@ -1,0 +1,23 @@
+.notes-page {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.notes-page__sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  max-height: 72vh;
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.notes-page__editor {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}

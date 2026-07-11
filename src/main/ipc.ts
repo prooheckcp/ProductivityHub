@@ -1,9 +1,10 @@
-import { ipcMain } from 'electron'
+import { ipcMain, shell } from 'electron'
 import type {
   AlarmFormInput,
   AppSettings,
   CategoryFormInput,
   CountdownTimerFormInput,
+  NoteFormInput,
   ProjectFormInput,
   StatsQuery,
   TaskFormInput,
@@ -12,6 +13,7 @@ import type {
 } from '../shared/types'
 import { getAppIconDataUrl } from './appIcons'
 import { getAppDetail } from './appDetailStats'
+import { deleteAttachmentIfExists, saveAttachment } from './attachments'
 import { getCodeTrackerStatus, resetCodeTracking } from './codeTracker'
 import { exportData, importData } from './dataTransfer'
 import { getHomeSummary } from './homeSummary'
@@ -66,6 +68,7 @@ import {
   startTimer,
   updateTimer
 } from './store/timers'
+import { createNote, deleteNote, listNotes, updateNote } from './store/notes'
 
 export function registerIpcHandlers(): void {
   // ---- Timers ----
@@ -100,6 +103,11 @@ export function registerIpcHandlers(): void {
   // ---- Images ----
   ipcMain.handle('images:save', (_event, fileName: string, data: Uint8Array) => saveImage(fileName, data))
   ipcMain.handle('images:delete', (_event, path: string) => deleteImageIfExists(path))
+
+  // ---- Attachments (e.g. PDFs) ----
+  ipcMain.handle('attachments:save', (_event, fileName: string, data: Uint8Array) => saveAttachment(fileName, data))
+  ipcMain.handle('attachments:delete', (_event, path: string) => deleteAttachmentIfExists(path))
+  ipcMain.handle('attachments:open', (_event, path: string) => shell.openPath(path))
 
   // ---- Stats ----
   ipcMain.handle('stats:get', (_event, query: StatsQuery) => getStats(query))
@@ -187,6 +195,27 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('clock:timers:start', (_event, id: string) => startCountdownTimer(id))
   ipcMain.handle('clock:timers:pause', (_event, id: string) => pauseCountdownTimer(id))
   ipcMain.handle('clock:timers:restart', (_event, id: string) => restartCountdownTimer(id))
+
+  // ---- Notes ----
+  ipcMain.handle('notes:list', () => listNotes())
+  ipcMain.handle('notes:create', (_event, input: NoteFormInput) => createNote(input))
+  ipcMain.handle('notes:update', (_event, id: string, patch: NoteFormInput) => {
+    const existing = listNotes().find((n) => n.id === id)
+    const updated = updateNote(id, patch)
+    const removedImages = (existing?.images ?? []).filter((path) => !patch.images.includes(path))
+    removedImages.forEach(deleteImageIfExists)
+    const removedPdfPaths = (existing?.pdfs ?? [])
+      .filter((pdf) => !patch.pdfs.some((p) => p.path === pdf.path))
+      .map((pdf) => pdf.path)
+    removedPdfPaths.forEach(deleteAttachmentIfExists)
+    return updated
+  })
+  ipcMain.handle('notes:delete', (_event, id: string) => {
+    const note = listNotes().find((n) => n.id === id)
+    deleteNote(id)
+    note?.images.forEach(deleteImageIfExists)
+    note?.pdfs.forEach((pdf) => deleteAttachmentIfExists(pdf.path))
+  })
 
   // ---- Data export/import ----
   ipcMain.handle('data:export', () => exportData())

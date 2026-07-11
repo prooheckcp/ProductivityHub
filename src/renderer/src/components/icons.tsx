@@ -424,3 +424,40 @@ export function WaveIcon({ size = 18 }: IconProps): JSX.Element {
     </svg>
   )
 }
+
+export function NoteIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path
+        d="M6 3.5h9l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-16a1 1 0 0 1 1-1Z"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M15 3.5v4h4M8.5 12h7M8.5 15.5h7M8.5 8.5h3" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function TableIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <rect x="3.5" y="4.5" width="17" height="15" rx="1.2" strokeWidth="1.7" />
+      <path d="M3.5 9.5h17M3.5 14.5h17M9.5 4.5v15M15 4.5v15" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function FileIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path
+        d="M6.5 3.5h7l4 4v13a1 1 0 0 1-1 1h-10a1 1 0 0 1-1-1v-16a1 1 0 0 1 1-1Z"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M13.5 3.5v4h4" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}

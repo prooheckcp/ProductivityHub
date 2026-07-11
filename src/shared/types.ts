@@ -311,6 +311,31 @@ export type HomeSummary = {
   closeAchievements: AchievementSummary[]
 }
 
+// ---- Notes ----
+
+export type NotePdf = {
+  id: string
+  name: string
+  path: string
+}
+
+export type Note = {
+  id: string
+  title: string
+  content: string
+  images: string[]
+  pdfs: NotePdf[]
+  createdAt: number
+  updatedAt: number
+}
+
+export type NoteFormInput = {
+  title: string
+  content: string
+  images: string[]
+  pdfs: NotePdf[]
+}
+
 // ---- Export/Import ----
 
 export type DataBundle = {
@@ -326,4 +351,5 @@ export type DataBundle = {
   alarms: Alarm[]
   countdownTimers: CountdownTimer[]
   codingSessions: CodingSession[]
+  notes: Note[]
 }

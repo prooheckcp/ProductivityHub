@@ -12,6 +12,8 @@ import type {
   CountdownTimer,
   CountdownTimerFormInput,
   HomeSummary,
+  Note,
+  NoteFormInput,
   Project,
   ProjectFormInput,
   StatsQuery,
@@ -38,6 +40,11 @@ export type Api = {
   images: {
     save: (fileName: string, data: Uint8Array) => Promise<string>
     delete: (path: string) => Promise<void>
+  }
+  attachments: {
+    save: (fileName: string, data: Uint8Array) => Promise<string>
+    delete: (path: string) => Promise<void>
+    open: (path: string) => Promise<string>
   }
   stats: {
     get: (query: StatsQuery) => Promise<StatsResult>
@@ -104,6 +111,12 @@ export type Api = {
   data: {
     export: () => Promise<{ canceled: boolean; path?: string }>
     import: () => Promise<{ canceled: boolean }>
+  }
+  notes: {
+    list: () => Promise<Note[]>
+    create: (input: NoteFormInput) => Promise<Note>
+    update: (id: string, patch: NoteFormInput) => Promise<Note>
+    remove: (id: string) => Promise<void>
   }
 }
 
