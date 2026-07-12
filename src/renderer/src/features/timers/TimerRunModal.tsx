@@ -11,7 +11,6 @@ import { currentElapsedMs } from '@shared/timeMath'
 import type { Timer } from '@shared/types'
 import './TimerRunModal.css'
 
-const FAST_TICK_MS = 30
 
 type TimerRunModalProps = {
   timer: Timer
@@ -38,14 +37,19 @@ export default function TimerRunModal({
   const [busy, setBusy] = useState(false)
   const isRunning = timer.runningSince !== null
 
-  // The page-level `now` only ticks once a second (shared across the whole
-  // timer grid) — run a faster local clock in here so milliseconds move
-  // smoothly while this modal is the one thing on screen.
+  // The page-level `now` only ticks per second — run a per-frame clock here so
+  // milliseconds move smoothly, sampled immediately on start so there's no
+  // stale first frame.
   const [fastNow, setFastNow] = useState(() => Date.now())
   useEffect(() => {
     if (!isRunning || editing) return
-    const interval = setInterval(() => setFastNow(Date.now()), FAST_TICK_MS)
-    return () => clearInterval(interval)
+    let raf = 0
+    const tick = (): void => {
+      setFastNow(Date.now())
+      raf = requestAnimationFrame(tick)
+    }
+    tick()
+    return () => cancelAnimationFrame(raf)
   }, [isRunning, editing])
 
   const clock = formatClockWithCentis(currentElapsedMs(timer, isRunning ? fastNow : now))

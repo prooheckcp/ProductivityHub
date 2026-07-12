@@ -101,14 +101,21 @@
   transform: rotate(0deg);
 }
 
+.note-list__actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
 .note-list__row-action {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
-  border-radius: 999px;
+  border-radius: 6px;
   color: var(--text-tertiary);
   cursor: pointer;
   opacity: 0;
@@ -123,6 +130,27 @@
 .note-list__row-action:hover {
   background: var(--surface-hover);
   color: var(--text-primary);
+}
+
+.note-list__group-colorpicker {
+  position: relative;
+  display: flex;
+}
+
+.note-list__group-colorpop {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 41;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 7px;
+  width: 190px;
+  padding: 9px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg, 0 12px 32px rgba(0, 0, 0, 0.18));
 }
 
 .note-list__dot {

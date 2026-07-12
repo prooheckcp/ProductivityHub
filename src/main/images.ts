@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto'
-import { existsSync, mkdirSync, unlinkSync, writeFileSync } from 'fs'
+import { copyFileSync, existsSync, mkdirSync, unlinkSync, writeFileSync } from 'fs'
 import { extname, join } from 'path'
 import { getImagesDir } from './store/paths'
 
@@ -10,6 +10,17 @@ export function saveImage(fileName: string, data: Uint8Array): string {
   const safeExt = /^\.[a-z0-9]+$/.test(ext) ? ext : '.png'
   const destPath = join(dir, `${randomUUID()}${safeExt}`)
   writeFileSync(destPath, data)
+  return destPath
+}
+
+/** Duplicates an existing image into a fresh file (own path) and returns it. */
+export function copyImage(srcPath: string): string {
+  const dir = getImagesDir()
+  mkdirSync(dir, { recursive: true })
+  const ext = extname(srcPath || '').toLowerCase()
+  const safeExt = /^\.[a-z0-9]+$/.test(ext) ? ext : '.png'
+  const destPath = join(dir, `${randomUUID()}${safeExt}`)
+  copyFileSync(srcPath, destPath)
   return destPath
 }
 

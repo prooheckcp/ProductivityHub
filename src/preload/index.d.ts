@@ -45,11 +45,13 @@ export type Api = {
   images: {
     save: (fileName: string, data: Uint8Array) => Promise<string>
     delete: (path: string) => Promise<void>
+    copy: (path: string) => Promise<string>
   }
   attachments: {
     save: (fileName: string, data: Uint8Array) => Promise<string>
     delete: (path: string) => Promise<void>
     open: (path: string) => Promise<string>
+    copy: (path: string) => Promise<string>
   }
   stats: {
     get: (query: StatsQuery) => Promise<StatsResult>

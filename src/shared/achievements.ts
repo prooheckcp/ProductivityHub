@@ -166,7 +166,13 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
     threshold: 1000 * HOUR_MS,
     title: '10x Engineer',
     description: 'Spend 1000 hours actively coding.'
-  }
+  },
+  { id: 'notes-1', category: 'notes', threshold: 1, title: 'First Note', description: 'Create your first note.' },
+  { id: 'notes-5', category: 'notes', threshold: 5, title: 'Note Taker', description: 'Create 5 notes.' },
+  { id: 'notes-10', category: 'notes', threshold: 10, title: 'Notebook', description: 'Create 10 notes.' },
+  { id: 'notes-25', category: 'notes', threshold: 25, title: 'Scribe', description: 'Create 25 notes.' },
+  { id: 'notes-50', category: 'notes', threshold: 50, title: 'Archivist', description: 'Create 50 notes.' },
+  { id: 'notes-100', category: 'notes', threshold: 100, title: 'Librarian', description: 'Create 100 notes.' }
 ]
 
 function currentFor(progress: AchievementProgress, category: AchievementDef['category']): number {
@@ -174,6 +180,7 @@ function currentFor(progress: AchievementProgress, category: AchievementDef['cat
   if (category === 'tasks') return progress.tasksCompleted
   if (category === 'timerUsage') return progress.timerUsageMs
   if (category === 'coding') return progress.codingMs
+  if (category === 'notes') return progress.notesCreated
   return progress.devToolsMs
 }
 

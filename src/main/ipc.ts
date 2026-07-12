@@ -15,15 +15,16 @@ import type {
 } from '../shared/types'
 import { getAppIconDataUrl } from './appIcons'
 import { getAppDetail } from './appDetailStats'
-import { deleteAttachmentIfExists, saveAttachment } from './attachments'
+import { copyAttachment, deleteAttachmentIfExists, saveAttachment } from './attachments'
 import { getCodeTrackerStatus, resetCodeTracking } from './codeTracker'
 import { exportData, importData } from './dataTransfer'
 import { getHomeSummary } from './homeSummary'
-import { deleteImageIfExists, saveImage } from './images'
+import { copyImage, deleteImageIfExists, saveImage } from './images'
 import { applyLoginItemSetting } from './loginItem'
 import { getCodeStats, getStats, getTodoStats } from './stats'
 import {
   getAchievementProgress,
+  recordNoteCreated,
   recordTaskCompleted,
   recordTaskUncompleted,
   recordTimerCreated,
@@ -127,6 +128,8 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('attachments:save', (_event, fileName: string, data: Uint8Array) => saveAttachment(fileName, data))
   ipcMain.handle('attachments:delete', (_event, path: string) => deleteAttachmentIfExists(path))
   ipcMain.handle('attachments:open', (_event, path: string) => shell.openPath(path))
+  ipcMain.handle('attachments:copy', (_event, path: string) => copyAttachment(path))
+  ipcMain.handle('images:copy', (_event, path: string) => copyImage(path))
 
   // ---- Stats ----
   ipcMain.handle('stats:get', (_event, query: StatsQuery) => getStats(query))
@@ -217,7 +220,11 @@ export function registerIpcHandlers(): void {
 
   // ---- Notes ----
   ipcMain.handle('notes:list', () => listNotes())
-  ipcMain.handle('notes:create', (_event, input: NoteFormInput) => createNote(input))
+  ipcMain.handle('notes:create', (_event, input: NoteFormInput) => {
+    const note = createNote(input)
+    recordNoteCreated()
+    return note
+  })
   ipcMain.handle('notes:update', (_event, id: string, patch: NoteFormInput) => {
     const existing = listNotes().find((n) => n.id === id)
     const updated = updateNote(id, patch)

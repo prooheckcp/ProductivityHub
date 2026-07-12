@@ -488,6 +488,16 @@ export function GripIcon({ size = 18 }: IconProps): JSX.Element {
   )
 }
 
+export function MusicIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path d="M9 18V5l10-2v13" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="6" cy="18" r="3" strokeWidth="1.7" />
+      <circle cx="16" cy="16" r="3" strokeWidth="1.7" />
+    </svg>
+  )
+}
+
 export function FolderIcon({ size = 18 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">

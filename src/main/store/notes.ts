@@ -64,7 +64,7 @@ function saveNotes(notes: Note[]): void {
   writeJsonFile(notesFile(), notes)
 }
 function loadGroups(): NoteGroup[] {
-  return readJsonFile<NoteGroup[]>(groupsFile(), [])
+  return readJsonFile<NoteGroup[]>(groupsFile(), []).map((g) => ({ ...g, color: g.color ?? null }))
 }
 function saveGroups(groups: NoteGroup[]): void {
   writeJsonFile(groupsFile(), groups)
@@ -169,6 +169,7 @@ export function createNoteGroup(input: NoteGroupFormInput): NoteGroup {
   const group: NoteGroup = {
     id: randomUUID(),
     name: input.name.trim() || 'Untitled group',
+    color: input.color ?? null,
     order: groups.length,
     createdAt: now,
     updatedAt: now
@@ -183,6 +184,7 @@ export function updateNoteGroup(id: string, patch: NoteGroupFormInput): NoteGrou
   const group = groups.find((g) => g.id === id)
   if (!group) throw new Error(`Note group not found: ${id}`)
   group.name = patch.name.trim() || group.name
+  group.color = patch.color ?? null
   group.updatedAt = Date.now()
   saveGroups(groups)
   return group

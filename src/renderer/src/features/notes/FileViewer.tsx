@@ -40,6 +40,10 @@ export default function FileViewer({ file, onRename, onRequestDelete }: FileView
           <img className="file-viewer__image" src={toFileUrl(file.path)} alt={file.name} />
         ) : file.kind === 'pdf' ? (
           <iframe className="file-viewer__frame" src={toFileUrl(file.path)} title={file.name} />
+        ) : file.kind === 'audio' ? (
+          <div className="file-viewer__audio">
+            <audio controls src={toFileUrl(file.path)} />
+          </div>
         ) : (
           <div className="file-viewer__other">
             <p>Preview isn’t available for this file type.</p>

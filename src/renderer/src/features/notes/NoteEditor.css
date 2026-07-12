@@ -1,9 +1,31 @@
 .note-editor {
+  position: relative;
   display: flex;
   flex-direction: column;
   flex: 1;
   min-width: 0;
   gap: 12px;
+}
+
+.note-editor--drag-over {
+  outline: 2px dashed var(--accent);
+  outline-offset: 6px;
+  border-radius: var(--radius-sm);
+}
+
+.note-editor__drop-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .note-editor__header {
@@ -30,19 +52,27 @@
   position: relative;
 }
 
-.note-editor__color-button {
+.note-editor__color-button,
+.note-editor__delete {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 8px;
+  padding: 7px 9px;
   border-radius: 8px;
   color: var(--text-secondary);
-  background: transparent;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
 }
 
 .note-editor__color-button:hover {
   background: var(--surface-hover);
   color: var(--text-primary);
+}
+
+.note-editor__delete:hover {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
 }
 
 .note-editor__color-current {
@@ -64,9 +94,11 @@
   top: calc(100% + 6px);
   right: 0;
   z-index: 41;
-  display: flex;
-  gap: 6px;
-  padding: 8px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  width: 200px;
+  padding: 10px;
   border-radius: 10px;
   background: var(--surface);
   border: 1px solid var(--border);

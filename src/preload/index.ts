@@ -30,12 +30,14 @@ const api = {
   },
   images: {
     save: (fileName: string, data: Uint8Array) => ipcRenderer.invoke('images:save', fileName, data),
-    delete: (path: string) => ipcRenderer.invoke('images:delete', path)
+    delete: (path: string) => ipcRenderer.invoke('images:delete', path),
+    copy: (path: string) => ipcRenderer.invoke('images:copy', path)
   },
   attachments: {
     save: (fileName: string, data: Uint8Array) => ipcRenderer.invoke('attachments:save', fileName, data),
     delete: (path: string) => ipcRenderer.invoke('attachments:delete', path),
-    open: (path: string) => ipcRenderer.invoke('attachments:open', path)
+    open: (path: string) => ipcRenderer.invoke('attachments:open', path),
+    copy: (path: string) => ipcRenderer.invoke('attachments:copy', path)
   },
   stats: {
     get: (query: StatsQuery) => ipcRenderer.invoke('stats:get', query),

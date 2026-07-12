@@ -3,7 +3,7 @@ import type { JSX, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { DrawingStroke, NoteBlock } from '@shared/types'
-import { CloseIcon, PlusIcon, TrashIcon } from '../../components/icons'
+import { ChevronDownIcon, CloseIcon, PlusIcon, TrashIcon } from '../../components/icons'
 import { toFileUrl } from '../../utils/fileUrl'
 import '../todo/MarkdownField.css'
 import './NoteBlockView.css'
@@ -35,6 +35,7 @@ export default function NoteBlockView({ block, onReplace }: NoteBlockViewProps):
   if (block.type === 'table') return <TableBlock block={block} onReplace={onReplace} />
   if (block.type === 'image') return <ImageBlock block={block} onReplace={onReplace} />
   if (block.type === 'drawing') return <DrawingBlock block={block} onReplace={onReplace} />
+  if (block.type === 'audio') return <AudioBlock block={block} onReplace={onReplace} />
   return <PdfBlock block={block} onReplace={onReplace} />
 }
 
@@ -206,7 +207,7 @@ function ImageBlock({
         onClick={() => onReplace([])}
         aria-label="Remove image"
       >
-        <CloseIcon size={13} />
+        <TrashIcon size={14} />
       </button>
     </div>
   )
@@ -338,10 +339,30 @@ function PdfBlock({
   block: Extract<NoteBlock, { type: 'pdf' }>
   onReplace: (blocks: NoteBlock[]) => void
 }): JSX.Element {
+  // Collapsed by default: the iframe is only mounted while expanded, which both
+  // saves space and avoids the embedded PDF viewer contending with other
+  // resources (images) loading through the same protocol at the same time.
+  const [expanded, setExpanded] = useState(false)
+
   return (
     <div className="note-block__pdf">
       <div className="note-block__pdf-bar">
-        <span className="note-block__pdf-name">{block.name}</span>
+        <button
+          type="button"
+          className={'note-block__pdf-toggle' + (expanded ? ' note-block__pdf-toggle--open' : '')}
+          onClick={() => setExpanded((v) => !v)}
+          aria-label={expanded ? 'Collapse PDF' : 'Expand PDF'}
+        >
+          <ChevronDownIcon size={13} />
+        </button>
+        <button
+          type="button"
+          className="note-block__pdf-name"
+          onClick={() => setExpanded((v) => !v)}
+          title="Click to preview"
+        >
+          {block.name}
+        </button>
         <button type="button" onClick={() => window.api.attachments.open(block.path)}>
           Open externally
         </button>
@@ -349,7 +370,27 @@ function PdfBlock({
           <TrashIcon size={13} />
         </button>
       </div>
-      <iframe className="note-block__pdf-frame" src={imageSrc(block.path)} title={block.name} />
+      {expanded && <iframe className="note-block__pdf-frame" src={imageSrc(block.path)} title={block.name} />}
+    </div>
+  )
+}
+
+function AudioBlock({
+  block,
+  onReplace
+}: {
+  block: Extract<NoteBlock, { type: 'audio' }>
+  onReplace: (blocks: NoteBlock[]) => void
+}): JSX.Element {
+  return (
+    <div className="note-block__audio">
+      <div className="note-block__audio-bar">
+        <span className="note-block__audio-name">{block.name}</span>
+        <button type="button" className="note-block__delete" onClick={() => onReplace([])} aria-label="Remove audio">
+          <TrashIcon size={13} />
+        </button>
+      </div>
+      <audio className="note-block__audio-player" controls src={imageSrc(block.path)} />
     </div>
   )
 }

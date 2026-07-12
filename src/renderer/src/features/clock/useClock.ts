@@ -29,11 +29,20 @@ export function useClock() {
     return () => clearInterval(interval)
   }, [refresh])
 
+  // rAF tick with an immediate sample — see useTimers.ts. Without the immediate
+  // setNow, the first render after Start used a stale `now`, making a countdown's
+  // `endsAt − now` render a huge bogus remaining (e.g. "7 hours") until the next
+  // tick corrected it.
   useEffect(() => {
     const hasRunning = countdownTimers.some((t) => t.status === 'running')
     if (!hasRunning) return
-    const interval = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(interval)
+    let raf = 0
+    const tick = (): void => {
+      setNow(Date.now())
+      raf = requestAnimationFrame(tick)
+    }
+    tick()
+    return () => cancelAnimationFrame(raf)
   }, [countdownTimers])
 
   const createAlarm = useCallback(async (input: AlarmFormInput) => {

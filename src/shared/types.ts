@@ -262,7 +262,7 @@ export type CountdownTimerFormInput = {
 
 // ---- Achievements ----
 
-export type AchievementCategory = 'timers' | 'tasks' | 'devtools' | 'timerUsage' | 'coding'
+export type AchievementCategory = 'timers' | 'tasks' | 'devtools' | 'timerUsage' | 'coding' | 'notes'
 
 export type AchievementDef = {
   id: string
@@ -278,6 +278,7 @@ export type AchievementProgress = {
   devToolsMs: number
   timerUsageMs: number
   codingMs: number
+  notesCreated: number
   unlocked: Record<string, number>
 }
 
@@ -331,11 +332,13 @@ export type NoteBlock =
   | { id: string; type: 'table'; rows: string[][] } // rows[0] is the header row
   | { id: string; type: 'image'; path: string }
   | { id: string; type: 'pdf'; name: string; path: string }
+  | { id: string; type: 'audio'; name: string; path: string }
   | { id: string; type: 'drawing'; strokes: DrawingStroke[]; height: number }
 
 export type NoteGroup = {
   id: string
   name: string
+  color: string | null
   order: number
   createdAt: number
   updatedAt: number
@@ -361,9 +364,10 @@ export type NoteFormInput = {
 
 export type NoteGroupFormInput = {
   name: string
+  color: string | null
 }
 
-export type NoteFileKind = 'image' | 'pdf' | 'other'
+export type NoteFileKind = 'image' | 'pdf' | 'audio' | 'other'
 
 // A file living in the notes tree: either loose in a group (parentNoteId null)
 // or nested under a specific note (parentNoteId set).

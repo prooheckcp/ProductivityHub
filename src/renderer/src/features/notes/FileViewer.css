@@ -61,3 +61,13 @@
   color: var(--text-secondary);
   font-size: 13px;
 }
+
+.file-viewer__audio {
+  margin: auto;
+  padding: 40px;
+}
+
+.file-viewer__audio audio {
+  width: 420px;
+  max-width: 100%;
+}

@@ -1,17 +1,20 @@
 import { useMemo, useRef, useState } from 'react'
 import type { DragEvent, JSX } from 'react'
-import type { Note, NoteFile, NoteFileFormInput, NoteGroup } from '@shared/types'
+import type { Note, NoteFile, NoteFileFormInput, NoteGroup, NoteGroupFormInput } from '@shared/types'
 import {
   ChevronDownIcon,
   CloseIcon,
   FileIcon,
   FolderIcon,
   ImageIcon,
+  MusicIcon,
+  PaletteIcon,
   PaperclipIcon,
   PlusIcon,
   SearchIcon,
   TrashIcon
 } from '../../components/icons'
+import { NOTE_COLORS, colorGradient } from './noteColors'
 import './NoteList.css'
 
 export type NoteSelection = { type: 'note' | 'file'; id: string }
@@ -25,7 +28,7 @@ type NoteListProps = {
   onDeleteNote: (id: string) => void
   onDeleteFile: (id: string) => void
   onCreateGroup: (name: string) => void
-  onRenameGroup: (id: string, name: string) => void
+  onUpdateGroup: (id: string, patch: NoteGroupFormInput) => void
   onDeleteGroup: (id: string) => void
   onMoveNote: (id: string, groupId: string | null, order: number) => void
   onMoveFile: (id: string, target: { groupId: string | null; parentNoteId: string | null }, order: number) => void
@@ -44,6 +47,13 @@ function loadCollapsed(): Set<string> {
   }
 }
 
+function kindForFile(file: File): NoteFileFormInput['kind'] {
+  if (file.type.startsWith('image/')) return 'image'
+  if (file.type.startsWith('audio/')) return 'audio'
+  if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) return 'pdf'
+  return 'other'
+}
+
 export default function NoteList({
   notes,
   groups,
@@ -53,7 +63,7 @@ export default function NoteList({
   onDeleteNote,
   onDeleteFile,
   onCreateGroup,
-  onRenameGroup,
+  onUpdateGroup,
   onDeleteGroup,
   onMoveNote,
   onMoveFile,
@@ -64,6 +74,7 @@ export default function NoteList({
   const [newGroupName, setNewGroupName] = useState('')
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null)
   const [editingGroupName, setEditingGroupName] = useState('')
+  const [colorPickerGroup, setColorPickerGroup] = useState<string | null>(null)
   const [dropTarget, setDropTarget] = useState<string | null>(null)
   const [collapsed, setCollapsed] = useState<Set<string>>(loadCollapsed)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -112,17 +123,13 @@ export default function NoteList({
     target: { groupId: string | null; parentNoteId: string | null }
   ): Promise<void> {
     for (const file of picked) {
-      const isImage = file.type.startsWith('image/')
+      const kind = kindForFile(file)
       const buffer = await file.arrayBuffer()
       const bytes = new Uint8Array(buffer)
-      const path = isImage
-        ? await window.api.images.save(file.name, bytes)
-        : await window.api.attachments.save(file.name, bytes)
-      const kind = isImage
-        ? 'image'
-        : file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
-          ? 'pdf'
-          : 'other'
+      const path =
+        kind === 'image'
+          ? await window.api.images.save(file.name, bytes)
+          : await window.api.attachments.save(file.name, bytes)
       await onCreateFile({ name: file.name, path, kind, groupId: target.groupId, parentNoteId: target.parentNoteId })
     }
   }
@@ -132,7 +139,6 @@ export default function NoteList({
     const target = attachTargetRef.current
     if (target) await uploadInto(picked, target)
   }
-  /** Returns true if the drop carried OS files (and were uploaded into `target`). */
   function tryOsDrop(event: DragEvent, target: { groupId: string | null; parentNoteId: string | null }): boolean {
     const osFiles = Array.from(event.dataTransfer.files)
     if (osFiles.length === 0) return false
@@ -190,7 +196,10 @@ export default function NoteList({
           (dropTarget === `f:${file.id}` ? ' note-list__item--drop' : '')
         }
         draggable={!searching}
-        onDragStart={(e) => e.dataTransfer.setData('text/plain', `file:${file.id}`)}
+        onDragStart={(e) => {
+          e.dataTransfer.setData('text/plain', `file:${file.id}`)
+          e.dataTransfer.effectAllowed = 'copyMove'
+        }}
         onDragOver={(e) => {
           if (searching) return
           e.preventDefault()
@@ -202,7 +211,7 @@ export default function NoteList({
         onClick={() => onSelect({ type: 'file', id: file.id })}
       >
         <span className="note-list__file-icon">
-          {file.kind === 'image' ? <ImageIcon size={13} /> : <FileIcon size={13} />}
+          {file.kind === 'image' ? <ImageIcon size={13} /> : file.kind === 'audio' ? <MusicIcon size={13} /> : <FileIcon size={13} />}
         </span>
         <span className="note-list__file-name">{file.name}</span>
         <span
@@ -215,7 +224,7 @@ export default function NoteList({
             onDeleteFile(file.id)
           }}
         >
-          <CloseIcon size={11} />
+          <TrashIcon size={13} />
         </span>
       </div>
     )
@@ -232,8 +241,12 @@ export default function NoteList({
             (active ? ' note-list__item--active' : '') +
             (dropTarget === `n:${note.id}` ? ' note-list__item--drop' : '')
           }
+          style={note.color ? { background: colorGradient(note.color) } : undefined}
           draggable={!searching}
-          onDragStart={(e) => e.dataTransfer.setData('text/plain', `note:${note.id}`)}
+          onDragStart={(e) => {
+            e.dataTransfer.setData('text/plain', `note:${note.id}`)
+            e.dataTransfer.effectAllowed = 'copyMove'
+          }}
           onDragOver={(e) => {
             if (searching) return
             e.preventDefault()
@@ -243,56 +256,79 @@ export default function NoteList({
           onDrop={(e) => onDropNote(e, note)}
           onClick={() => onSelect({ type: 'note', id: note.id })}
         >
-          {note.color && <span className="note-list__dot" style={{ background: note.color }} />}
           <div className="note-list__item-text">
             <span className="note-list__item-title">{note.title || 'Untitled note'}</span>
             <span className="note-list__item-date">{new Date(note.updatedAt).toLocaleDateString()}</span>
           </div>
-          <span
-            className="note-list__row-action"
-            role="button"
-            tabIndex={0}
-            aria-label="Attach file to note"
-            title="Attach file under this note"
-            onClick={(e) => {
-              e.stopPropagation()
-              beginAttach({ groupId: note.groupId, parentNoteId: note.id })
-            }}
-          >
-            <PaperclipIcon size={13} />
-          </span>
-          <span
-            className="note-list__item-delete"
-            role="button"
-            tabIndex={0}
-            aria-label="Delete note"
-            onClick={(e) => {
-              e.stopPropagation()
-              onDeleteNote(note.id)
-            }}
-          >
-            <CloseIcon size={12} />
-          </span>
+          <div className="note-list__actions">
+            <span
+              className="note-list__row-action"
+              role="button"
+              tabIndex={0}
+              aria-label="Attach file to note"
+              title="Attach file under this note"
+              onClick={(e) => {
+                e.stopPropagation()
+                beginAttach({ groupId: note.groupId, parentNoteId: note.id })
+              }}
+            >
+              <PaperclipIcon size={13} />
+            </span>
+            <span
+              className="note-list__row-action"
+              role="button"
+              tabIndex={0}
+              aria-label="Delete note"
+              onClick={(e) => {
+                e.stopPropagation()
+                onDeleteNote(note.id)
+              }}
+            >
+              <TrashIcon size={13} />
+            </span>
+          </div>
         </div>
         {children.map((file) => renderFile(file, true))}
       </div>
     )
   }
 
-  function renderGroupHeaderControls(groupId: string | null): JSX.Element {
+  function renderGroupColorPicker(group: NoteGroup): JSX.Element {
     return (
-      <span
-        className="note-list__row-action"
-        role="button"
-        tabIndex={0}
-        aria-label="Add file to group"
-        title="Add file to this group"
-        onClick={(e) => {
-          e.stopPropagation()
-          beginAttach({ groupId, parentNoteId: null })
-        }}
-      >
-        <PaperclipIcon size={13} />
+      <span className="note-list__group-colorpicker">
+        <span
+          className="note-list__row-action"
+          role="button"
+          tabIndex={0}
+          aria-label="Group color"
+          title="Group color"
+          onClick={(e) => {
+            e.stopPropagation()
+            setColorPickerGroup((g) => (g === group.id ? null : group.id))
+          }}
+        >
+          <PaletteIcon size={13} />
+        </span>
+        {colorPickerGroup === group.id && (
+          <>
+            <div className="note-editor__color-backdrop" onClick={() => setColorPickerGroup(null)} />
+            <div className="note-list__group-colorpop">
+              {NOTE_COLORS.map((c) => (
+                <button
+                  key={c ?? 'none'}
+                  type="button"
+                  className={'note-editor__color' + (c === null ? ' note-editor__color--none' : '')}
+                  style={c ? { background: c } : undefined}
+                  onClick={() => {
+                    onUpdateGroup(group.id, { name: group.name, color: c })
+                    setColorPickerGroup(null)
+                  }}
+                  aria-label={c ? `Color ${c}` : 'No color'}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </span>
     )
   }
@@ -301,7 +337,6 @@ export default function NoteList({
     <div
       className="note-list"
       onDragOver={(e) => {
-        // Allow OS files to be dropped onto empty space (→ ungrouped).
         if (e.dataTransfer.types.includes('Files')) e.preventDefault()
       }}
       onDrop={(e) => {
@@ -345,6 +380,7 @@ export default function NoteList({
                   className={
                     'note-list__group-header' + (dropTarget === `g:${group.id}` ? ' note-list__group-header--drop' : '')
                   }
+                  style={group.color ? { background: colorGradient(group.color) } : undefined}
                   onDragOver={(e) => {
                     e.preventDefault()
                     setDropTarget(`g:${group.id}`)
@@ -368,7 +404,7 @@ export default function NoteList({
                       autoFocus
                       onChange={(e) => setEditingGroupName(e.target.value)}
                       onBlur={() => {
-                        onRenameGroup(group.id, editingGroupName)
+                        onUpdateGroup(group.id, { name: editingGroupName, color: group.color })
                         setEditingGroupId(null)
                       }}
                       onKeyDown={(e) => {
@@ -387,16 +423,32 @@ export default function NoteList({
                       {group.name}
                     </span>
                   )}
-                  {renderGroupHeaderControls(group.id)}
-                  <button
-                    type="button"
-                    className="note-list__group-delete"
-                    onClick={() => onDeleteGroup(group.id)}
-                    aria-label="Delete group"
-                    title="Delete group (contents move to Ungrouped)"
-                  >
-                    <TrashIcon size={13} />
-                  </button>
+                  <div className="note-list__actions">
+                    {renderGroupColorPicker(group)}
+                    <span
+                      className="note-list__row-action"
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Add file to group"
+                      title="Add file to this group"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        beginAttach({ groupId: group.id, parentNoteId: null })
+                      }}
+                    >
+                      <PaperclipIcon size={13} />
+                    </span>
+                    <span
+                      className="note-list__row-action"
+                      role="button"
+                      tabIndex={0}
+                      aria-label="Delete group"
+                      title="Delete group (contents move to Ungrouped)"
+                      onClick={() => onDeleteGroup(group.id)}
+                    >
+                      <TrashIcon size={13} />
+                    </span>
+                  </div>
                 </div>
                 {!isCollapsed && (
                   <div className="note-list__section">
@@ -421,7 +473,21 @@ export default function NoteList({
             onDrop={(e) => onDropSection(e, null)}
           >
             <span className="note-list__group-name">Ungrouped</span>
-            {renderGroupHeaderControls(null)}
+            <div className="note-list__actions">
+              <span
+                className="note-list__row-action"
+                role="button"
+                tabIndex={0}
+                aria-label="Add file"
+                title="Add file"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  beginAttach({ groupId: null, parentNoteId: null })
+                }}
+              >
+                <PaperclipIcon size={13} />
+              </span>
+            </div>
           </div>
           <div className="note-list__section">
             {notesIn(null).map(renderNote)}

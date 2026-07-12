@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto'
-import { existsSync, mkdirSync, unlinkSync, writeFileSync } from 'fs'
+import { copyFileSync, existsSync, mkdirSync, unlinkSync, writeFileSync } from 'fs'
 import { extname, join } from 'path'
 import { getAttachmentsDir } from './store/paths'
 
@@ -10,6 +10,17 @@ export function saveAttachment(fileName: string, data: Uint8Array): string {
   const safeExt = /^\.[a-z0-9]+$/.test(ext) ? ext : ''
   const destPath = join(dir, `${randomUUID()}${safeExt}`)
   writeFileSync(destPath, data)
+  return destPath
+}
+
+/** Duplicates an existing attachment into a fresh file (own path) and returns it. */
+export function copyAttachment(srcPath: string): string {
+  const dir = getAttachmentsDir()
+  mkdirSync(dir, { recursive: true })
+  const ext = extname(srcPath || '').toLowerCase()
+  const safeExt = /^\.[a-z0-9]+$/.test(ext) ? ext : ''
+  const destPath = join(dir, `${randomUUID()}${safeExt}`)
+  copyFileSync(srcPath, destPath)
   return destPath
 }
 

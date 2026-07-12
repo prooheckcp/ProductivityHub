@@ -31,8 +31,7 @@ export default function Notes(): JSX.Element {
     createFile,
     renameFile,
     removeFile,
-    moveFile,
-    detachFile
+    moveFile
   } = useNotes()
   const location = useLocation()
   const openNoteId = (location.state as { openNoteId?: string } | null)?.openNoteId ?? null
@@ -145,8 +144,8 @@ export default function Notes(): JSX.Element {
                 onSelect={setSelection}
                 onDeleteNote={setDeletingNoteId}
                 onDeleteFile={setDeletingFileId}
-                onCreateGroup={(name) => void createGroup({ name })}
-                onRenameGroup={(id, name) => void updateGroup(id, { name })}
+                onCreateGroup={(name) => void createGroup({ name, color: null })}
+                onUpdateGroup={(id, patch) => void updateGroup(id, patch)}
                 onDeleteGroup={(id) => void removeGroup(id)}
                 onMoveNote={moveNote}
                 onMoveFile={moveFile}
@@ -162,7 +161,6 @@ export default function Notes(): JSX.Element {
                 onUpdate={updateNote}
                 onRequestDelete={() => setDeletingNoteId(selectedNote.id)}
                 resolveFile={(id) => files.find((f) => f.id === id)}
-                onDetachFile={detachFile}
               />
             )}
             {selectedFile && (

@@ -13,11 +13,21 @@ export function useTimers() {
     })
   }, [])
 
+  // Drive the live clock with requestAnimationFrame, sampling Date.now() every
+  // frame and *immediately* on start. setInterval was stale on the first render
+  // after pressing start (it only ticked while something was already running)
+  // and drifts/gets throttled in the background — that caused skipped seconds
+  // and, for countdown timers, a huge wrong value flashing on start.
   useEffect(() => {
     const hasRunning = timers.some((timer) => timer.runningSince !== null)
     if (!hasRunning) return
-    const interval = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(interval)
+    let raf = 0
+    const tick = (): void => {
+      setNow(Date.now())
+      raf = requestAnimationFrame(tick)
+    }
+    tick()
+    return () => cancelAnimationFrame(raf)
   }, [timers])
 
   const createTimer = useCallback(async (input: TimerFormInput) => {
