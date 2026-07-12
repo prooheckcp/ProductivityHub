@@ -90,6 +90,39 @@
   text-overflow: ellipsis;
 }
 
+.timer-card__pin {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: none;
+  appearance: none;
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: opacity 120ms ease, background-color 120ms ease;
+}
+
+.timer-card:hover .timer-card__pin,
+.timer-card__pin:focus-visible,
+.timer-card__pin--active {
+  opacity: 1;
+}
+
+.timer-card__pin:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.timer-card__pin--active {
+  background: var(--accent);
+  color: var(--accent-contrast);
+}
+
 .timer-card__edit {
   position: absolute;
   top: 10px;

@@ -1,9 +1,10 @@
 import type { JSX } from 'react'
-import { PauseIcon, PlayIcon, RestartIcon } from '../../components/icons'
+import { PauseIcon, PinIcon, PlayIcon, RestartIcon } from '../../components/icons'
 import ProgressBar from '../../components/ProgressBar'
 import type { CountdownTimer } from '@shared/types'
 import { currentRemainingMs } from '@shared/timeMath'
 import { formatClock } from '../../utils/format'
+import { useOverlayPins } from '../overlay/useOverlayPins'
 import './CountdownTimerCard.css'
 
 type CountdownTimerCardProps = {
@@ -28,11 +29,23 @@ export default function CountdownTimerCard({
   const percent = timer.durationMs > 0 ? ((timer.durationMs - remaining) / timer.durationMs) * 100 : 0
   const isRunning = timer.status === 'running'
   const isFinished = timer.status === 'finished'
+  const { isPinned, toggle } = useOverlayPins()
+  const pinned = isPinned(`c:${timer.id}`)
 
   return (
     <div className={'countdown-card' + (isFinished ? ' countdown-card--finished' : '')}>
       <div className="countdown-card__top">
         <p className="countdown-card__name">{timer.name}</p>
+        <button
+          type="button"
+          className={'countdown-card__pin' + (pinned ? ' countdown-card__pin--active' : '')}
+          onClick={() => toggle(`c:${timer.id}`)}
+          aria-label={pinned ? 'Unpin from overlay' : 'Pin to overlay'}
+          aria-pressed={pinned}
+          title={pinned ? 'Unpin from overlay' : 'Pin to overlay'}
+        >
+          <PinIcon size={14} />
+        </button>
         <button type="button" className="countdown-card__delete" onClick={onDelete} aria-label="Delete timer">
           ×
         </button>

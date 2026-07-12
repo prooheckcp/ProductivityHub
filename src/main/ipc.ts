@@ -21,7 +21,9 @@ import { exportData, importData } from './dataTransfer'
 import { getHomeSummary } from './homeSummary'
 import { copyImage, deleteImageIfExists, saveImage } from './images'
 import { applyLoginItemSetting } from './loginItem'
-import { setOverlayEnabled } from './overlayWindow'
+import { resizeOverlay, setOverlayEnabled, setOverlayInteracting } from './overlayWindow'
+import { broadcast } from './broadcast'
+import { listOverlayPins, removeOverlayPin, setOverlayPin } from './store/overlayPins'
 import { getCodeStats, getStats, getTodoStats } from './stats'
 import {
   getAchievementProgress,
@@ -97,9 +99,33 @@ export function registerIpcHandlers(): void {
   // Fire-and-forget: the floating timer overlay toggles its own click-through
   // as the pointer moves on/off its buttons. `forward: true` keeps mouse-move
   // events flowing so hover still works while the window is click-through.
-  ipcMain.on('overlay:set-mouse-ignore', (event, ignore: boolean) => {
-    const win = BrowserWindow.fromWebContents(event.sender)
-    win?.setIgnoreMouseEvents(ignore, { forward: true })
+  // True while the pointer is over the overlay, so a resulting app activation
+  // isn't treated as "reopen the main window" (buttons/body handle it themselves).
+  ipcMain.on('overlay:set-interacting', (_event, interacting: boolean) => {
+    setOverlayInteracting(interacting)
+  })
+  // The overlay renderer reports its content height so the window hugs the cards.
+  ipcMain.on('overlay:resize', (_event, height: number) => {
+    resizeOverlay(height)
+  })
+
+  // Clicking an overlay card's body opens that timer in the app.
+  ipcMain.handle('overlay:open-timer', (_event, kind: 'timer' | 'countdown', id: string) => {
+    const main = BrowserWindow.getAllWindows().find((w) => w.webContents.getURL().includes('index.html'))
+    if (main) {
+      main.show()
+      main.focus()
+    }
+    broadcast('overlay:open-timer', kind, id)
+  })
+
+  // Timers pinned to the overlay / in-app corner. Any window can pin/unpin;
+  // the change is broadcast so every window (main + overlay) refreshes.
+  ipcMain.handle('overlay:pins:list', () => listOverlayPins())
+  ipcMain.handle('overlay:pins:set', (_event, key: string, pinned: boolean) => {
+    const next = setOverlayPin(key, pinned)
+    broadcast('overlay:pins-changed')
+    return next
   })
 
   // ---- Timers ----
@@ -123,10 +149,18 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('timers:delete', (_event, id: string) => {
     const timer = listTimers().find((t) => t.id === id)
     deleteTimer(id)
+    removeOverlayPin(`t:${id}`)
+    broadcast('overlay:pins-changed')
     if (timer) deleteImageIfExists(timer.imagePath)
   })
 
-  ipcMain.handle('timers:start', (_event, id: string) => startTimer(id))
+  ipcMain.handle('timers:start', (_event, id: string) => {
+    const timer = startTimer(id)
+    // Starting a timer auto-pins it to the overlay / in-app corner.
+    setOverlayPin(`t:${id}`, true)
+    broadcast('overlay:pins-changed')
+    return timer
+  })
   ipcMain.handle('timers:pause', (_event, id: string) => pauseTimer(id))
   ipcMain.handle('timers:reset', (_event, id: string) => resetTimer(id))
   ipcMain.handle('timers:setManualTime', (_event, id: string, ms: number) => setManualTime(id, ms))
@@ -225,8 +259,17 @@ export function registerIpcHandlers(): void {
   // ---- Clock: countdown timers ----
   ipcMain.handle('clock:timers:list', () => listCountdownTimers())
   ipcMain.handle('clock:timers:create', (_event, input: CountdownTimerFormInput) => createCountdownTimer(input))
-  ipcMain.handle('clock:timers:delete', (_event, id: string) => deleteCountdownTimer(id))
-  ipcMain.handle('clock:timers:start', (_event, id: string) => startCountdownTimer(id))
+  ipcMain.handle('clock:timers:delete', (_event, id: string) => {
+    deleteCountdownTimer(id)
+    removeOverlayPin(`c:${id}`)
+    broadcast('overlay:pins-changed')
+  })
+  ipcMain.handle('clock:timers:start', (_event, id: string) => {
+    const timer = startCountdownTimer(id)
+    setOverlayPin(`c:${id}`, true)
+    broadcast('overlay:pins-changed')
+    return timer
+  })
   ipcMain.handle('clock:timers:pause', (_event, id: string) => pauseCountdownTimer(id))
   ipcMain.handle('clock:timers:restart', (_event, id: string) => restartCountdownTimer(id))
 

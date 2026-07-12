@@ -33,7 +33,15 @@ import type {
 
 export type Api = {
   overlay: {
-    setMouseIgnore: (ignore: boolean) => void
+    setInteracting: (interacting: boolean) => void
+    resize: (height: number) => void
+    pins: {
+      list: () => Promise<string[]>
+      set: (key: string, pinned: boolean) => Promise<string[]>
+    }
+    onPinsChanged: (callback: () => void) => () => void
+    openTimer: (kind: 'timer' | 'countdown', id: string) => Promise<void>
+    onOpenTimer: (callback: (kind: 'timer' | 'countdown', id: string) => void) => () => void
   }
   timers: {
     list: () => Promise<Timer[]>

@@ -1,0 +1,134 @@
+/* Rounded timer cards shared by the floating overlay window and the in-app
+   bottom-right corner. Does NOT touch html/body so it's safe in the app. */
+
+.corner-timers {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.corner-timer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 288px;
+  padding: 8px 12px 8px 8px;
+  background: var(--surface);
+  border: 1px solid color-mix(in srgb, var(--surface) 75%, black);
+  border-radius: 999px;
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(15, 15, 20, 0.14));
+  animation: corner-timer-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.corner-timer--clickable {
+  cursor: pointer;
+}
+
+.corner-timer--clickable:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+@keyframes corner-timer-in {
+  from {
+    opacity: 0;
+    transform: translateX(18px) scale(0.97);
+  }
+}
+
+.corner-timer__cover {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.corner-timer__cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.corner-timer__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.corner-timer__name {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+
+.corner-timer__clock {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-tertiary);
+}
+
+.corner-timer__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
+  animation: corner-timer-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes corner-timer-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.corner-timer__btn {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  flex-shrink: 0;
+  transition: opacity 120ms ease, background-color 120ms ease;
+}
+
+.corner-timer__btn--play {
+  background: var(--accent-gradient);
+  color: var(--accent-contrast);
+}
+
+.corner-timer__btn--play:hover {
+  opacity: 0.85;
+}
+
+.corner-timer__pin {
+  color: var(--text-tertiary);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+}
+
+.corner-timer__pin:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.corner-timer__pin--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+}

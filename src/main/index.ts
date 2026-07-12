@@ -11,7 +11,7 @@ import { startDeadlineNotifier, stopDeadlineNotifier } from './deadlineNotifier'
 import { startTimerTaskWatcher, stopTimerTaskWatcher } from './timerTaskWatcher'
 import { applyLoginItemSetting, wasLaunchedHidden } from './loginItem'
 import { createTray } from './tray'
-import { initOverlay, destroyOverlayWindow, setMainFocused } from './overlayWindow'
+import { initOverlay, destroyOverlayWindow, setMainFocused, isOverlayInteracting } from './overlayWindow'
 import { getSettings } from './store/settings'
 
 const APP_NAME = 'Shiba Track'
@@ -135,6 +135,10 @@ app.whenReady().then(() => {
   initOverlay(getSettings().showTimerOverlay, iconPath)
 
   app.on('activate', () => {
+    // Interacting with the floating overlay activates the app too; don't let that
+    // auto-reopen the main window (overlay buttons must not open it — only a
+    // card-body click does, explicitly, via the overlay:open-timer handler).
+    if (isOverlayInteracting()) return
     if (BrowserWindow.getAllWindows().length === 0) createWindow(true)
     else showMainWindow()
   })

@@ -19,9 +19,28 @@ import type {
 
 const api = {
   overlay: {
-    // Toggle the floating overlay window's click-through. Passing false while a
-    // button is hovered lets the click land; true restores pass-through.
-    setMouseIgnore: (ignore: boolean) => ipcRenderer.send('overlay:set-mouse-ignore', ignore)
+    // Report pointer-over-overlay so the app doesn't treat the resulting
+    // activation as "reopen the main window" (buttons act in place).
+    setInteracting: (interacting: boolean) => ipcRenderer.send('overlay:set-interacting', interacting),
+    // Report the overlay's content height so the window hugs the cards.
+    resize: (height: number) => ipcRenderer.send('overlay:resize', height),
+    pins: {
+      list: () => ipcRenderer.invoke('overlay:pins:list'),
+      set: (key: string, pinned: boolean) => ipcRenderer.invoke('overlay:pins:set', key, pinned)
+    },
+    onPinsChanged: (callback: () => void) => {
+      const handler = (): void => callback()
+      ipcRenderer.on('overlay:pins-changed', handler)
+      return () => ipcRenderer.removeListener('overlay:pins-changed', handler)
+    },
+    // Open a pinned timer in the main app (from an overlay card-body click).
+    openTimer: (kind: 'timer' | 'countdown', id: string) =>
+      ipcRenderer.invoke('overlay:open-timer', kind, id),
+    onOpenTimer: (callback: (kind: 'timer' | 'countdown', id: string) => void) => {
+      const handler = (_e: IpcRendererEvent, kind: 'timer' | 'countdown', id: string): void => callback(kind, id)
+      ipcRenderer.on('overlay:open-timer', handler)
+      return () => ipcRenderer.removeListener('overlay:open-timer', handler)
+    }
   },
   timers: {
     list: () => ipcRenderer.invoke('timers:list'),

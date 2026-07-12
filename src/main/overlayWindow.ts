@@ -11,9 +11,23 @@ let enabled = true
 let mainFocused = true
 // The app icon, re-applied whenever we restore the Dock (see ensureDockVisible).
 let dockIconPath: string | null = null
+// True while the pointer is over an overlay card (click-through is off). Used to
+// suppress the app's generic "activate → show main window" behaviour so clicking
+// an overlay button doesn't raise the app; body clicks open the app explicitly.
+let overlayInteracting = false
 
-const WIDTH = 260
-const HEIGHT = 460
+export function setOverlayInteracting(value: boolean): void {
+  overlayInteracting = value
+}
+export function isOverlayInteracting(): boolean {
+  return overlayInteracting
+}
+
+const WIDTH = 312
+// Initial height; the renderer measures its content and calls resizeOverlay so
+// the window hugs the cards (no dead click-blocking area, buttons stay clickable
+// — the old click-through toggling was unreliable).
+const HEIGHT = 120
 
 // A frameless/transparent + always-visible-on-all-workspaces window makes macOS
 // treat the app as an "accessory" and drops its Dock icon. Re-assert the Dock
@@ -53,11 +67,14 @@ function build(): void {
     hasShadow: false,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      // The overlay is hidden while the app is focused. Without this, Chromium
+      // throttles/freezes the hidden window's timers, so its polled timer list
+      // goes stale and it shows nothing when it's finally revealed.
+      backgroundThrottling: false
     }
   })
 
-  overlayWindow.setIgnoreMouseEvents(true, { forward: true })
   overlayWindow.setAlwaysOnTop(true, 'screen-saver')
   if (process.platform === 'darwin') {
     // skipTransformProcessType keeps the app a regular (Dock-visible) app.
@@ -89,14 +106,26 @@ function build(): void {
     overlayWindow.loadFile(join(__dirname, '../renderer/overlay.html'))
   }
 
-  const reposition = (): void => {
-    if (!overlayWindow) return
-    const area = screen.getPrimaryDisplay().workArea
-    overlayWindow.setBounds({ x: area.x + area.width - WIDTH, y: area.y + area.height - HEIGHT, width: WIDTH, height: HEIGHT })
-  }
+  const reposition = (): void => resizeOverlay(lastContentHeight)
   screen.on('display-metrics-changed', reposition)
   screen.on('display-added', reposition)
   screen.on('display-removed', reposition)
+}
+
+let lastContentHeight = HEIGHT
+
+/** Size the overlay to its content and keep it anchored bottom-right. */
+export function resizeOverlay(contentHeight: number): void {
+  lastContentHeight = contentHeight
+  if (!overlayWindow || overlayWindow.isDestroyed()) return
+  const area = screen.getPrimaryDisplay().workArea
+  const h = Math.max(1, Math.min(Math.ceil(contentHeight), area.height))
+  overlayWindow.setBounds({
+    x: area.x + area.width - WIDTH,
+    y: area.y + area.height - h,
+    width: WIDTH,
+    height: h
+  })
 }
 
 // Reconcile the window's visibility with the current enabled + focus state.
@@ -138,6 +167,9 @@ export function setOverlayEnabled(isEnabled: boolean): void {
 /** Main window gained/lost focus (or was shown/hidden). */
 export function setMainFocused(focused: boolean): void {
   mainFocused = focused
+  // When the app is focused the overlay is hidden, so no card can be under the
+  // pointer — clear the interacting flag so a later Dock click isn't suppressed.
+  if (focused) overlayInteracting = false
   apply()
 }
 
