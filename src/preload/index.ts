@@ -18,6 +18,11 @@ import type {
 } from '../shared/types'
 
 const api = {
+  overlay: {
+    // Toggle the floating overlay window's click-through. Passing false while a
+    // button is hovered lets the click land; true restores pass-through.
+    setMouseIgnore: (ignore: boolean) => ipcRenderer.send('overlay:set-mouse-ignore', ignore)
+  },
   timers: {
     list: () => ipcRenderer.invoke('timers:list'),
     create: (input: TimerFormInput) => ipcRenderer.invoke('timers:create', input),

@@ -11,6 +11,7 @@ import { startDeadlineNotifier, stopDeadlineNotifier } from './deadlineNotifier'
 import { startTimerTaskWatcher, stopTimerTaskWatcher } from './timerTaskWatcher'
 import { applyLoginItemSetting, wasLaunchedHidden } from './loginItem'
 import { createTray } from './tray'
+import { initOverlay, destroyOverlayWindow, setMainFocused } from './overlayWindow'
 import { getSettings } from './store/settings'
 
 const APP_NAME = 'Shiba Track'
@@ -61,7 +62,15 @@ function createWindow(showImmediately: boolean): void {
 
   mainWindow.on('ready-to-show', () => {
     if (showImmediately) mainWindow?.show()
+    else setMainFocused(false) // launched hidden → app isn't focused
   })
+
+  // The floating overlay is shown only while the app is NOT the focused window
+  // (see overlayWindow.ts). Hiding-to-tray fires 'hide'; minimizing fires 'blur'.
+  mainWindow.on('focus', () => setMainFocused(true))
+  mainWindow.on('blur', () => setMainFocused(false))
+  mainWindow.on('show', () => setMainFocused(true))
+  mainWindow.on('hide', () => setMainFocused(false))
 
   // The app keeps running in the background (tracking other apps' usage) once
   // the window is closed — so a click on the close button hides it instead of
@@ -121,6 +130,9 @@ app.whenReady().then(() => {
   createTray(iconPath, showMainWindow)
 
   createWindow(!wasLaunchedHidden())
+  // The floating always-on-top timer overlay (independent of the main window),
+  // created only if enabled in Settings.
+  initOverlay(getSettings().showTimerOverlay, iconPath)
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow(true)
@@ -130,6 +142,7 @@ app.whenReady().then(() => {
 
 app.on('before-quit', () => {
   isQuitting = true
+  destroyOverlayWindow()
   stopAppTracker()
   stopDeadlineNotifier()
   stopTimerTaskWatcher()

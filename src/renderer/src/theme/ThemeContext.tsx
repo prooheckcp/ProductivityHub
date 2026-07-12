@@ -25,7 +25,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   backgroundGradient: DEFAULT_GRADIENT_ID,
   font: 'system',
   textColor: null,
-  launchAtLogin: false
+  launchAtLogin: false,
+  showTimerOverlay: true
 }
 
 type ThemeContextValue = {
@@ -38,6 +39,7 @@ type ThemeContextValue = {
   setFont: (font: FontChoice) => void
   setTextColor: (color: string | null) => void
   setLaunchAtLogin: (enabled: boolean) => void
+  setShowTimerOverlay: (enabled: boolean) => void
   reloadSettings: () => void
 }
 
@@ -149,6 +151,7 @@ export function ThemeProvider({ children }: { children: ReactNode }): JSX.Elemen
       setFont: (font) => updateSetting({ font }),
       setTextColor: (color) => updateSetting({ textColor: color }),
       setLaunchAtLogin: (enabled) => updateSetting({ launchAtLogin: enabled }),
+      setShowTimerOverlay: (enabled) => updateSetting({ showTimerOverlay: enabled }),
       reloadSettings: load
     }),
     [settings, loaded, unlockedAchievementIds]

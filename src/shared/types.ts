@@ -139,6 +139,7 @@ export type AppSettings = {
   font: FontChoice
   textColor: string | null
   launchAtLogin: boolean
+  showTimerOverlay: boolean
 }
 
 // ---- To-Do ----

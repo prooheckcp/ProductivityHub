@@ -32,6 +32,9 @@ import type {
 } from '../shared/types'
 
 export type Api = {
+  overlay: {
+    setMouseIgnore: (ignore: boolean) => void
+  }
   timers: {
     list: () => Promise<Timer[]>
     create: (input: TimerFormInput) => Promise<Timer>

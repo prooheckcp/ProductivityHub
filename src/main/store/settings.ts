@@ -8,7 +8,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   backgroundGradient: 'indigo',
   font: 'system',
   textColor: null,
-  launchAtLogin: false
+  launchAtLogin: false,
+  showTimerOverlay: true
 }
 
 export function getSettings(): AppSettings {

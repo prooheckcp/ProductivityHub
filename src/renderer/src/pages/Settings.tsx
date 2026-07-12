@@ -17,7 +17,8 @@ const FONT_CHOICES: FontChoice[] = ['system', 'serif', 'rounded', 'mono', 'comic
 const STATUS_POLL_MS = 4000
 
 export default function Settings(): JSX.Element {
-  const { settings, setBackgroundGradient, setFont, setTextColor, setLaunchAtLogin } = useTheme()
+  const { settings, setBackgroundGradient, setFont, setTextColor, setLaunchAtLogin, setShowTimerOverlay } =
+    useTheme()
   const [exportStatus, setExportStatus] = useState<string | null>(null)
   const [confirmingImport, setConfirmingImport] = useState(false)
   const [importing, setImporting] = useState(false)
@@ -141,6 +142,27 @@ export default function Settings(): JSX.Element {
           aria-pressed={settings.launchAtLogin}
         >
           <span className="settings__toggle-label">Launch at login</span>
+          <span className="settings__toggle-switch">
+            <span className="settings__toggle-knob" />
+          </span>
+        </button>
+      </Card>
+
+      <Card className="settings__card">
+        <h2 className="settings__section-title">Floating timer overlay</h2>
+        <p className="settings__section-description">
+          Shows a small, translucent card in the bottom-right corner of your screen for any running
+          timer (from Time Tracker and from Alarms &amp; Timers), so you can keep an eye on them —
+          and pause them — while you're working in another app. It only appears when Shiba Track
+          isn't the focused window, and stays click-through except over its buttons.
+        </p>
+        <button
+          type="button"
+          className={'settings__toggle-row' + (settings.showTimerOverlay ? ' settings__toggle-row--on' : '')}
+          onClick={() => setShowTimerOverlay(!settings.showTimerOverlay)}
+          aria-pressed={settings.showTimerOverlay}
+        >
+          <span className="settings__toggle-label">Show floating timer overlay</span>
           <span className="settings__toggle-switch">
             <span className="settings__toggle-knob" />
           </span>

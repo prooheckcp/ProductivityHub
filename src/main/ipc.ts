@@ -1,4 +1,4 @@
-import { ipcMain, shell } from 'electron'
+import { BrowserWindow, ipcMain, shell } from 'electron'
 import type {
   AlarmFormInput,
   AppSettings,
@@ -21,6 +21,7 @@ import { exportData, importData } from './dataTransfer'
 import { getHomeSummary } from './homeSummary'
 import { copyImage, deleteImageIfExists, saveImage } from './images'
 import { applyLoginItemSetting } from './loginItem'
+import { setOverlayEnabled } from './overlayWindow'
 import { getCodeStats, getStats, getTodoStats } from './stats'
 import {
   getAchievementProgress,
@@ -92,6 +93,15 @@ import {
 } from './store/notes'
 
 export function registerIpcHandlers(): void {
+  // ---- Overlay window ----
+  // Fire-and-forget: the floating timer overlay toggles its own click-through
+  // as the pointer moves on/off its buttons. `forward: true` keeps mouse-move
+  // events flowing so hover still works while the window is click-through.
+  ipcMain.on('overlay:set-mouse-ignore', (event, ignore: boolean) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    win?.setIgnoreMouseEvents(ignore, { forward: true })
+  })
+
   // ---- Timers ----
   ipcMain.handle('timers:list', () => listTimers())
 
@@ -150,6 +160,7 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('settings:update', (_event, patch: Partial<AppSettings>) => {
     const updated = updateSettings(patch)
     if (patch.launchAtLogin !== undefined) applyLoginItemSetting(updated.launchAtLogin)
+    if (patch.showTimerOverlay !== undefined) setOverlayEnabled(updated.showTimerOverlay)
     return updated
   })
 
