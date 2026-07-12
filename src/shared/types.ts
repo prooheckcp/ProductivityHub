@@ -262,7 +262,14 @@ export type CountdownTimerFormInput = {
 
 // ---- Achievements ----
 
-export type AchievementCategory = 'timers' | 'tasks' | 'devtools' | 'timerUsage' | 'coding' | 'notes'
+export type AchievementCategory =
+  | 'timers'
+  | 'tasks'
+  | 'devtools'
+  | 'timerUsage'
+  | 'coding'
+  | 'notes'
+  | 'noteCells'
 
 export type AchievementDef = {
   id: string
@@ -279,6 +286,7 @@ export type AchievementProgress = {
   timerUsageMs: number
   codingMs: number
   notesCreated: number
+  noteCellsCreated: number
   unlocked: Record<string, number>
 }
 

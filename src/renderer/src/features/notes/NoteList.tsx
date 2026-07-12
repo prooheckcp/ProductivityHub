@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { DragEvent, JSX } from 'react'
 import type { Note, NoteFile, NoteFileFormInput, NoteGroup, NoteGroupFormInput } from '@shared/types'
 import {
@@ -77,10 +77,28 @@ export default function NoteList({
   const [colorPickerGroup, setColorPickerGroup] = useState<string | null>(null)
   const [dropTarget, setDropTarget] = useState<string | null>(null)
   const [collapsed, setCollapsed] = useState<Set<string>>(loadCollapsed)
+  // Notes start collapsed (attached files hidden); opening a note expands it.
+  const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set())
   const fileInputRef = useRef<HTMLInputElement>(null)
   const attachTargetRef = useRef<{ groupId: string | null; parentNoteId: string | null } | null>(null)
 
   const searching = query.trim().length > 0
+
+  // Auto-expand a note when it becomes the open selection.
+  useEffect(() => {
+    if (selection?.type !== 'note') return
+    const id = selection.id
+    setExpandedNotes((prev) => (prev.has(id) ? prev : new Set(prev).add(id)))
+  }, [selection])
+
+  function toggleNoteExpanded(noteId: string): void {
+    setExpandedNotes((prev) => {
+      const next = new Set(prev)
+      if (next.has(noteId)) next.delete(noteId)
+      else next.add(noteId)
+      return next
+    })
+  }
 
   const filteredNotes = useMemo(() => {
     if (!searching) return notes
@@ -233,6 +251,8 @@ export default function NoteList({
   function renderNote(note: Note): JSX.Element {
     const active = selection?.type === 'note' && selection.id === note.id
     const children = filesUnder(note.id)
+    const hasChildren = children.length > 0
+    const expanded = searching || expandedNotes.has(note.id)
     return (
       <div key={note.id} className="note-list__note-wrap">
         <div
@@ -256,6 +276,22 @@ export default function NoteList({
           onDrop={(e) => onDropNote(e, note)}
           onClick={() => onSelect({ type: 'note', id: note.id })}
         >
+          {hasChildren ? (
+            <button
+              type="button"
+              className={'note-list__note-chevron' + (expanded ? ' note-list__note-chevron--open' : '')}
+              onClick={(e) => {
+                e.stopPropagation()
+                toggleNoteExpanded(note.id)
+              }}
+              aria-label={expanded ? 'Hide attached files' : 'Show attached files'}
+              title={expanded ? 'Hide attached files' : 'Show attached files'}
+            >
+              <ChevronDownIcon size={12} />
+            </button>
+          ) : (
+            <span className="note-list__note-chevron-spacer" />
+          )}
           <div className="note-list__item-text">
             <span className="note-list__item-title">{note.title || 'Untitled note'}</span>
             <span className="note-list__item-date">{new Date(note.updatedAt).toLocaleDateString()}</span>
@@ -288,7 +324,7 @@ export default function NoteList({
             </span>
           </div>
         </div>
-        {children.map((file) => renderFile(file, true))}
+        {expanded && children.map((file) => renderFile(file, true))}
       </div>
     )
   }

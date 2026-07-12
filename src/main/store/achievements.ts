@@ -27,6 +27,7 @@ const DEFAULT_PROGRESS: AchievementProgress = {
   timerUsageMs: 0,
   codingMs: 0,
   notesCreated: 0,
+  noteCellsCreated: 0,
   unlocked: {}
 }
 
@@ -55,6 +56,7 @@ function countFor(progress: AchievementProgress, category: AchievementDef['categ
   if (category === 'timerUsage') return progress.timerUsageMs
   if (category === 'coding') return progress.codingMs
   if (category === 'notes') return progress.notesCreated
+  if (category === 'noteCells') return progress.noteCellsCreated
   return progress.devToolsMs
 }
 
@@ -94,6 +96,16 @@ export function recordNoteCreated(): AchievementProgress {
   const progress = loadProgress()
   progress.notesCreated += 1
   notifyUnlocked(unlockNewly(progress, 'notes'))
+  saveProgress(progress)
+  return applyDevUnlocks(progress)
+}
+
+/** Count newly-added note cells (blocks). Lifetime counter — removing cells never decrements it. */
+export function recordCellsCreated(delta: number): AchievementProgress {
+  const progress = loadProgress()
+  if (delta <= 0) return applyDevUnlocks(progress)
+  progress.noteCellsCreated += delta
+  notifyUnlocked(unlockNewly(progress, 'noteCells'))
   saveProgress(progress)
   return applyDevUnlocks(progress)
 }

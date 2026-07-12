@@ -172,7 +172,14 @@ export const ACHIEVEMENT_DEFS: AchievementDef[] = [
   { id: 'notes-10', category: 'notes', threshold: 10, title: 'Notebook', description: 'Create 10 notes.' },
   { id: 'notes-25', category: 'notes', threshold: 25, title: 'Scribe', description: 'Create 25 notes.' },
   { id: 'notes-50', category: 'notes', threshold: 50, title: 'Archivist', description: 'Create 50 notes.' },
-  { id: 'notes-100', category: 'notes', threshold: 100, title: 'Librarian', description: 'Create 100 notes.' }
+  { id: 'notes-100', category: 'notes', threshold: 100, title: 'Librarian', description: 'Create 100 notes.' },
+  { id: 'cells-1', category: 'noteCells', threshold: 1, title: 'Building Block', description: 'Add your first cell to a note.' },
+  { id: 'cells-10', category: 'noteCells', threshold: 10, title: 'Block Party', description: 'Add 10 cells across your notes.' },
+  { id: 'cells-25', category: 'noteCells', threshold: 25, title: 'Stacking Up', description: 'Add 25 cells across your notes.' },
+  { id: 'cells-50', category: 'noteCells', threshold: 50, title: 'Well Structured', description: 'Add 50 cells across your notes.' },
+  { id: 'cells-100', category: 'noteCells', threshold: 100, title: 'Content Machine', description: 'Add 100 cells across your notes.' },
+  { id: 'cells-250', category: 'noteCells', threshold: 250, title: 'Master Builder', description: 'Add 250 cells across your notes.' },
+  { id: 'cells-500', category: 'noteCells', threshold: 500, title: 'Architect', description: 'Add 500 cells across your notes.' }
 ]
 
 function currentFor(progress: AchievementProgress, category: AchievementDef['category']): number {
@@ -181,6 +188,7 @@ function currentFor(progress: AchievementProgress, category: AchievementDef['cat
   if (category === 'timerUsage') return progress.timerUsageMs
   if (category === 'coding') return progress.codingMs
   if (category === 'notes') return progress.notesCreated
+  if (category === 'noteCells') return progress.noteCellsCreated
   return progress.devToolsMs
 }
 

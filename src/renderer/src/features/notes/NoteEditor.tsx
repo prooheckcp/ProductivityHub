@@ -1,7 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, DragEvent, JSX } from 'react'
 import type { Note, NoteBlock, NoteFile, NoteFormInput } from '@shared/types'
-import { DrawIcon, FileIcon, ImageIcon, MusicIcon, NoteIcon, PaletteIcon, TableIcon, TrashIcon } from '../../components/icons'
+import {
+  DrawIcon,
+  FileIcon,
+  GripIcon,
+  ImageIcon,
+  MusicIcon,
+  NoteIcon,
+  PaletteIcon,
+  TableIcon,
+  TrashIcon
+} from '../../components/icons'
 import NoteBlockView from './NoteBlockView'
 import { NOTE_COLORS } from './noteColors'
 import './NoteEditor.css'
@@ -24,6 +34,11 @@ export default function NoteEditor({ note, onUpdate, onRequestDelete, resolveFil
   const [blocks, setBlocks] = useState<NoteBlock[]>(note.blocks)
   const [dragOver, setDragOver] = useState(false)
   const [colorOpen, setColorOpen] = useState(false)
+  // The currently focused block — new blocks are inserted right after it.
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  // Which block is being dragged (dimmed) and where a drop would land.
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [dropGap, setDropGap] = useState<number | null>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
   const pdfInputRef = useRef<HTMLInputElement>(null)
   const audioInputRef = useRef<HTMLInputElement>(null)
@@ -53,112 +68,160 @@ export default function NoteEditor({ note, onUpdate, onRequestDelete, resolveFil
     setBlocks((prev) => prev.flatMap((b) => (b.id === id ? next : [b])))
   }
 
-  function appendBlock(block: NoteBlock): void {
-    setBlocks((prev) => [...prev, block])
+  /** Insert blocks directly after the selected block (or at the end). */
+  function insertAfterSelected(newBlocks: NoteBlock[]): void {
+    if (newBlocks.length === 0) return
+    setBlocks((prev) => {
+      const i = selectedId ? prev.findIndex((b) => b.id === selectedId) : -1
+      const at = i >= 0 ? i + 1 : prev.length
+      return [...prev.slice(0, at), ...newBlocks, ...prev.slice(at)]
+    })
+    setSelectedId(newBlocks[newBlocks.length - 1].id)
   }
 
-  async function handleImageFiles(files: File[]): Promise<void> {
-    for (const file of files) {
-      const buffer = await file.arrayBuffer()
-      const path = await window.api.images.save(file.name, new Uint8Array(buffer))
-      appendBlock({ id: crypto.randomUUID(), type: 'image', path })
+  /** Insert blocks at an absolute gap index (used for positioned drops). */
+  function insertAtIndex(index: number, newBlocks: NoteBlock[]): void {
+    if (newBlocks.length === 0) return
+    setBlocks((prev) => {
+      const at = Math.max(0, Math.min(index, prev.length))
+      return [...prev.slice(0, at), ...newBlocks, ...prev.slice(at)]
+    })
+    setSelectedId(newBlocks[newBlocks.length - 1].id)
+  }
+
+  /** Move an existing block to a gap index (0..len). */
+  function moveBlock(id: string, toGap: number): void {
+    setBlocks((prev) => {
+      const from = prev.findIndex((b) => b.id === id)
+      if (from < 0) return prev
+      const moved = prev[from]
+      const without = prev.filter((_, i) => i !== from)
+      let at = from < toGap ? toGap - 1 : toGap
+      at = Math.max(0, Math.min(at, without.length))
+      return [...without.slice(0, at), moved, ...without.slice(at)]
+    })
+  }
+
+  // Build a note block from a freshly uploaded / OS-dropped file (saved to disk).
+  async function blockFromUpload(file: File): Promise<NoteBlock | null> {
+    const bytes = new Uint8Array(await file.arrayBuffer())
+    if (file.type.startsWith('image/')) {
+      const path = await window.api.images.save(file.name, bytes)
+      return { id: crypto.randomUUID(), type: 'image', path }
     }
-  }
-
-  async function handlePdfFiles(files: File[]): Promise<void> {
-    for (const file of files) {
-      const buffer = await file.arrayBuffer()
-      const path = await window.api.attachments.save(file.name, new Uint8Array(buffer))
-      appendBlock({ id: crypto.randomUUID(), type: 'pdf', name: file.name, path })
+    if (file.type.startsWith('audio/')) {
+      const path = await window.api.attachments.save(file.name, bytes)
+      return { id: crypto.randomUUID(), type: 'audio', name: file.name, path }
     }
-  }
-
-  async function handleAudioFiles(files: File[]): Promise<void> {
-    for (const file of files) {
-      const buffer = await file.arrayBuffer()
-      const path = await window.api.attachments.save(file.name, new Uint8Array(buffer))
-      appendBlock({ id: crypto.randomUUID(), type: 'audio', name: file.name, path })
+    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+      const path = await window.api.attachments.save(file.name, bytes)
+      return { id: crypto.randomUUID(), type: 'pdf', name: file.name, path }
     }
+    return null
   }
 
-  async function onImageInput(event: ChangeEvent<HTMLInputElement>): Promise<void> {
+  // Build a note block from a sidebar file — duplicated on disk so the tree
+  // entry keeps its own copy and deleting either side never breaks the other.
+  async function blockFromSidebarFile(file: NoteFile): Promise<NoteBlock> {
+    if (file.kind === 'image') {
+      const path = await window.api.images.copy(file.path)
+      return { id: crypto.randomUUID(), type: 'image', path }
+    }
+    if (file.kind === 'audio') {
+      const path = await window.api.attachments.copy(file.path)
+      return { id: crypto.randomUUID(), type: 'audio', name: file.name, path }
+    }
+    const path = await window.api.attachments.copy(file.path)
+    return { id: crypto.randomUUID(), type: 'pdf', name: file.name, path }
+  }
+
+  async function handleFilesFromInput(files: File[]): Promise<void> {
+    const built = (await Promise.all(files.map(blockFromUpload))).filter((b): b is NoteBlock => b !== null)
+    insertAfterSelected(built)
+  }
+
+  function onImageInput(event: ChangeEvent<HTMLInputElement>): void {
     const files = Array.from(event.target.files ?? [])
     event.target.value = ''
-    await handleImageFiles(files)
+    void handleFilesFromInput(files)
   }
-
-  async function onPdfInput(event: ChangeEvent<HTMLInputElement>): Promise<void> {
+  function onPdfInput(event: ChangeEvent<HTMLInputElement>): void {
     const files = Array.from(event.target.files ?? [])
     event.target.value = ''
-    await handlePdfFiles(files)
+    void handleFilesFromInput(files)
   }
-
-  async function onAudioInput(event: ChangeEvent<HTMLInputElement>): Promise<void> {
+  function onAudioInput(event: ChangeEvent<HTMLInputElement>): void {
     const files = Array.from(event.target.files ?? [])
     event.target.value = ''
-    await handleAudioFiles(files)
+    void handleFilesFromInput(files)
   }
 
-  async function onDrop(event: DragEvent<HTMLDivElement>): Promise<void> {
-    event.preventDefault()
-    setDragOver(false)
-
-    // Files dragged from the OS (Finder) or from the app's file inputs.
-    const files = Array.from(event.dataTransfer.files)
-    if (files.length > 0) {
-      await handleImageFiles(files.filter((f) => f.type.startsWith('image/')))
-      await handleAudioFiles(files.filter((f) => f.type.startsWith('audio/')))
-      await handlePdfFiles(
-        files.filter((f) => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'))
-      )
+  // Resolve a drop (OS files, a sidebar file, or a block being reordered) into
+  // the block list at the given gap index.
+  async function handleDropPayload(event: DragEvent, index: number): Promise<void> {
+    const osFiles = Array.from(event.dataTransfer.files)
+    if (osFiles.length > 0) {
+      const built = (await Promise.all(osFiles.map(blockFromUpload))).filter((b): b is NoteBlock => b !== null)
+      insertAtIndex(index, built)
       return
     }
-
-    // A file dragged in from the notes sidebar tree — copy it into the body as a
-    // block. The original stays in the sidebar (the block gets its own copy on
-    // disk, so deleting either side never breaks the other).
     const payload = event.dataTransfer.getData('text/plain')
+    if (payload.startsWith('block:')) {
+      moveBlock(payload.slice('block:'.length), index)
+      return
+    }
     if (payload.startsWith('file:')) {
       const file = resolveFile(payload.slice('file:'.length))
       if (!file) return
-      if (file.kind === 'image') {
-        const path = await window.api.images.copy(file.path)
-        appendBlock({ id: crypto.randomUUID(), type: 'image', path })
-      } else if (file.kind === 'audio') {
-        const path = await window.api.attachments.copy(file.path)
-        appendBlock({ id: crypto.randomUUID(), type: 'audio', name: file.name, path })
-      } else {
-        const path = await window.api.attachments.copy(file.path)
-        appendBlock({ id: crypto.randomUUID(), type: 'pdf', name: file.name, path })
-      }
+      insertAtIndex(index, [await blockFromSidebarFile(file)])
     }
+  }
+
+  function isDragPayload(event: DragEvent): boolean {
+    return event.dataTransfer.types.includes('Files') || event.dataTransfer.types.includes('text/plain')
+  }
+
+  // Gap index for a drop landing on the block at `index` (top half → before it).
+  function gapForBlock(event: DragEvent, index: number): number {
+    const rect = event.currentTarget.getBoundingClientRect()
+    return index + (event.clientY - rect.top > rect.height / 2 ? 1 : 0)
+  }
+
+  function onRootDrop(event: DragEvent<HTMLDivElement>): void {
+    event.preventDefault()
+    setDragOver(false)
+    setDropGap(null)
+    setDraggingId(null)
+    void handleDropPayload(event, blocks.length)
   }
 
   return (
     <div
       className={'note-editor' + (dragOver ? ' note-editor--drag-over' : '')}
       onDragEnter={(e) => {
-        // Only react to real drags (OS files or a sidebar tree item), never text.
-        if (e.dataTransfer.types.includes('Files') || e.dataTransfer.types.includes('text/plain')) {
+        if (isDragPayload(e)) {
           e.preventDefault()
           setDragOver(true)
         }
       }}
       onDragOver={(e) => {
-        if (e.dataTransfer.types.includes('Files') || e.dataTransfer.types.includes('text/plain')) {
-          e.preventDefault()
-          e.dataTransfer.dropEffect = 'copy'
-          setDragOver(true)
-        }
+        if (!isDragPayload(e)) return
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'copy'
+        setDragOver(true)
+        setDropGap(blocks.length) // fallback target when not over a specific block
       }}
       onDragLeave={(e) => {
-        // Ignore leaves into descendant elements — only clear when the pointer
-        // actually leaves the editor.
-        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragOver(false)
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+          setDragOver(false)
+          setDropGap(null)
+        }
       }}
-      onDrop={onDrop}
+      onDrop={onRootDrop}
     >
-      {dragOver && <div className="note-editor__drop-overlay">Drop to add to this note</div>}
+      {dragOver && blocks.length === 0 && (
+        <div className="note-editor__drop-overlay">Drop to add to this note</div>
+      )}
       <div className="note-editor__header">
         <input
           className="note-editor__title"
@@ -214,15 +277,15 @@ export default function NoteEditor({ note, onUpdate, onRequestDelete, resolveFil
       </div>
 
       <div className="note-editor__toolbar">
-        <button type="button" onClick={() => appendBlock({ id: crypto.randomUUID(), type: 'markdown', text: '' })}>
+        <button type="button" onClick={() => insertAfterSelected([{ id: crypto.randomUUID(), type: 'markdown', text: '' }])}>
           <NoteIcon size={14} /> Text
         </button>
-        <button type="button" onClick={() => appendBlock(newTableBlock())}>
+        <button type="button" onClick={() => insertAfterSelected([newTableBlock()])}>
           <TableIcon size={14} /> Table
         </button>
         <button
           type="button"
-          onClick={() => appendBlock({ id: crypto.randomUUID(), type: 'drawing', strokes: [], height: 240 })}
+          onClick={() => insertAfterSelected([{ id: crypto.randomUUID(), type: 'drawing', strokes: [], height: 240 }])}
         >
           <DrawIcon size={14} /> Draw
         </button>
@@ -241,16 +304,70 @@ export default function NoteEditor({ note, onUpdate, onRequestDelete, resolveFil
       </div>
 
       <div
-        className={'note-editor__blocks' + (dragOver ? ' note-editor__blocks--drag-over' : '')}
+        className="note-editor__blocks"
         style={color ? { background: color } : undefined}
+        onClick={(e) => {
+          // Click empty space to deselect — the next added block goes to the end.
+          if (e.target === e.currentTarget) setSelectedId(null)
+        }}
       >
         {blocks.length === 0 ? (
           <p className="note-editor__empty">
             This note is empty. Add a block above, or drag an image or PDF here.
           </p>
         ) : (
-          blocks.map((block) => (
-            <NoteBlockView key={block.id} block={block} onReplace={(next) => replaceBlock(block.id, next)} />
+          blocks.map((block, index) => (
+            <div
+              key={block.id}
+              className={
+                'note-editor__block' +
+                (block.id === selectedId ? ' note-editor__block--selected' : '') +
+                (block.id === draggingId ? ' note-editor__block--dragging' : '') +
+                (dropGap === index ? ' note-editor__block--drop-above' : '') +
+                (dropGap === index + 1 ? ' note-editor__block--drop-below' : '')
+              }
+              onClick={() => setSelectedId(block.id)}
+              onDragOver={(e) => {
+                if (!isDragPayload(e)) return
+                e.preventDefault()
+                e.stopPropagation()
+                e.dataTransfer.dropEffect = 'copy'
+                setDragOver(true)
+                setDropGap(gapForBlock(e, index))
+              }}
+              onDrop={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                const gap = gapForBlock(e, index)
+                setDragOver(false)
+                setDropGap(null)
+                setDraggingId(null)
+                void handleDropPayload(e, gap)
+              }}
+            >
+              <span
+                className="note-editor__block-grip"
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('text/plain', `block:${block.id}`)
+                  // Must include 'copy' — the drop zones set dropEffect 'copy',
+                  // and Chromium rejects the drop if the effect isn't allowed.
+                  e.dataTransfer.effectAllowed = 'copyMove'
+                  setDraggingId(block.id)
+                }}
+                onDragEnd={() => {
+                  setDraggingId(null)
+                  setDropGap(null)
+                }}
+                title="Drag to reorder"
+                aria-label="Drag to reorder"
+              >
+                <GripIcon size={14} />
+              </span>
+              <div className="note-editor__block-content">
+                <NoteBlockView block={block} onReplace={(next) => replaceBlock(block.id, next)} />
+              </div>
+            </div>
           ))
         )}
       </div>

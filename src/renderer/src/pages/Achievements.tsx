@@ -15,7 +15,9 @@ const SECTIONS: { key: AchievementCategory; title: string }[] = [
   { key: 'timerUsage', title: 'Timer Usage' },
   { key: 'tasks', title: 'Tasks' },
   { key: 'devtools', title: 'Developer Tools' },
-  { key: 'coding', title: 'Coding' }
+  { key: 'coding', title: 'Coding' },
+  { key: 'notes', title: 'Notes' },
+  { key: 'noteCells', title: 'Note Cells' }
 ]
 
 const DURATION_CATEGORIES: AchievementCategory[] = ['devtools', 'timerUsage', 'coding']

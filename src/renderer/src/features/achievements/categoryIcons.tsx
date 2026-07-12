@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { ChartIcon, ChecklistIcon, CodeIcon, NoteIcon, TimerIcon } from '../../components/icons'
+import { ChartIcon, ChecklistIcon, CodeIcon, NoteIcon, TableIcon, TimerIcon } from '../../components/icons'
 import type { AchievementCategory } from '@shared/types'
 
 export const ACHIEVEMENT_CATEGORY_ICONS: Record<AchievementCategory, (props: { size?: number }) => JSX.Element> = {
@@ -8,5 +8,6 @@ export const ACHIEVEMENT_CATEGORY_ICONS: Record<AchievementCategory, (props: { s
   tasks: ChecklistIcon,
   devtools: CodeIcon,
   coding: CodeIcon,
-  notes: NoteIcon
+  notes: NoteIcon,
+  noteCells: TableIcon
 }

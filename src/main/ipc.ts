@@ -24,6 +24,7 @@ import { applyLoginItemSetting } from './loginItem'
 import { getCodeStats, getStats, getTodoStats } from './stats'
 import {
   getAchievementProgress,
+  recordCellsCreated,
   recordNoteCreated,
   recordTaskCompleted,
   recordTaskUncompleted,
@@ -223,11 +224,14 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('notes:create', (_event, input: NoteFormInput) => {
     const note = createNote(input)
     recordNoteCreated()
+    recordCellsCreated(note.blocks.length)
     return note
   })
   ipcMain.handle('notes:update', (_event, id: string, patch: NoteFormInput) => {
     const existing = listNotes().find((n) => n.id === id)
     const updated = updateNote(id, patch)
+    // Count any net-new cells (blocks) toward the note-cell achievements.
+    recordCellsCreated(updated.blocks.length - (existing?.blocks.length ?? 0))
     // Delete files whose blocks were removed. Route each removed path to the
     // right deleter based on the block type it came from.
     const nextPaths = new Set(noteFilePaths(updated))
