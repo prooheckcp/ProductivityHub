@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { JSX } from 'react'
 import type { CountdownTimer, Timer } from '@shared/types'
 import { currentElapsedMs, currentRemainingMs } from '@shared/timeMath'
@@ -36,13 +36,14 @@ export default function CornerTimers({ variant, onOpenTimer }: CornerTimersProps
   const [countdowns, setCountdowns] = useState<CountdownTimer[]>([])
   const [now, setNow] = useState(Date.now())
 
+  const refresh = useCallback((): void => {
+    void Promise.all([window.api.timers.list(), window.api.clock.timers.list()]).then(([t, c]) => {
+      setTimers(t)
+      setCountdowns(c)
+    })
+  }, [])
+
   useEffect(() => {
-    const refresh = (): void => {
-      void Promise.all([window.api.timers.list(), window.api.clock.timers.list()]).then(([t, c]) => {
-        setTimers(t)
-        setCountdowns(c)
-      })
-    }
     refresh()
     const poll = setInterval(refresh, POLL_MS)
     const tick = setInterval(() => setNow(Date.now()), TICK_MS)
@@ -60,7 +61,7 @@ export default function CornerTimers({ variant, onOpenTimer }: CornerTimersProps
       clearInterval(tick)
       document.removeEventListener('visibilitychange', onVisible)
     }
-  }, [])
+  }, [refresh])
 
   const all: Item[] = [
     ...timers.map<Item>((t) => ({
@@ -88,15 +89,22 @@ export default function CornerTimers({ variant, onOpenTimer }: CornerTimersProps
   // Overlay shows only pinned timers; the in-app corner shows pinned OR running.
   const items = all.filter((i) => (variant === 'overlay' ? i.pinned : i.pinned || i.running))
 
+  // Apply the returned updated timer to local state right away so the icon and
+  // clock flip immediately — otherwise the change only shows on the next poll,
+  // which felt like a 2-3s lag on the overlay window.
   async function togglePlay(item: Item): Promise<void> {
     if (item.kind === 'timer') {
-      if (item.running) await window.api.timers.pause(item.id)
-      else await window.api.timers.start(item.id)
-    } else if (item.running) {
-      await window.api.clock.timers.pause(item.id)
+      const updated = item.running
+        ? await window.api.timers.pause(item.id)
+        : await window.api.timers.start(item.id)
+      if (updated) setTimers((prev) => prev.map((t) => (t.id === item.id ? updated : t)))
     } else {
-      await window.api.clock.timers.start(item.id)
+      const updated = item.running
+        ? await window.api.clock.timers.pause(item.id)
+        : await window.api.clock.timers.start(item.id)
+      if (updated) setCountdowns((prev) => prev.map((c) => (c.id === item.id ? updated : c)))
     }
+    setNow(Date.now())
   }
 
   if (items.length === 0) return null
