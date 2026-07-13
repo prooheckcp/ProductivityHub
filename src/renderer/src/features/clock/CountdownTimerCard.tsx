@@ -14,6 +14,8 @@ type CountdownTimerCardProps = {
   onPause: () => void
   onRestart: () => void
   onDelete: () => void
+  /** Briefly emphasised when opened from the overlay (deep link). */
+  highlight?: boolean
 }
 
 export default function CountdownTimerCard({
@@ -22,7 +24,8 @@ export default function CountdownTimerCard({
   onPlay,
   onPause,
   onRestart,
-  onDelete
+  onDelete,
+  highlight = false
 }: CountdownTimerCardProps): JSX.Element {
   const remaining = currentRemainingMs(timer, now)
   const clock = formatClock(remaining)
@@ -33,7 +36,14 @@ export default function CountdownTimerCard({
   const pinned = isPinned(`c:${timer.id}`)
 
   return (
-    <div className={'countdown-card' + (isFinished ? ' countdown-card--finished' : '')}>
+    <div
+      id={`countdown-${timer.id}`}
+      className={
+        'countdown-card' +
+        (isFinished ? ' countdown-card--finished' : '') +
+        (highlight ? ' countdown-card--highlight' : '')
+      }
+    >
       <div className="countdown-card__top">
         <p className="countdown-card__name">{timer.name}</p>
         <button

@@ -13,6 +13,23 @@
   box-shadow: 0 0 0 1px var(--accent);
 }
 
+/* Flash when opened from the overlay (deep link). */
+.countdown-card--highlight {
+  animation: countdown-card-flash 1.8s ease;
+}
+
+@keyframes countdown-card-flash {
+  0%,
+  70% {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  100% {
+    border-color: var(--border);
+    box-shadow: none;
+  }
+}
+
 .countdown-card__top {
   display: flex;
   align-items: center;

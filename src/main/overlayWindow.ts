@@ -65,6 +65,15 @@ function build(): void {
     skipTaskbar: true,
     focusable: false,
     hasShadow: false,
+    // The app is usually inactive when the overlay is visible. Without this, macOS
+    // swallows the first click just to activate the app, so the overlay's buttons
+    // "do nothing" on the first press. This delivers that click to the content.
+    acceptFirstMouse: true,
+    // macOS: a 'panel' is an NSNonactivatingPanel — it receives clicks WITHOUT
+    // activating the app or bringing the main window forward. This is what makes
+    // the overlay's buttons act in place instead of just opening the app. (No-op
+    // / ignored on other platforms.)
+    ...(process.platform === 'darwin' ? { type: 'panel' as const } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -128,9 +137,15 @@ export function resizeOverlay(contentHeight: number): void {
   })
 }
 
+let reassertTimer: ReturnType<typeof setTimeout> | undefined
+
 // Reconcile the window's visibility with the current enabled + focus state.
 // showInactive() so the overlay never steals focus from whatever the user is in.
 function apply(): void {
+  if (reassertTimer) {
+    clearTimeout(reassertTimer)
+    reassertTimer = undefined
+  }
   if (!enabled) {
     if (overlayWindow?.isVisible()) overlayWindow.hide()
     return
@@ -141,8 +156,20 @@ function apply(): void {
   }
   if (!ready) return
   const shouldShow = !mainFocused
-  if (shouldShow && !overlayWindow.isVisible()) overlayWindow.showInactive()
-  else if (!shouldShow && overlayWindow.isVisible()) overlayWindow.hide()
+  if (shouldShow && !overlayWindow.isVisible()) {
+    overlayWindow.showInactive()
+    // A panel can be auto-hidden by macOS when the app resigns active (which is
+    // exactly when we want it shown). The deactivate lands just after this call,
+    // so re-assert once it settles — but only while it still ought to be visible.
+    reassertTimer = setTimeout(() => {
+      reassertTimer = undefined
+      if (enabled && !mainFocused && overlayWindow && !overlayWindow.isDestroyed() && !overlayWindow.isVisible()) {
+        overlayWindow.showInactive()
+      }
+    }, 350)
+  } else if (!shouldShow && overlayWindow.isVisible()) {
+    overlayWindow.hide()
+  }
 }
 
 /** Called once at startup with the persisted setting and the app icon path. */

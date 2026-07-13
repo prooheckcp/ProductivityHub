@@ -21,6 +21,17 @@
   animation: corner-timer-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* On the floating overlay the cards stay faint until hovered, so they don't
+   dominate the desktop; hovering (to reach a button) brings them to full. */
+.corner-timer--overlay {
+  opacity: 0.32;
+  transition: opacity 160ms ease;
+}
+
+.corner-timer--overlay:hover {
+  opacity: 1;
+}
+
 .corner-timer--clickable {
   cursor: pointer;
 }

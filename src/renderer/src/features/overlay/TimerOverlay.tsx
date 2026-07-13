@@ -30,6 +30,31 @@ export default function TimerOverlay(): JSX.Element {
     return () => clearTimeout(t)
   }, [achToasts])
 
+  // Clicking any part of the overlay activates the app on macOS, which would
+  // otherwise fire app.on('activate') and reopen the main window. Flag that we're
+  // interacting with the overlay on pointerdown — synchronously, BEFORE the OS
+  // activation lands — so that activation is suppressed (button/body clicks act
+  // in place; a body click opens the app explicitly via overlay:open-timer). Keep
+  // it set briefly after release so the activate event is always covered.
+  useEffect(() => {
+    let clear: ReturnType<typeof setTimeout> | undefined
+    const onDown = (): void => {
+      if (clear) clearTimeout(clear)
+      window.api.overlay.setInteracting(true)
+    }
+    const onUp = (): void => {
+      if (clear) clearTimeout(clear)
+      clear = setTimeout(() => window.api.overlay.setInteracting(false), 600)
+    }
+    document.addEventListener('pointerdown', onDown, true)
+    document.addEventListener('pointerup', onUp, true)
+    return () => {
+      document.removeEventListener('pointerdown', onDown, true)
+      document.removeEventListener('pointerup', onUp, true)
+      if (clear) clearTimeout(clear)
+    }
+  }, [])
+
   // Keep the window sized to the cards so it never blocks the desktop and the
   // buttons are always directly clickable (no click-through toggling).
   useEffect(() => {

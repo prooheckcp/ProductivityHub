@@ -23,7 +23,7 @@ export default function AppLayout(): JSX.Element {
   const openTimer = useCallback(
     (kind: 'timer' | 'countdown', id: string): void => {
       if (kind === 'timer') navigate('/time-tracker', { state: { openTimerId: id } })
-      else navigate('/clock/timers')
+      else navigate('/clock/timers', { state: { openTimerId: id } })
     },
     [navigate]
   )

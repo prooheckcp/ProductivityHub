@@ -88,10 +88,6 @@ export default function CornerTimers({ variant, onOpenTimer }: CornerTimersProps
   // Overlay shows only pinned timers; the in-app corner shows pinned OR running.
   const items = all.filter((i) => (variant === 'overlay' ? i.pinned : i.pinned || i.running))
 
-  const setInteracting = (v: boolean): void => {
-    if (variant === 'overlay') window.api.overlay.setInteracting(v)
-  }
-
   async function togglePlay(item: Item): Promise<void> {
     if (item.kind === 'timer') {
       if (item.running) await window.api.timers.pause(item.id)
@@ -106,13 +102,17 @@ export default function CornerTimers({ variant, onOpenTimer }: CornerTimersProps
   if (items.length === 0) return null
 
   return (
-    <div className="corner-timers" onMouseEnter={() => setInteracting(true)} onMouseLeave={() => setInteracting(false)}>
+    <div className={'corner-timers' + (variant === 'overlay' ? ' corner-timers--overlay' : '')}>
       {items.map((item) => {
         const clock = formatClock(item.ms)
         return (
           <div
             key={item.key}
-            className={'corner-timer' + (onOpenTimer ? ' corner-timer--clickable' : '')}
+            className={
+              'corner-timer' +
+              (variant === 'overlay' ? ' corner-timer--overlay' : '') +
+              (onOpenTimer ? ' corner-timer--clickable' : '')
+            }
             onClick={() => onOpenTimer?.(item.kind, item.id)}
             role={onOpenTimer ? 'button' : undefined}
             title={onOpenTimer ? 'Open in app' : undefined}

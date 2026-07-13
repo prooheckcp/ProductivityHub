@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { JSX } from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import Button from '../components/Button'
 import EmptyState from '../components/EmptyState'
@@ -41,6 +41,20 @@ export default function Clock(): JSX.Element {
   const [deletingAlarmId, setDeletingAlarmId] = useState<string | null>(null)
   const [showCreateTimer, setShowCreateTimer] = useState(false)
   const [deletingTimerId, setDeletingTimerId] = useState<string | null>(null)
+
+  // Deep link from the overlay (a card-body click): scroll to the countdown timer
+  // and flash it. location.key changes on every navigate(), so re-tapping repeats.
+  const location = useLocation()
+  const deepLinkTimerId = (location.state as { openTimerId?: string } | null)?.openTimerId ?? null
+  const [highlightId, setHighlightId] = useState<string | null>(null)
+  useEffect(() => {
+    if (!deepLinkTimerId || view !== 'timers') return
+    setHighlightId(deepLinkTimerId)
+    const el = document.getElementById(`countdown-${deepLinkTimerId}`)
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    const t = setTimeout(() => setHighlightId(null), 1800)
+    return () => clearTimeout(t)
+  }, [location.key, deepLinkTimerId, view])
 
   const sortedAlarms = [...alarms].sort((a, b) => a.hour * 60 + a.minute - (b.hour * 60 + b.minute))
   const editingAlarm = alarms.find((a) => a.id === editingAlarmId) ?? null
@@ -112,6 +126,7 @@ export default function Clock(): JSX.Element {
                   onPause={() => pauseCountdownTimer(timer.id)}
                   onRestart={() => restartCountdownTimer(timer.id)}
                   onDelete={() => setDeletingTimerId(timer.id)}
+                  highlight={highlightId === timer.id}
                 />
               ))}
             </div>
