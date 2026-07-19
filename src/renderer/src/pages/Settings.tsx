@@ -9,6 +9,7 @@ import { COLOR_GRADIENTS, EFFECT_GRADIENTS } from '../theme/gradients'
 import type { CodeTrackerStatus, FontChoice } from '@shared/types'
 import { CODE_TRACKER_CONNECTED_WINDOW_MS, CODE_TRACKER_MARKETPLACE_URL } from '@shared/codeTrackerConfig'
 import GradientPicker from '../features/settings/GradientPicker'
+import AccountSettings from '../features/settings/AccountSettings'
 import shibaArtist from '../assets/shiba-artist.png'
 import extensionIcon from '../assets/vscode-extension-icon.png'
 import './Settings.css'
@@ -71,6 +72,8 @@ export default function Settings(): JSX.Element {
   return (
     <>
       <PageHeader title="Settings" subtitle="Personalize the look of your workspace." />
+
+      <AccountSettings />
 
       <Card className="settings__card settings__card--appearance">
         <img className="settings__appearance-art" src={shibaArtist} alt="" />

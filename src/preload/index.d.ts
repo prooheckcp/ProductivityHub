@@ -6,6 +6,9 @@ import type {
   AlarmFormInput,
   AppDetailResult,
   AppSettings,
+  AuthMode,
+  AuthState,
+  DataBundle,
   Category,
   CategoryFormInput,
   CodeStatsResult,
@@ -130,6 +133,16 @@ export type Api = {
   data: {
     export: () => Promise<{ canceled: boolean; path?: string }>
     import: () => Promise<{ canceled: boolean }>
+    getBundle: () => Promise<DataBundle>
+    restoreBundle: (bundle: Partial<DataBundle>) => Promise<void>
+  }
+  auth: {
+    getState: () => Promise<AuthState>
+    setIdentity: (mode: AuthMode, userId: string | null, skipLogin?: boolean) => Promise<AuthState>
+    onDeepLink: (callback: (url: string) => void) => () => void
+  }
+  system: {
+    openExternal: (url: string) => Promise<void>
   }
   notes: {
     list: () => Promise<Note[]>

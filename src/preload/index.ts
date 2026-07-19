@@ -134,7 +134,22 @@ const api = {
   },
   data: {
     export: () => ipcRenderer.invoke('data:export'),
-    import: () => ipcRenderer.invoke('data:import')
+    import: () => ipcRenderer.invoke('data:import'),
+    getBundle: () => ipcRenderer.invoke('data:getBundle'),
+    restoreBundle: (bundle: unknown) => ipcRenderer.invoke('data:restoreBundle', bundle)
+  },
+  auth: {
+    getState: () => ipcRenderer.invoke('auth:getState'),
+    setIdentity: (mode: 'guest' | 'account', userId: string | null, skipLogin?: boolean) =>
+      ipcRenderer.invoke('auth:setIdentity', mode, userId, skipLogin),
+    onDeepLink: (callback: (url: string) => void) => {
+      const handler = (_e: IpcRendererEvent, url: string): void => callback(url)
+      ipcRenderer.on('auth:deep-link', handler)
+      return () => ipcRenderer.removeListener('auth:deep-link', handler)
+    }
+  },
+  system: {
+    openExternal: (url: string) => ipcRenderer.invoke('system:openExternal', url)
   },
   notes: {
     list: () => ipcRenderer.invoke('notes:list'),

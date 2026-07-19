@@ -1,0 +1,157 @@
+.account__identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 4px 0 8px;
+}
+
+.account__avatar {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: var(--surface-sunken);
+  flex-shrink: 0;
+}
+
+.account__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.account__avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.account__avatar-edit {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 3px 0;
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.account__avatar:hover .account__avatar-edit {
+  opacity: 1;
+}
+
+.account__email {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.account__email-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.account__email-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account__username-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.account__input {
+  flex: 1;
+  font: inherit;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.account__input:focus {
+  border-color: var(--accent);
+}
+
+.account__templates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.account__template {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  padding: 0;
+  border: 2px solid transparent;
+  background: var(--surface-sunken);
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.05s;
+}
+
+.account__template img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.account__template:hover {
+  border-color: var(--border);
+}
+
+.account__template:active {
+  transform: scale(0.95);
+}
+
+.account__template--selected {
+  border-color: var(--accent);
+}
+
+.account__select {
+  width: 100%;
+  cursor: pointer;
+  appearance: none;
+}
+
+.account__hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--text-tertiary);
+}
+
+.account__error {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #c0392b;
+}
+
+.account__logout {
+  margin-top: 14px;
+}

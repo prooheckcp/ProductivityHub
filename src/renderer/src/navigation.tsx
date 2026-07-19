@@ -6,6 +6,7 @@ import {
   ChecklistIcon,
   CodeIcon,
   HomeIcon,
+  LeaderboardIcon,
   NoteIcon,
   SettingsIcon,
   TimerIcon,
@@ -18,6 +19,7 @@ import ProjectDetail from './pages/ProjectDetail'
 import Clock from './pages/Clock'
 import Stats from './pages/Stats'
 import Achievements from './pages/Achievements'
+import Leaderboard from './pages/Leaderboard'
 import Notes from './pages/Notes'
 import Settings from './pages/Settings'
 
@@ -64,7 +66,14 @@ export const NAV_ITEMS: NavItem[] = [
       { path: '/stats/code', label: 'Code', icon: CodeIcon }
     ]
   },
-  { path: '/achievements', label: 'Achievements', icon: TrophyIcon, element: <Achievements /> }
+  { path: '/achievements', label: 'Achievements', icon: TrophyIcon, element: <Achievements /> },
+  {
+    path: '/leaderboard',
+    label: 'Leaderboards',
+    icon: LeaderboardIcon,
+    element: <Leaderboard />,
+    children: [{ path: '/leaderboard/code', label: 'Code', icon: CodeIcon }]
+  }
 ]
 
 // Pinned to the bottom of the sidebar, separate from the main page list.
@@ -77,5 +86,6 @@ export const SECONDARY_NAV_ITEMS: NavItem[] = [
 export const EXTRA_ROUTES: { path: string; element: JSX.Element }[] = [
   { path: '/todo/:projectId', element: <ProjectDetail /> },
   { path: '/stats/:category', element: <Stats /> },
-  { path: '/clock/:view', element: <Clock /> }
+  { path: '/clock/:view', element: <Clock /> },
+  { path: '/leaderboard/code', element: <Leaderboard /> }
 ]

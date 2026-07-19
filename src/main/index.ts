@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerIpcHandlers } from './ipc'
+import { registerAuthProtocol, handleDeepLinkUrl, AUTH_PROTOCOL } from './authProtocol'
 import { registerLocalImageProtocol } from './localImageProtocol'
 import { setBroadcastTarget } from './broadcast'
 import { startAppTracker, stopAppTracker } from './appTracker'
@@ -31,6 +32,21 @@ if (!app.commandLine.hasSwitch('user-data-dir')) {
 // it instead of the default "Electron" (productName in electron-builder only
 // applies to packaged builds — this is what fixes the name while running/dev).
 app.setName(APP_NAME)
+
+// A single instance is required so the OAuth deep link (which relaunches the app
+// with the shibatrack:// URL on Windows/Linux) reaches the already-running app
+// instead of spawning a second copy. macOS delivers it via 'open-url' instead.
+const gotSingleInstanceLock = app.requestSingleInstanceLock()
+if (!gotSingleInstanceLock) {
+  app.quit()
+} else {
+  app.on('second-instance', (_event, argv) => {
+    // Windows/Linux: the deep link comes in as an argv on the relaunch.
+    const url = argv.find((arg) => arg.startsWith(`${AUTH_PROTOCOL}://`))
+    if (url) handleDeepLinkUrl(url)
+    else showMainWindow()
+  })
+}
 
 const iconPath = app.isPackaged
   ? join(process.resourcesPath, 'icon.png')
@@ -120,6 +136,7 @@ app.whenReady().then(() => {
   })
 
   registerIpcHandlers()
+  registerAuthProtocol(() => mainWindow)
   registerLocalImageProtocol()
   startAppTracker()
   startDeadlineNotifier()

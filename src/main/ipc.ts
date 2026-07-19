@@ -17,7 +17,9 @@ import { getAppIconDataUrl } from './appIcons'
 import { getAppDetail } from './appDetailStats'
 import { copyAttachment, deleteAttachmentIfExists, saveAttachment } from './attachments'
 import { getCodeTrackerStatus, resetCodeTracking } from './codeTracker'
-import { exportData, importData } from './dataTransfer'
+import { buildBundle, exportData, importData, restoreBundle } from './dataTransfer'
+import { pickSyncedSettings } from '../shared/syncBundle'
+import type { DataBundle } from '../shared/types'
 import { getHomeSummary } from './homeSummary'
 import { copyImage, deleteImageIfExists, saveImage } from './images'
 import { applyLoginItemSetting } from './loginItem'
@@ -48,6 +50,7 @@ import {
   updateAlarm
 } from './store/clock'
 import { getSettings, updateSettings } from './store/settings'
+import { getAuthState, setIdentity, type AuthMode } from './store/identity'
 import {
   createCategory,
   createProject,
@@ -343,4 +346,26 @@ export function registerIpcHandlers(): void {
   // ---- Data export/import ----
   ipcMain.handle('data:export', () => exportData())
   ipcMain.handle('data:import', () => importData())
+
+  // ---- Auth / identity ----
+  // The renderer owns the Supabase session; the main process only tracks which
+  // identity is active so the store layer reads/writes the right data dir.
+  ipcMain.handle('auth:getState', () => getAuthState())
+  ipcMain.handle('auth:setIdentity', (_event, mode: AuthMode, userId: string | null, skipLogin?: boolean) =>
+    setIdentity(mode, userId, skipLogin)
+  )
+
+  // Open an external URL in the user's browser (used to start OAuth sign-in).
+  ipcMain.handle('system:openExternal', (_event, url: string) => shell.openExternal(url))
+
+  // ---- Cloud sync payload ----
+  // Read the current identity's full snapshot (for pushing to the cloud) and
+  // restore a snapshot pulled from the cloud back into local stores.
+  ipcMain.handle('data:getBundle', () => buildBundle())
+  ipcMain.handle('data:restoreBundle', (_event, bundle: Partial<DataBundle>) => {
+    // Keep machine-only settings (launchAtLogin, showTimerOverlay) local, but
+    // apply the synced theme fields on top.
+    restoreBundle(bundle, { skipSettings: true })
+    if (bundle.settings) updateSettings(pickSyncedSettings(bundle.settings))
+  })
 }

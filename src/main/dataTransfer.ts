@@ -10,7 +10,9 @@ import { getSettings, setSettings } from './store/settings'
 import { listCategories, listProjects, listTasks, restoreTodoData } from './store/todo'
 import { listTimers, listTimerSessions, restoreTimersData } from './store/timers'
 
-function buildBundle(): DataBundle {
+// The full serializable snapshot of the current identity's local data. Reused by
+// file export/import AND by cloud sync (see main/ipc.ts auth:* handlers).
+export function buildBundle(): DataBundle {
   return {
     exportedAt: Date.now(),
     settings: getSettings(),
@@ -28,6 +30,26 @@ function buildBundle(): DataBundle {
     noteGroups: listNoteGroups(),
     noteFiles: listNoteFiles()
   }
+}
+
+// Write a bundle into the current identity's local stores. `skipSettings` lets
+// cloud sync preserve machine-specific settings (launchAtLogin, showTimerOverlay)
+// while still restoring the rest — the theme fields are merged separately.
+export function restoreBundle(bundle: Partial<DataBundle>, options: { skipSettings?: boolean } = {}): void {
+  if (bundle.settings && !options.skipSettings) setSettings(bundle.settings)
+  restoreTimersData(bundle.timers ?? [], bundle.timerSessions ?? [])
+  restoreAppUsageSessions(bundle.appUsageSessions ?? [])
+  restoreTodoData({
+    projects: bundle.projects ?? [],
+    categories: bundle.categories ?? [],
+    tasks: bundle.tasks ?? []
+  })
+  if (bundle.achievements) restoreAchievementProgress(bundle.achievements)
+  if (bundle.alarms) restoreAlarms(bundle.alarms)
+  if (bundle.countdownTimers) restoreCountdownTimers(bundle.countdownTimers)
+  if (bundle.codingSessions) restoreCodingSessions(bundle.codingSessions)
+  if (bundle.notes || bundle.noteGroups || bundle.noteFiles)
+    restoreNotesData(bundle.notes ?? [], bundle.noteGroups ?? [], bundle.noteFiles ?? [])
 }
 
 export async function exportData(): Promise<{ canceled: boolean; path?: string }> {
@@ -52,21 +74,6 @@ export async function importData(): Promise<{ canceled: boolean }> {
 
   const raw = readFileSync(filePaths[0], 'utf-8')
   const bundle = JSON.parse(raw) as Partial<DataBundle>
-
-  if (bundle.settings) setSettings(bundle.settings)
-  restoreTimersData(bundle.timers ?? [], bundle.timerSessions ?? [])
-  restoreAppUsageSessions(bundle.appUsageSessions ?? [])
-  restoreTodoData({
-    projects: bundle.projects ?? [],
-    categories: bundle.categories ?? [],
-    tasks: bundle.tasks ?? []
-  })
-  if (bundle.achievements) restoreAchievementProgress(bundle.achievements)
-  if (bundle.alarms) restoreAlarms(bundle.alarms)
-  if (bundle.countdownTimers) restoreCountdownTimers(bundle.countdownTimers)
-  if (bundle.codingSessions) restoreCodingSessions(bundle.codingSessions)
-  if (bundle.notes || bundle.noteGroups || bundle.noteFiles)
-    restoreNotesData(bundle.notes ?? [], bundle.noteGroups ?? [], bundle.noteFiles ?? [])
-
+  restoreBundle(bundle)
   return { canceled: false }
 }

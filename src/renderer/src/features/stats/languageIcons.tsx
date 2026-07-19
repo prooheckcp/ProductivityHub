@@ -1,5 +1,6 @@
 import type { JSX } from 'react'
 import { CodeIcon } from '../../components/icons'
+import { languageIcon as pngLanguageIcon } from '../../assets/langIcons'
 
 type LanguageBadgeProps = { size?: number }
 type LanguageIcon = (props: LanguageBadgeProps) => JSX.Element
@@ -93,5 +94,13 @@ const LANGUAGE_ICONS: Record<string, LanguageIcon> = {
 }
 
 export function getLanguageIcon(language: string): LanguageIcon {
+  // Prefer a real bundled PNG logo (Images/programming_languages) when we have
+  // one; fall back to the colored letter badge, then the generic code icon.
+  const png = pngLanguageIcon(language)
+  if (png) {
+    return function LanguagePngIcon({ size = 18 }: LanguageBadgeProps): JSX.Element {
+      return <img src={png} width={size} height={size} alt="" style={{ objectFit: 'contain', borderRadius: 4 }} />
+    }
+  }
   return LANGUAGE_ICONS[language] ?? CodeIcon
 }

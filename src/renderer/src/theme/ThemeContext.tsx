@@ -125,6 +125,19 @@ export function ThemeProvider({ children }: { children: ReactNode }): JSX.Elemen
 
   useEffect(load, [])
 
+  // After a login switches the active data dir in-place (no full reload), the
+  // account's theme lives in a different settings file — re-read it.
+  useEffect(() => {
+    const onReloaded = (): void => {
+      load()
+      window.api.achievements.get().then((progress) => {
+        setUnlockedAchievementIds(new Set(Object.keys(progress.unlocked)))
+      })
+    }
+    window.addEventListener('app:data-reloaded', onReloaded)
+    return () => window.removeEventListener('app:data-reloaded', onReloaded)
+  }, [])
+
   useEffect(() => {
     window.api.achievements.get().then((progress) => {
       setUnlockedAchievementIds(new Set(Object.keys(progress.unlocked)))

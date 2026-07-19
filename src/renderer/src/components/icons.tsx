@@ -559,3 +559,69 @@ export function SidebarIcon({ size = 18 }: IconProps): JSX.Element {
     </svg>
   )
 }
+
+export function UserIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <circle cx="12" cy="8" r="3.6" strokeWidth="1.8" />
+      <path d="M4.5 20a7.5 7.5 0 0 1 15 0" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function EyeOffIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path
+        d="M10.6 6.2A9.6 9.6 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4M6.2 6.2A16.8 16.8 0 0 0 2 12s3.5 7 10 7a9.5 9.5 0 0 0 5.8-1.9M4 4l16 16M9.9 9.9a3 3 0 0 0 4.2 4.2"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+export function LeaderboardIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path d="M4 20h16" strokeWidth="1.8" strokeLinecap="round" />
+      <rect x="9.5" y="7" width="5" height="13" rx="1" strokeWidth="1.8" />
+      <rect x="3.5" y="11" width="5" height="9" rx="1" strokeWidth="1.8" />
+      <rect x="15.5" y="13" width="5" height="7" rx="1" strokeWidth="1.8" />
+    </svg>
+  )
+}
+
+// Brand marks for the social sign-in buttons. Google keeps its four brand
+// colors; GitHub uses currentColor so it adapts to the button text color.
+export function GoogleIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48">
+      <path
+        fill="#FFC107"
+        d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22 22-9.8 22-22c0-1.3-.1-2.5-.4-3.5z"
+      />
+      <path
+        fill="#FF3D00"
+        d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 4.1 29.6 2 24 2 15.6 2 8.3 6.8 6.3 14.7z"
+      />
+      <path
+        fill="#4CAF50"
+        d="M24 46c5.5 0 10.4-2.1 14.1-5.5l-6.5-5.5C29.5 36.9 26.9 38 24 38c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C8.2 41.1 15.5 46 24 46z"
+      />
+      <path
+        fill="#1976D2"
+        d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.5l6.5 5.5C41.4 36.4 46 30.9 46 24c0-1.3-.1-2.5-.4-3.5z"
+      />
+    </svg>
+  )
+}
+
+export function GitHubIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.09.68-.22.68-.49 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.49-1.11-1.49-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.36-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.71 0 0 .84-.28 2.75 1.05a9.35 9.35 0 0 1 2.5-.34c.85 0 1.71.12 2.5.34 1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.45.1 2.71.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.82 0 .27.18.59.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z" />
+    </svg>
+  )
+}

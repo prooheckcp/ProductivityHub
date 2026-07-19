@@ -402,6 +402,37 @@ export type NoteFileFormInput = {
 
 // ---- Export/Import ----
 
+// ---- Auth / identity ----
+
+export type AuthMode = 'guest' | 'account'
+
+export type AuthState = {
+  mode: AuthMode
+  userId: string | null
+  skipLogin: boolean
+}
+
+// Public profile, mirrored from the Supabase `profiles` table.
+export type Profile = {
+  id: string
+  username: string | null
+  avatarUrl: string | null
+  country: string | null
+}
+
+// ---- Leaderboards ----
+
+export type LeaderboardPeriod = 'all' | 'daily' | 'weekly'
+
+export type LeaderboardEntry = {
+  userId: string
+  username: string | null
+  avatarUrl: string | null
+  country: string | null
+  ms: number
+  rank: number
+}
+
 export type DataBundle = {
   exportedAt: number
   settings: AppSettings

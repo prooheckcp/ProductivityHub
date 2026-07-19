@@ -3,6 +3,7 @@ import type { JSX } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { ChevronDownIcon, SidebarIcon } from './icons'
 import { NAV_ITEMS, SECONDARY_NAV_ITEMS, type NavItem } from '../navigation'
+import UserChip from './UserChip'
 import logo from '../assets/logo.png'
 import logoText from '../assets/logo-text.png'
 import './Sidebar.css'
@@ -97,6 +98,8 @@ export default function Sidebar({ onCollapse }: { onCollapse: () => void }): JSX
       <div className="sidebar__secondary">
         <NavList items={SECONDARY_NAV_ITEMS} />
       </div>
+
+      <UserChip />
     </nav>
   )
 }
