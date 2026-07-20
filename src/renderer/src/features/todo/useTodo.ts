@@ -43,6 +43,14 @@ export function useTodo() {
     return () => clearInterval(interval)
   }, [tasks])
 
+  // The main process resets recurring tasks back to 'todo' when they're due
+  // again — refresh so the list reflects the flip immediately.
+  useEffect(() => {
+    return window.api.todo.tasks.onRecurringDue(() => {
+      window.api.todo.tasks.list().then(setTasks)
+    })
+  }, [])
+
   // ---- Projects ----
   const createProject = useCallback(async (input: ProjectFormInput) => {
     const project = await window.api.todo.projects.create(input)

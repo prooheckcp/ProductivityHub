@@ -1,4 +1,5 @@
 import type { CodeStatsEntry, CodeStatsResult, StatsEntry, StatsQuery, StatsResult, TodoStatsResult } from '../shared/types'
+import { isTrackedLanguage } from '../shared/languageExtensions'
 import { currentAppUsage } from './appTracker'
 import { CATEGORY_AUTO_DETECT_SUPPORTED, getAppCategory } from './appCategory'
 import { currentCodingSession } from './codeTracker'
@@ -227,16 +228,21 @@ export function getCodeStats(query: StatsQuery): CodeStatsResult {
   const now = Date.now()
   const { start, end } = resolveRange(query, now)
 
-  const intervals: CodeInterval[] = listCodingSessions().map((session) => ({
-    startedAt: session.startedAt,
-    endedAt: session.endedAt,
-    language: session.language,
-    projectName: session.projectName,
-    filePath: session.filePath,
-    fileName: session.fileName
-  }))
+  // Only count languages we actually track (files whose extension is in the
+  // language map). Unknown extensions that fell back to a raw languageId or
+  // 'Other' are excluded from all code stats.
+  const intervals: CodeInterval[] = listCodingSessions()
+    .filter((session) => isTrackedLanguage(session.language))
+    .map((session) => ({
+      startedAt: session.startedAt,
+      endedAt: session.endedAt,
+      language: session.language,
+      projectName: session.projectName,
+      filePath: session.filePath,
+      fileName: session.fileName
+    }))
   const live = currentCodingSession()
-  if (live) {
+  if (live && isTrackedLanguage(live.language)) {
     intervals.push({
       startedAt: live.startedAt,
       endedAt: now,

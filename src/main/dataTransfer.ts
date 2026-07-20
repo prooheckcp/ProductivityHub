@@ -1,6 +1,9 @@
 import { dialog } from 'electron'
-import { readFileSync, writeFileSync } from 'fs'
+import { cpSync, existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'fs'
+import { join } from 'path'
 import type { DataBundle } from '../shared/types'
+import { getDataDir } from './store/paths'
+import { identityRoot } from './store/identity'
 import { getAchievementProgress, restoreAchievementProgress } from './store/achievements'
 import { listAppUsageSessions, restoreAppUsageSessions } from './store/appUsage'
 import { listAlarms, listCountdownTimers, restoreAlarms, restoreCountdownTimers } from './store/clock'
@@ -50,6 +53,27 @@ export function restoreBundle(bundle: Partial<DataBundle>, options: { skipSettin
   if (bundle.codingSessions) restoreCodingSessions(bundle.codingSessions)
   if (bundle.notes || bundle.noteGroups || bundle.noteFiles)
     restoreNotesData(bundle.notes ?? [], bundle.noteGroups ?? [], bundle.noteFiles ?? [])
+}
+
+// Snapshot the current identity's data dir before anything overwrites it. This
+// is a safety net: even if a restore replaces the live data, the previous state
+// is recoverable under <identityRoot>/backups/<timestamp>/. Keeps the 10 newest.
+export function backupCurrentData(reason: string): void {
+  try {
+    const dataDir = getDataDir()
+    if (!existsSync(dataDir)) return
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-')
+    const backupsRoot = join(identityRoot(), 'backups')
+    cpSync(dataDir, join(backupsRoot, `${stamp}_${reason}`), { recursive: true })
+
+    // Prune to the 10 most recent backups.
+    const entries = readdirSync(backupsRoot).sort()
+    for (const old of entries.slice(0, Math.max(0, entries.length - 10))) {
+      rmSync(join(backupsRoot, old), { recursive: true, force: true })
+    }
+  } catch (error) {
+    console.error('Failed to back up data dir:', error)
+  }
 }
 
 export async function exportData(): Promise<{ canceled: boolean; path?: string }> {

@@ -5,7 +5,7 @@ import Button from '../../components/Button'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import { ArrowLeftIcon, PauseIcon, PlayIcon, PlusIcon } from '../../components/icons'
 import { currentElapsedMs } from '@shared/timeMath'
-import type { Project, Task, TaskFormInput, TaskPriority } from '@shared/types'
+import type { Project, Recurrence, Task, TaskFormInput, TaskPriority } from '@shared/types'
 import { formatClock } from '../../utils/format'
 import { useTimersContext } from '../timers/TimersContext'
 import { datetimeLocalToMs, msToDatetimeLocal } from './taskDates'
@@ -13,6 +13,7 @@ import { hasSprintConfig } from './sprintMath'
 import ImageGallery from './ImageGallery'
 import MarkdownField from './MarkdownField'
 import PriorityBadge, { PRIORITIES } from './PriorityBadge'
+import RecurrenceField from './RecurrenceField'
 import TaskStatusControl from './TaskStatusControl'
 import './TaskModal.css'
 
@@ -65,6 +66,7 @@ export default function TaskModal({
   const [timerTargetMinutes, setTimerTargetMinutes] = useState(
     task?.timerTargetMs ? String(Math.round(task.timerTargetMs / 60000)) : ''
   )
+  const [recurrence, setRecurrence] = useState<Recurrence | null>(task?.recurrence ?? null)
   const [saving, setSaving] = useState(false)
   const [busy, setBusy] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
@@ -85,7 +87,8 @@ export default function TaskModal({
       estimatedMs: estimateMinutes.trim() ? Number(estimateMinutes) * 60000 : null,
       sprintNumber: Number.isFinite(parsedSprint) && parsedSprint > 0 ? parsedSprint : null,
       linkedTimerId: linkedTimerId || null,
-      timerTargetMs: linkedTimerId && Number.isFinite(parsedTarget) && parsedTarget > 0 ? parsedTarget * 60000 : null
+      timerTargetMs: linkedTimerId && Number.isFinite(parsedTarget) && parsedTarget > 0 ? parsedTarget * 60000 : null,
+      recurrence
     }
   }
 
@@ -278,6 +281,11 @@ export default function TaskModal({
               />
             )}
           </div>
+        </div>
+
+        <div className="task-modal__field">
+          <p className="task-modal__label">Repeat</p>
+          <RecurrenceField value={recurrence} onChange={setRecurrence} completionCount={task?.completionCount ?? 0} />
         </div>
 
         {task && (

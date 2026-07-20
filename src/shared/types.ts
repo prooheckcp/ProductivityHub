@@ -180,6 +180,23 @@ export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent'
 
 export type TaskStatus = 'todo' | 'in_progress' | 'under_review' | 'finished'
 
+// How often a recurring task repeats. 'custom' repeats on specific days chosen
+// via the calendar (either weekdays, or days-of-month) — see calendarMode.
+export type RecurrenceMode = 'daily' | 'weekly' | 'biweekly' | 'monthly' | 'custom'
+
+// Which face of the custom calendar is used: 'week' → pick weekdays (0=Sun..6=Sat),
+// 'month' → pick days-of-month (1..31).
+export type RecurrenceCalendarMode = 'week' | 'month'
+
+export type Recurrence = {
+  mode: RecurrenceMode
+  calendarMode: RecurrenceCalendarMode
+  /** For custom 'week' mode: weekdays it repeats on (0=Sun..6=Sat). */
+  daysOfWeek: number[]
+  /** For custom 'month' mode: days-of-month it repeats on (1..31). */
+  daysOfMonth: number[]
+}
+
 export type Task = {
   id: string
   categoryId: string
@@ -198,6 +215,14 @@ export type Task = {
   sprintNumber: number | null
   linkedTimerId: string | null
   timerTargetMs: number | null
+  /** null = not recurring. When set, completing the task auto-resets it later. */
+  recurrence: Recurrence | null
+  /** Lifetime count of how many times this recurring task has been completed. */
+  completionCount: number
+  /** When the recurring task was last marked complete. */
+  lastCompletedAt: number | null
+  /** When a completed recurring task should reset back to 'todo' (with tolerance). */
+  nextDueAt: number | null
   order: number
   createdAt: number
   updatedAt: number
@@ -213,6 +238,7 @@ export type TaskFormInput = {
   sprintNumber: number | null
   linkedTimerId: string | null
   timerTargetMs: number | null
+  recurrence: Recurrence | null
 }
 
 // ---- Alarms & Countdown Timers ----

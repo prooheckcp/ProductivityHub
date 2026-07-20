@@ -72,7 +72,11 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Leaderboards',
     icon: LeaderboardIcon,
     element: <Leaderboard />,
-    children: [{ path: '/leaderboard/code', label: 'Code', icon: CodeIcon }]
+    children: [
+      { path: '/leaderboard/code', label: 'Code', icon: CodeIcon },
+      { path: '/leaderboard/devtools', label: 'Developer Tools', icon: SettingsIcon },
+      { path: '/leaderboard/games', label: 'Games', icon: TrophyIcon }
+    ]
   }
 ]
 
@@ -87,5 +91,5 @@ export const EXTRA_ROUTES: { path: string; element: JSX.Element }[] = [
   { path: '/todo/:projectId', element: <ProjectDetail /> },
   { path: '/stats/:category', element: <Stats /> },
   { path: '/clock/:view', element: <Clock /> },
-  { path: '/leaderboard/code', element: <Leaderboard /> }
+  { path: '/leaderboard/:category', element: <Leaderboard /> }
 ]

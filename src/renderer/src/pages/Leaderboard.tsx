@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { JSX } from 'react'
+import { useParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import Card from '../components/Card'
 import EmptyState from '../components/EmptyState'
@@ -8,10 +9,11 @@ import { useProfile } from '../auth/ProfileContext'
 import {
   fetchLeaderboard,
   fetchLeaderboardCountries,
-  fetchLeaderboardLanguages,
+  fetchLeaderboardItems,
   fetchMyRank
 } from '../leaderboard/leaderboardApi'
 import type { LeaderboardEntry, LeaderboardPeriod } from '@shared/types'
+import type { LeaderboardCategory } from '@shared/appLeaderboardCatalog'
 import { countryFlag, countryName } from '@shared/countries'
 import { resolveAvatar } from '../assets/avatarTemplates'
 import { languageIcon } from '../assets/langIcons'
@@ -23,6 +25,16 @@ const PERIODS: { key: LeaderboardPeriod; label: string }[] = [
   { key: 'weekly', label: 'This week' },
   { key: 'daily', label: 'Today' }
 ]
+
+const CATEGORY_META: Record<LeaderboardCategory, { title: string; itemLabel: string; noun: string }> = {
+  code: { title: 'Code', itemLabel: 'Language', noun: 'coding time' },
+  devtools: { title: 'Developer Tools', itemLabel: 'Tool', noun: 'tool time' },
+  games: { title: 'Games', itemLabel: 'Game', noun: 'game time' }
+}
+
+function parseCategory(raw: string | undefined): LeaderboardCategory {
+  return raw === 'devtools' || raw === 'games' ? raw : 'code'
+}
 
 function rankClass(rank: number): string {
   if (rank === 1) return 'lb-row--gold'
@@ -38,13 +50,16 @@ function initials(name: string): string {
 }
 
 export default function Leaderboard(): JSX.Element {
+  const { category: rawCategory } = useParams()
+  const category = parseCategory(rawCategory)
+  const meta = CATEGORY_META[category]
   const { status } = useAuth()
   const { profile } = useProfile()
   const signedIn = status === 'authenticated'
 
-  const [languages, setLanguages] = useState<string[]>([])
+  const [items, setItems] = useState<string[]>([])
   const [countries, setCountries] = useState<string[]>([])
-  const [language, setLanguage] = useState<string>('')
+  const [item, setItem] = useState<string>('')
   const [country, setCountry] = useState<string>('') // '' = all countries
   const [period, setPeriod] = useState<LeaderboardPeriod>('all')
 
@@ -54,31 +69,40 @@ export default function Leaderboard(): JSX.Element {
   const [error, setError] = useState<string | null>(null)
   const [refreshTick, setRefreshTick] = useState(0)
 
-  // Load the available languages + countries (also on manual refresh, since new
-  // data may have synced after the page opened).
+  // Reset all category-scoped state when switching categories so the previous
+  // category's items/rows never leak (e.g. code languages showing under Games).
+  useEffect(() => {
+    setItem('')
+    setItems([])
+    setEntries([])
+    setMyRank(null)
+    setError(null)
+  }, [category])
+
+  // Load the available items + countries for this category.
   useEffect(() => {
     if (!signedIn) return
     let cancelled = false
-    Promise.all([fetchLeaderboardLanguages(), fetchLeaderboardCountries()])
-      .then(([langs, ctys]) => {
+    Promise.all([fetchLeaderboardItems(category), fetchLeaderboardCountries(category)])
+      .then(([its, ctys]) => {
         if (cancelled) return
-        setLanguages(langs)
+        setItems(its)
         setCountries(ctys)
-        setLanguage((prev) => prev || langs[0] || '')
+        setItem((prev) => prev || its[0] || '')
       })
       .catch((e) => !cancelled && setError(e.message))
     return () => {
       cancelled = true
     }
-  }, [signedIn, refreshTick])
+  }, [signedIn, category, refreshTick])
 
   // Load the ranked list + the user's own rank whenever filters change.
   useEffect(() => {
-    if (!signedIn || !language) return
+    if (!signedIn || !item) return
     let cancelled = false
     setLoading(true)
     setError(null)
-    const q = { language, country: country || null, period }
+    const q = { category, item, country: country || null, period }
     Promise.all([fetchLeaderboard({ ...q, limit: 100 }), fetchMyRank(q)])
       .then(([rows, rank]) => {
         if (cancelled) return
@@ -90,21 +114,22 @@ export default function Leaderboard(): JSX.Element {
     return () => {
       cancelled = true
     }
-  }, [signedIn, language, country, period, refreshTick])
+  }, [signedIn, category, item, country, period, refreshTick])
 
+  const iconUrl = category === 'code' && item ? languageIcon(item) : null
   const scopeLabel = useMemo(
-    () => (country ? `${countryName(country)} · ${language}` : `Worldwide · ${language}`),
-    [country, language]
+    () => (country ? `${countryName(country)} · ${item}` : `Worldwide · ${item}`),
+    [country, item]
   )
 
   if (!signedIn) {
     return (
       <>
-        <PageHeader title="Leaderboards" subtitle="See how your coding time stacks up." />
+        <PageHeader title="Leaderboards" subtitle="See how your time stacks up." />
         <Card className="lb-card">
           <EmptyState
             title="Sign in to compete"
-            description="Coding leaderboards rank your tracked programming time against everyone else. Sign in to appear on the board and see your world rank."
+            description="Leaderboards rank your tracked time against everyone else. Sign in to appear on the board and see your world rank."
           />
         </Card>
       </>
@@ -113,14 +138,16 @@ export default function Leaderboard(): JSX.Element {
 
   return (
     <>
-      <PageHeader title="Leaderboards" subtitle="Coding time, ranked against the world." />
+      <PageHeader title={`${meta.title} leaderboard`} subtitle={`Your tracked ${meta.noun}, ranked against the world.`} />
 
       {/* Your rank banner */}
       <Card className="lb-card lb-myrank">
-        {languageIcon(language) && <img className="lb-myrank__lang-icon" src={languageIcon(language) as string} alt="" />}
+        {iconUrl && <img className="lb-myrank__lang-icon" src={iconUrl} alt="" />}
         <div className="lb-myrank__left">
           <span className="lb-myrank__label">Your {country ? countryName(country) : 'world'} rank</span>
-          <span className="lb-myrank__scope">{scopeLabel} · {PERIODS.find((p) => p.key === period)?.label}</span>
+          <span className="lb-myrank__scope">
+            {scopeLabel} · {PERIODS.find((p) => p.key === period)?.label}
+          </span>
         </div>
         <div className="lb-myrank__value">
           {myRank ? (
@@ -137,14 +164,14 @@ export default function Leaderboard(): JSX.Element {
       {/* Filters */}
       <Card className="lb-card lb-filters">
         <div className="lb-filter">
-          <label htmlFor="lb-language">Language</label>
+          <label htmlFor="lb-item">{meta.itemLabel}</label>
           <div className="lb-filter__with-icon">
-            {languageIcon(language) && <img className="lb-filter__icon" src={languageIcon(language) as string} alt="" />}
-            <select id="lb-language" value={language} onChange={(e) => setLanguage(e.target.value)} disabled={!languages.length}>
-              {languages.length === 0 && <option value="">No data yet</option>}
-              {languages.map((l) => (
-                <option key={l} value={l}>
-                  {l}
+            {iconUrl && <img className="lb-filter__icon" src={iconUrl} alt="" />}
+            <select id="lb-item" value={item} onChange={(e) => setItem(e.target.value)} disabled={!items.length}>
+              {items.length === 0 && <option value="">No data yet</option>}
+              {items.map((it) => (
+                <option key={it} value={it}>
+                  {it}
                 </option>
               ))}
             </select>
@@ -190,7 +217,7 @@ export default function Leaderboard(): JSX.Element {
         {!error && !loading && entries.length === 0 && (
           <EmptyState
             title="No entries yet"
-            description="Nobody has tracked coding time for this filter yet. Track some coding time and check back!"
+            description={`Nobody has tracked ${meta.noun} for this filter yet. Track some and check back!`}
           />
         )}
         {!error && !loading && entries.length > 0 && (

@@ -11,6 +11,7 @@ import type {
 import { dataFile } from './paths'
 import { readJsonFile, writeJsonFile } from './jsonFile'
 import { recordTaskCompleted } from './achievements'
+import { computeNextDueAt, isRecurrenceValid } from '../../shared/recurrence'
 
 const projectsFile = (): string => dataFile('projects.json')
 const categoriesFile = (): string => dataFile('categories.json')
@@ -34,6 +35,10 @@ function normalizeTask(task: Task): Task {
     sprintNumber: task.sprintNumber ?? null,
     linkedTimerId: task.linkedTimerId ?? null,
     timerTargetMs: task.timerTargetMs ?? null,
+    recurrence: task.recurrence ?? null,
+    completionCount: task.completionCount ?? 0,
+    lastCompletedAt: task.lastCompletedAt ?? null,
+    nextDueAt: task.nextDueAt ?? null,
     statusChangedAt: task.statusChangedAt ?? legacy.completedAt ?? null,
     status: task.status ?? (legacy.completed ? 'finished' : 'todo')
   }
@@ -175,6 +180,10 @@ export function createTask(categoryId: string, parentTaskId: string | null, inpu
     sprintNumber: input.sprintNumber,
     linkedTimerId: input.linkedTimerId,
     timerTargetMs: input.timerTargetMs,
+    recurrence: isRecurrenceValid(input.recurrence) ? input.recurrence : null,
+    completionCount: 0,
+    lastCompletedAt: null,
+    nextDueAt: null,
     order,
     createdAt: now,
     updatedAt: now
@@ -196,6 +205,10 @@ export function updateTask(id: string, patch: TaskFormInput): Task {
   task.sprintNumber = patch.sprintNumber
   task.linkedTimerId = patch.linkedTimerId
   task.timerTargetMs = patch.timerTargetMs
+  const nextRecurrence = isRecurrenceValid(patch.recurrence) ? patch.recurrence : null
+  // If recurrence was turned off, cancel any pending auto-reset.
+  if (!nextRecurrence) task.nextDueAt = null
+  task.recurrence = nextRecurrence
   task.updatedAt = Date.now()
   if (task.deadline === null) task.deadlineNotifiedAt = null
   saveTasks(tasks)
@@ -226,15 +239,44 @@ export function setTaskStatus(id: string, status: TaskStatus): { task: Task; cha
   const wasFinished = task.status === 'finished'
   const isFinished = status === 'finished'
   const changed = wasFinished !== isFinished
+  const now = Date.now()
   task.status = status
-  task.statusChangedAt = Date.now()
+  task.statusChangedAt = now
   if (isFinished && task.runningSince !== null) {
-    task.accumulatedMs += Math.max(0, Date.now() - task.runningSince)
+    task.accumulatedMs += Math.max(0, now - task.runningSince)
     task.runningSince = null
   }
-  task.updatedAt = Date.now()
+  // Recurring tasks: completing one records a completion and schedules the
+  // auto-reset (recurringTaskWatcher flips it back to 'todo' at nextDueAt).
+  // Manually un-completing one cancels that pending reset.
+  if (changed && task.recurrence) {
+    if (isFinished) {
+      task.completionCount += 1
+      task.lastCompletedAt = now
+      task.nextDueAt = computeNextDueAt(task.recurrence, now)
+    } else {
+      task.nextDueAt = null
+    }
+  }
+  task.updatedAt = now
   saveTasks(tasks)
   return { task, changed }
+}
+
+// Called by recurringTaskWatcher when a completed recurring task's reset time
+// arrives: flip it back to 'todo' so it's due again. Does NOT touch achievement
+// counters (the completion was already counted when it was marked done).
+export function resetRecurringTask(id: string): Task | null {
+  const tasks = loadTasks()
+  const task = tasks.find((t) => t.id === id)
+  if (!task) return null
+  const now = Date.now()
+  task.status = 'todo'
+  task.statusChangedAt = now
+  task.nextDueAt = null
+  task.updatedAt = now
+  saveTasks(tasks)
+  return task
 }
 
 export function startTask(id: string): Task {
@@ -279,9 +321,16 @@ export function checkTimerLinkedTasks(timerId: string, accumulatedMs: number): v
       task.status !== 'finished' &&
       accumulatedMs >= task.timerTargetMs
     ) {
+      const now = Date.now()
       task.status = 'finished'
-      task.statusChangedAt = Date.now()
-      task.updatedAt = Date.now()
+      task.statusChangedAt = now
+      task.updatedAt = now
+      // A recurring timer-linked task also records a completion and schedules its reset.
+      if (task.recurrence) {
+        task.completionCount += 1
+        task.lastCompletedAt = now
+        task.nextDueAt = computeNextDueAt(task.recurrence, now)
+      }
       changed = true
       recordTaskCompleted()
     }

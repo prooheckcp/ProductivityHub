@@ -17,7 +17,7 @@ import { getAppIconDataUrl } from './appIcons'
 import { getAppDetail } from './appDetailStats'
 import { copyAttachment, deleteAttachmentIfExists, saveAttachment } from './attachments'
 import { getCodeTrackerStatus, resetCodeTracking } from './codeTracker'
-import { buildBundle, exportData, importData, restoreBundle } from './dataTransfer'
+import { backupCurrentData, buildBundle, exportData, importData, restoreBundle } from './dataTransfer'
 import { pickSyncedSettings } from '../shared/syncBundle'
 import type { DataBundle } from '../shared/types'
 import { getHomeSummary } from './homeSummary'
@@ -363,6 +363,9 @@ export function registerIpcHandlers(): void {
   // restore a snapshot pulled from the cloud back into local stores.
   ipcMain.handle('data:getBundle', () => buildBundle())
   ipcMain.handle('data:restoreBundle', (_event, bundle: Partial<DataBundle>) => {
+    // Always snapshot the current data first — a restore overwrites the live
+    // files, and this guarantees a recovery point.
+    backupCurrentData('pre-restore')
     // Keep machine-only settings (launchAtLogin, showTimerOverlay) local, but
     // apply the synced theme fields on top.
     restoreBundle(bundle, { skipSettings: true })

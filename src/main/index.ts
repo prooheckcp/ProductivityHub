@@ -10,6 +10,7 @@ import { startClockWatcher, stopClockWatcher } from './clockWatcher'
 import { startCodeTracker, stopCodeTracker } from './codeTracker'
 import { startDeadlineNotifier, stopDeadlineNotifier } from './deadlineNotifier'
 import { startTimerTaskWatcher, stopTimerTaskWatcher } from './timerTaskWatcher'
+import { startRecurringTaskWatcher, stopRecurringTaskWatcher } from './recurringTaskWatcher'
 import { applyLoginItemSetting, wasLaunchedHidden } from './loginItem'
 import { createTray } from './tray'
 import { initOverlay, destroyOverlayWindow, setMainFocused, isOverlayInteracting } from './overlayWindow'
@@ -141,6 +142,7 @@ app.whenReady().then(() => {
   startAppTracker()
   startDeadlineNotifier()
   startTimerTaskWatcher()
+  startRecurringTaskWatcher()
   startClockWatcher()
   startCodeTracker()
   applyLoginItemSetting(getSettings().launchAtLogin)
@@ -167,6 +169,7 @@ app.on('before-quit', () => {
   stopAppTracker()
   stopDeadlineNotifier()
   stopTimerTaskWatcher()
+  stopRecurringTaskWatcher()
   stopClockWatcher()
   stopCodeTracker()
 })

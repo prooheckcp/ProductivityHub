@@ -4,6 +4,7 @@
   padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.16);
   -webkit-app-region: no-drag;
+  flex-shrink: 0;
 }
 
 .user-chip__button {
@@ -112,4 +113,12 @@
 
 .user-chip__menu-item:hover {
   background: var(--surface-hover);
+}
+
+.user-chip__menu-item--danger {
+  color: #d13438;
+}
+
+.user-chip__menu-item--danger:hover {
+  background: rgba(209, 52, 56, 0.1);
 }

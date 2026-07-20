@@ -47,6 +47,22 @@
   gap: 8px;
 }
 
+.task-row__recurring {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px 1px 6px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.task-row__recurring svg {
+  flex-shrink: 0;
+}
+
 .task-row__deadline {
   font-size: 11px;
   color: var(--text-tertiary);

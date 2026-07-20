@@ -110,7 +110,9 @@ export async function fetchCountryByIp(): Promise<string | null> {
   }
 }
 
-// Resolve a best-guess country: OS locale first, then IP geolocation.
+// Resolve a best-guess country. IP geolocation FIRST (reflects where you
+// physically are), then OS locale as a fallback — the locale region can be wrong
+// (e.g. an en-GB system used in Japan reports GB).
 export async function resolveCountry(): Promise<string | null> {
-  return detectCountryCode() ?? (await fetchCountryByIp())
+  return (await fetchCountryByIp()) ?? detectCountryCode()
 }

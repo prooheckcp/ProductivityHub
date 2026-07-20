@@ -9,6 +9,7 @@ import { TimersProvider } from '../features/timers/TimersContext'
 import { ClockProvider } from '../features/clock/ClockContext'
 import ClockWidgets from '../features/clock/ClockWidgets'
 import AchievementToast from '../features/achievements/AchievementToast'
+import RecurringTaskToast from '../features/todo/RecurringTaskToast'
 import CornerTimers from '../features/overlay/CornerTimers'
 import './AppLayout.css'
 
@@ -63,6 +64,7 @@ export default function AppLayout(): JSX.Element {
             <ClockWidgets />
           </div>
           <AchievementToast />
+          <RecurringTaskToast />
         </div>
       </ClockProvider>
     </TimersProvider>

@@ -1,0 +1,206 @@
+.recurrence-field {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recurrence-field__toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.recurrence-field__toggle:hover {
+  background: var(--surface-hover);
+}
+
+.recurrence-field__toggle--on {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+}
+
+.recurrence-field__toggle-icon {
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+}
+
+.recurrence-field__toggle-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.recurrence-field__count {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+}
+
+.recurrence-field__switch {
+  margin-left: auto;
+  width: 36px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--surface-active);
+  flex-shrink: 0;
+  transition: background-color 140ms ease;
+  position: relative;
+}
+
+.recurrence-field__switch--on {
+  background: var(--accent);
+}
+
+.recurrence-field__knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #ffffff;
+  transition: transform 140ms ease;
+}
+
+.recurrence-field__switch--on .recurrence-field__knob {
+  transform: translateX(16px);
+}
+
+.recurrence-field__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+}
+
+.recurrence-field__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.recurrence-field__chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 550;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.recurrence-field__chip:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.recurrence-field__chip--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.recurrence-field__custom {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.recurrence-field__seg {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--surface-active);
+}
+
+.recurrence-field__seg-btn {
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.recurrence-field__seg-btn--active {
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.15));
+}
+
+.recurrence-field__weekdays {
+  display: flex;
+  gap: 6px;
+}
+
+.recurrence-field__day {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.recurrence-field__day:hover {
+  background: var(--surface-hover);
+}
+
+.recurrence-field__day--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.recurrence-field__monthdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.recurrence-field__mday {
+  aspect-ratio: 1;
+  min-width: 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.recurrence-field__mday:hover {
+  background: var(--surface-hover);
+}
+
+.recurrence-field__mday--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.recurrence-field__hint {
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+  line-height: 1.45;
+}

@@ -1,7 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { JSX, ReactNode } from 'react'
 import type { User } from '@supabase/supabase-js'
-import { computeTotalTrackedMs } from '@shared/syncBundle'
 import { isSupabaseConfigured, supabase } from '../supabase/client'
 import { bundleHasData, pullRemote, pushRemote, startPushEngine, type RemoteData } from '../sync/syncEngine'
 
@@ -62,28 +61,45 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
   // the cloud from local (guest) data.
   const completeLogin = useCallback(
     async (u: User): Promise<void> => {
-      const guestBundle = await window.api.data.getBundle()
+      const guestBundle = await window.api.data.getBundle() // current dir = guest
       await window.api.auth.setIdentity('account', u.id, true)
+      const accountBundle = await window.api.data.getBundle() // account dir now active
 
-      let remote: RemoteData = null
-      try {
-        remote = await pullRemote(u.id)
-      } catch {
-        remote = null // offline — fall through to local
-      }
-
-      if (remote && bundleHasData(remote.bundle)) {
-        await window.api.data.restoreBundle(remote.bundle)
+      // LOCAL-FIRST: if this machine already has data for the account, it is
+      // authoritative — NEVER overwrite it with the cloud (which could be
+      // staler and cause data loss). Just back it up to the cloud.
+      if (bundleHasData(accountBundle)) {
+        try {
+          await pushRemote(u.id, accountBundle)
+        } catch {
+          // offline — the push engine will retry
+        }
       } else {
-        const wantsUpload = bundleHasData(guestBundle) ? await askUpload() : false
-        if (wantsUpload) {
+        // The account dir is empty on this machine. Safe to seed it.
+        let remote: RemoteData = null
+        let pullFailed = false
+        try {
+          remote = await pullRemote(u.id)
+        } catch {
+          pullFailed = true
+        }
+
+        if (!pullFailed && remote && bundleHasData(remote.bundle)) {
+          // Existing account, restore its cloud data onto this fresh machine.
+          await window.api.data.restoreBundle(remote.bundle)
+        } else if (!pullFailed && !remote && bundleHasData(guestBundle)) {
+          // Brand-new account (no cloud row) + you have guest data → offer import.
+          const wantsUpload = await askUpload()
+          if (wantsUpload) {
+            await window.api.data.restoreBundle(guestBundle)
+            await pushRemote(u.id, await window.api.data.getBundle())
+          } else {
+            await pushRemote(u.id, accountBundle)
+          }
+        } else if (bundleHasData(guestBundle)) {
+          // Cloud empty/unreachable but you have local guest data → seed it so
+          // the app is never blank. (No prompt: nothing to overwrite.)
           await window.api.data.restoreBundle(guestBundle)
-          await pushRemote(u.id, guestBundle)
-        } else {
-          // Create the cloud row from whatever is in the account dir (usually
-          // empty) so subsequent pushes UPDATE and get anti-cheat validated.
-          const fresh = await window.api.data.getBundle()
-          await pushRemote(u.id, fresh)
         }
       }
 
@@ -111,19 +127,10 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
           await completeLogin(session.user)
           return
         }
-        // Identity matches. Adopt cloud only if it's ahead (another device),
-        // otherwise keep local and let the push engine sync forward.
+        // Identity matches. Local data on this machine is authoritative — do NOT
+        // pull/restore on startup (that risked overwriting newer local data with
+        // a staler cloud copy). The push engine backs local up to the cloud.
         setUser(session.user)
-        try {
-          const localTotal = computeTotalTrackedMs(await window.api.data.getBundle())
-          const remote = await pullRemote(session.user.id)
-          if (!cancelled && remote && remote.totalTrackedMs > localTotal && bundleHasData(remote.bundle)) {
-            await window.api.data.restoreBundle(remote.bundle)
-            notifyDataReloaded()
-          }
-        } catch {
-          // offline — keep local
-        }
         if (!cancelled) setStatus('authenticated')
         return
       }
@@ -190,6 +197,11 @@ export function AuthProvider({ children }: { children: ReactNode }): JSX.Element
         setAuthError(null)
         const { data, error } = await supabase.auth.signUp({ email, password })
         if (error) return { error: error.message }
+        // Supabase obfuscates "email already registered" (to prevent enumeration)
+        // by returning a user with an empty `identities` array and no session.
+        if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+          return { error: 'An account with this email already exists — try signing in instead.' }
+        }
         if (!data.session) return { error: null, needsConfirmation: true }
         await completeLogin(data.session.user)
         return { error: null }

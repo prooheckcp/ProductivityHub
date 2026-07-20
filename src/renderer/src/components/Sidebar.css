@@ -20,6 +20,7 @@
   align-items: center;
   gap: 8px;
   padding: 4px 6px 24px 10px;
+  flex-shrink: 0;
 }
 
 .sidebar__brand {
@@ -70,10 +71,35 @@
   flex-direction: column;
   gap: 2px;
   -webkit-app-region: no-drag;
+  /* Take the free vertical space and scroll internally so expanding sections
+     never push Settings or the profile chip off-screen. */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  /* Room so the last item isn't flush against the scroll edge. */
+  padding-bottom: 4px;
+}
+
+/* Slim, unobtrusive scrollbar for the nav list. */
+.sidebar__list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar__list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 3px;
+}
+
+.sidebar__list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.sidebar__list::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .sidebar__secondary {
-  margin-top: auto;
+  flex-shrink: 0;
   padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.16);
 }

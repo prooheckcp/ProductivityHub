@@ -6,6 +6,7 @@ import { useAuth } from '../../auth/AuthContext'
 import { useProfile } from '../../auth/ProfileContext'
 import { COUNTRIES, countryFlag, detectCountryCode } from '@shared/countries'
 import { AVATAR_TEMPLATES, resolveAvatar, templateIndex } from '../../assets/avatarTemplates'
+import { LogOutIcon } from '../../components/icons'
 import './AccountSettings.css'
 
 function initials(name: string): string {
@@ -172,8 +173,9 @@ export default function AccountSettings(): JSX.Element {
       {error && <p className="account__error">{error}</p>}
 
       <div className="settings__data-actions account__logout">
-        <Button variant="secondary" onClick={() => void signOut()}>
-          Log out
+        <Button variant="danger" onClick={() => void signOut()} className="account__logout-btn">
+          <LogOutIcon size={16} />
+          <span>Log out</span>
         </Button>
       </div>
     </Card>

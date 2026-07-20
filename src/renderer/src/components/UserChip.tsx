@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { useProfile } from '../auth/ProfileContext'
 import { resolveAvatar } from '../assets/avatarTemplates'
-import { SettingsIcon } from './icons'
+import { LogOutIcon, SettingsIcon, UserIcon } from './icons'
 import './UserChip.css'
 
 function initials(name: string): string {
@@ -52,14 +52,15 @@ export default function UserChip(): JSX.Element {
           </button>
           <button
             type="button"
-            className="user-chip__menu-item"
+            className={'user-chip__menu-item' + (isGuest ? '' : ' user-chip__menu-item--danger')}
             role="menuitem"
             onClick={() => {
               setOpen(false)
               void signOut()
             }}
           >
-            {isGuest ? 'Sign in' : 'Log out'}
+            {isGuest ? <UserIcon size={15} /> : <LogOutIcon size={15} />}
+            <span>{isGuest ? 'Sign in' : 'Log out'}</span>
           </button>
         </div>
       )}

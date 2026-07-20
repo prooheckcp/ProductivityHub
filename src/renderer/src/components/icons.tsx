@@ -74,6 +74,19 @@ export function CheckIcon({ size = 18 }: IconProps): JSX.Element {
   )
 }
 
+export function RepeatIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path
+        d="M17 2.5 20.5 6 17 9.5M20.5 6H8a4 4 0 0 0-4 4v1M7 21.5 3.5 18 7 14.5M3.5 18H16a4 4 0 0 0 4-4v-1"
+        strokeWidth="1.9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 export function PlayIcon({ size = 18 }: IconProps): JSX.Element {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none">
@@ -565,6 +578,19 @@ export function UserIcon({ size = 18 }: IconProps): JSX.Element {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
       <circle cx="12" cy="8" r="3.6" strokeWidth="1.8" />
       <path d="M4.5 20a7.5 7.5 0 0 1 15 0" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function LogOutIcon({ size = 18 }: IconProps): JSX.Element {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <path
+        d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M4.5 12H15"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }

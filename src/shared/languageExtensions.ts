@@ -92,6 +92,16 @@ export const EXTENSION_LANGUAGE_MAP: Record<string, string> = {
   astro: 'Astro'
 }
 
+// The canonical languages we actually track (the values of the extension map).
+// Coding time for anything else (unknown extensions that fell back to the
+// editor's languageId, 'Other', 'Plain Text', etc.) is excluded from Stats and
+// the leaderboards.
+export const TRACKED_LANGUAGES: ReadonlySet<string> = new Set(Object.values(EXTENSION_LANGUAGE_MAP))
+
+export function isTrackedLanguage(language: string): boolean {
+  return TRACKED_LANGUAGES.has(language)
+}
+
 function extensionOf(fileName: string): string {
   const base = fileName.split(/[\\/]/).pop() ?? fileName
   if (base.toLowerCase() === 'dockerfile') return 'dockerfile'

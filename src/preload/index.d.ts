@@ -112,6 +112,7 @@ export type Api = {
       setStatus: (id: string, status: TaskStatus) => Promise<Task>
       start: (id: string) => Promise<Task>
       pause: (id: string) => Promise<Task>
+      onRecurringDue: (callback: (task: { id: string; name: string }) => void) => () => void
     }
   }
   clock: {

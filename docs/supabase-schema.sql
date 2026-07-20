@@ -112,33 +112,10 @@ create trigger validate_user_data
   before update on public.user_data
   for each row execute function public.validate_user_data_update();
 
--- ============================================================================
--- Storage: public `avatars` bucket. Files are stored under `<uid>/...` so a
--- user can only write their own folder; anyone can read (for leaderboards).
--- ============================================================================
-insert into storage.buckets (id, name, public)
-values ('avatars', 'avatars', true)
-on conflict (id) do nothing;
-
-drop policy if exists "Avatar images are publicly readable" on storage.objects;
-create policy "Avatar images are publicly readable"
-  on storage.objects for select
-  using (bucket_id = 'avatars');
-
-drop policy if exists "Users can upload their own avatar" on storage.objects;
-create policy "Users can upload their own avatar"
-  on storage.objects for insert
-  with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
-
-drop policy if exists "Users can update their own avatar" on storage.objects;
-create policy "Users can update their own avatar"
-  on storage.objects for update
-  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
-
-drop policy if exists "Users can delete their own avatar" on storage.objects;
-create policy "Users can delete their own avatar"
-  on storage.objects for delete
-  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+-- NOTE: Storage (the `avatars` bucket + policies) lives in a SEPARATE file,
+-- docs/supabase-storage-optional.sql. It's only needed for custom photo uploads
+-- (the 6 built-in templates work without it). It's kept separate because a
+-- storage-policy permission error would otherwise roll back this whole script.
 
 -- ============================================================================
 -- coding_leaderboard: public, cross-user aggregates of coding time per language.
@@ -315,3 +292,139 @@ as $$
   where p.country is not null and cl.all_time_ms > 0
   order by p.country;
 $$;
+
+-- ============================================================================
+-- app_leaderboard: cross-user aggregates of time spent in specific apps, split
+-- by category ('devtools' | 'games') and item (canonical app name). Same
+-- three-window model as coding_leaderboard.
+-- ============================================================================
+create table if not exists public.app_leaderboard (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  category text not null,
+  item text not null,
+  all_time_ms bigint not null default 0,
+  today_ms bigint not null default 0,
+  today_date date,
+  week_ms bigint not null default 0,
+  week_key text,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, category, item)
+);
+
+alter table public.app_leaderboard enable row level security;
+
+drop policy if exists "App leaderboard is readable by everyone" on public.app_leaderboard;
+create policy "App leaderboard is readable by everyone"
+  on public.app_leaderboard for select using (true);
+
+drop policy if exists "Users can insert their own app rows" on public.app_leaderboard;
+create policy "Users can insert their own app rows"
+  on public.app_leaderboard for insert with check (auth.uid() = user_id);
+
+drop policy if exists "Users can update their own app rows" on public.app_leaderboard;
+create policy "Users can update their own app rows"
+  on public.app_leaderboard for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+create or replace function public.validate_app_leaderboard_update()
+returns trigger language plpgsql as $$
+declare
+  factor        constant numeric := 4;
+  tolerance_ms  constant bigint  := 7200000;
+  elapsed_ms       bigint;
+  allowed_increase bigint;
+  actual_increase  bigint;
+begin
+  elapsed_ms := greatest(0, floor(extract(epoch from (now() - old.updated_at)) * 1000))::bigint;
+  allowed_increase := (elapsed_ms * factor)::bigint + tolerance_ms;
+  actual_increase := new.all_time_ms - old.all_time_ms;
+  if actual_increase > allowed_increase then
+    raise exception 'Rejected implausible app-time increase for %/%: % ms over % ms (max %)',
+      new.category, new.item, actual_increase, elapsed_ms, allowed_increase
+      using errcode = 'check_violation';
+  end if;
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+drop trigger if exists validate_app_leaderboard on public.app_leaderboard;
+create trigger validate_app_leaderboard
+  before update on public.app_leaderboard
+  for each row execute function public.validate_app_leaderboard_update();
+
+-- Ranked app leaderboard for a category + item, optional country, time window.
+create or replace function public.get_app_leaderboard(
+  p_category text,
+  p_item text,
+  p_country text default null,
+  p_period text default 'all',
+  p_limit int default 100
+)
+returns table (user_id uuid, username text, avatar_url text, country text, ms bigint, rank bigint)
+language sql stable as $$
+  with base as (
+    select al.user_id, p.username, p.avatar_url, p.country,
+      case when p_period='daily' then al.today_ms when p_period='weekly' then al.week_ms else al.all_time_ms end as ms
+    from public.app_leaderboard al join public.profiles p on p.id = al.user_id
+    where al.category = p_category and al.item = p_item
+      and (p_country is null or p.country = p_country)
+      and (p_period='all'
+        or (p_period='daily' and al.today_date=(now() at time zone 'utc')::date)
+        or (p_period='weekly' and al.week_key=to_char((now() at time zone 'utc'),'IYYY"-W"IW')))
+  ),
+  ranked as (select *, rank() over (order by ms desc) as rank from base where ms > 0)
+  select user_id, username, avatar_url, country, ms, rank from ranked order by rank limit p_limit;
+$$;
+
+create or replace function public.get_my_app_rank(
+  p_category text, p_item text, p_country text default null, p_period text default 'all'
+)
+returns table (rank bigint, ms bigint) language sql stable as $$
+  with base as (
+    select al.user_id,
+      case when p_period='daily' then al.today_ms when p_period='weekly' then al.week_ms else al.all_time_ms end as ms
+    from public.app_leaderboard al join public.profiles p on p.id = al.user_id
+    where al.category = p_category and al.item = p_item
+      and (p_country is null or p.country = p_country)
+      and (p_period='all'
+        or (p_period='daily' and al.today_date=(now() at time zone 'utc')::date)
+        or (p_period='weekly' and al.week_key=to_char((now() at time zone 'utc'),'IYYY"-W"IW')))
+  ),
+  ranked as (select user_id, ms, rank() over (order by ms desc) as rank from base where ms > 0)
+  select rank, ms from ranked where user_id = auth.uid();
+$$;
+
+create or replace function public.get_app_leaderboard_items(p_category text)
+returns table (item text) language sql stable as $$
+  select distinct item from public.app_leaderboard where category = p_category and all_time_ms > 0 order by item;
+$$;
+
+create or replace function public.get_app_leaderboard_countries(p_category text)
+returns table (country text) language sql stable as $$
+  select distinct p.country from public.app_leaderboard al join public.profiles p on p.id = al.user_id
+  where al.category = p_category and p.country is not null and al.all_time_ms > 0 order by p.country;
+$$;
+
+-- ============================================================================
+-- CRITICAL: expose these tables/functions to the Data API roles.
+-- This project was created with "Automatically expose new tables" OFF, so
+-- tables you create are NOT visible to PostgREST until granted — that's what
+-- causes "Could not find the table public.X in the schema cache". RLS (enabled
+-- above) still restricts which ROWS each user sees, so these grants are safe.
+-- ============================================================================
+grant usage on schema public to anon, authenticated;
+grant select, insert, update, delete on public.profiles to anon, authenticated;
+grant select, insert, update, delete on public.user_data to anon, authenticated;
+grant select, insert, update, delete on public.coding_leaderboard to anon, authenticated;
+grant select, insert, update, delete on public.app_leaderboard to anon, authenticated;
+grant execute on function public.get_coding_leaderboard(text, text, text, int) to anon, authenticated;
+grant execute on function public.get_my_coding_rank(text, text, text) to anon, authenticated;
+grant execute on function public.get_coding_leaderboard_languages() to anon, authenticated;
+grant execute on function public.get_coding_leaderboard_countries() to anon, authenticated;
+grant execute on function public.get_app_leaderboard(text, text, text, text, int) to anon, authenticated;
+grant execute on function public.get_my_app_rank(text, text, text, text) to anon, authenticated;
+grant execute on function public.get_app_leaderboard_items(text) to anon, authenticated;
+grant execute on function public.get_app_leaderboard_countries(text) to anon, authenticated;
+
+-- Tell PostgREST to reload its schema cache immediately.
+notify pgrst, 'reload schema';

@@ -26,7 +26,8 @@ const BLANK_TASK: TaskFormInput = {
   estimatedMs: null,
   sprintNumber: null,
   linkedTimerId: null,
-  timerTargetMs: null
+  timerTargetMs: null,
+  recurrence: null
 }
 
 const PRIORITY_RANK: Record<Task['priority'], number> = { urgent: 0, high: 1, medium: 2, low: 3 }

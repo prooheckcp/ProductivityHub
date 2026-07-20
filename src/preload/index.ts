@@ -113,7 +113,12 @@ const api = {
       remove: (id: string) => ipcRenderer.invoke('todo:tasks:delete', id),
       setStatus: (id: string, status: TaskStatus) => ipcRenderer.invoke('todo:tasks:setStatus', id, status),
       start: (id: string) => ipcRenderer.invoke('todo:tasks:start', id),
-      pause: (id: string) => ipcRenderer.invoke('todo:tasks:pause', id)
+      pause: (id: string) => ipcRenderer.invoke('todo:tasks:pause', id),
+      onRecurringDue: (callback: (task: { id: string; name: string }) => void) => {
+        const listener = (_event: IpcRendererEvent, task: { id: string; name: string }): void => callback(task)
+        ipcRenderer.on('todo:recurring-due', listener)
+        return () => ipcRenderer.removeListener('todo:recurring-due', listener)
+      }
     }
   },
   clock: {

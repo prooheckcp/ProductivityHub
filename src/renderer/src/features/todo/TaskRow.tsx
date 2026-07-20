@@ -1,7 +1,8 @@
 import type { JSX } from 'react'
 import type { Task, TaskStatus } from '@shared/types'
+import { describeRecurrence } from '@shared/recurrence'
 import ProgressBar from '../../components/ProgressBar'
-import { ChevronDownIcon } from '../../components/icons'
+import { ChevronDownIcon, RepeatIcon } from '../../components/icons'
 import { formatDeadline } from './taskDates'
 import PriorityBadge from './PriorityBadge'
 import TaskStatusControl from './TaskStatusControl'
@@ -56,6 +57,15 @@ export default function TaskRow({
         <span className={'task-row__name' + (isDone ? ' task-row__name--done' : '')}>{task.name}</span>
         <span className="task-row__meta">
           <PriorityBadge priority={task.priority} />
+          {task.recurrence && (
+            <span
+              className="task-row__recurring"
+              title={`Repeats: ${describeRecurrence(task.recurrence)}${task.completionCount > 0 ? ` · completed ${task.completionCount}×` : ''}`}
+            >
+              <RepeatIcon size={11} />
+              {describeRecurrence(task.recurrence)}
+            </span>
+          )}
           {task.deadline !== null && (
             <span className={'task-row__deadline' + (isOverdue ? ' task-row__deadline--overdue' : '')}>
               {formatDeadline(task.deadline)}

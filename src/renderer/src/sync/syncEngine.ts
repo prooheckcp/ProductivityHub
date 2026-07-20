@@ -1,5 +1,7 @@
 import type { DataBundle } from '@shared/types'
 import { computeTotalTrackedMs, pickSyncedSettings } from '@shared/syncBundle'
+import { isTrackedLanguage } from '@shared/languageExtensions'
+import { matchAppToItem } from '@shared/appLeaderboardCatalog'
 import { supabase } from '../supabase/client'
 
 export type RemoteData = {
@@ -83,7 +85,8 @@ export async function pushLeaderboard(userId: string, bundle: DataBundle): Promi
 
   for (const s of bundle.codingSessions) {
     const language = (s.language || '').trim()
-    if (!language) continue
+    // Only rank languages we actually track (skip 'Other', raw languageIds, etc.)
+    if (!language || !isTrackedLanguage(language)) continue
     const cur = map.get(language) ?? { all: 0, today: 0, week: 0 }
     cur.all += s.durationMs
     const started = new Date(s.startedAt)
@@ -106,6 +109,47 @@ export async function pushLeaderboard(userId: string, bundle: DataBundle): Promi
   if (error) {
     // eslint-disable-next-line no-console
     console.warn('[sync] leaderboard push failed (will retry):', error.message)
+    return { error: error.message }
+  }
+  return { error: null }
+}
+
+// Aggregate app-usage sessions into (category, item) buckets and upsert them to
+// the app leaderboard. Only apps in the curated catalog (Dev Tools / Games) are
+// ranked; everything else is ignored.
+export async function pushAppLeaderboard(userId: string, bundle: DataBundle): Promise<{ error: string | null }> {
+  const now = new Date()
+  const todayStr = utcDateString(now)
+  const weekKey = isoWeekKey(now)
+  const map = new Map<string, { category: string; item: string; all: number; today: number; week: number }>()
+
+  for (const s of bundle.appUsageSessions) {
+    const match = matchAppToItem(s.appName)
+    if (!match) continue
+    const key = `${match.category}|${match.item}`
+    const cur = map.get(key) ?? { category: match.category, item: match.item, all: 0, today: 0, week: 0 }
+    cur.all += s.durationMs
+    const started = new Date(s.startedAt)
+    if (utcDateString(started) === todayStr) cur.today += s.durationMs
+    if (isoWeekKey(started) === weekKey) cur.week += s.durationMs
+    map.set(key, cur)
+  }
+  if (map.size === 0) return { error: null }
+
+  const rows = [...map.values()].map((v) => ({
+    user_id: userId,
+    category: v.category,
+    item: v.item,
+    all_time_ms: v.all,
+    today_ms: v.today,
+    today_date: todayStr,
+    week_ms: v.week,
+    week_key: weekKey
+  }))
+  const { error } = await supabase.from('app_leaderboard').upsert(rows, { onConflict: 'user_id,category,item' })
+  if (error) {
+    // eslint-disable-next-line no-console
+    console.warn('[sync] app leaderboard push failed (will retry):', error.message)
     return { error: error.message }
   }
   return { error: null }
@@ -155,13 +199,14 @@ export function startPushEngine(userId: string, intervalMs = 20000): () => void 
       // block the leaderboard, and vice-versa.
       const userData = await pushRemote(userId, bundle)
       const leaderboard = await pushLeaderboard(userId, bundle)
+      const appLeaderboard = await pushAppLeaderboard(userId, bundle)
       if (userData.error) {
         // eslint-disable-next-line no-console
         console.warn('[sync] user_data push failed (will retry):', userData.error)
       }
       // Only mark this state as synced when everything landed; otherwise retry
       // on the next tick.
-      if (!userData.error && !leaderboard.error) lastSignature = sig
+      if (!userData.error && !leaderboard.error && !appLeaderboard.error) lastSignature = sig
     } catch (err) {
       // eslint-disable-next-line no-console
       console.warn('[sync] push error (will retry):', err)
