@@ -3,6 +3,7 @@ out
 dist
 dist-electron
 release
+.cache
 .DS_Store
 *.log
 *.tsbuildinfo

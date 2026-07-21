@@ -8,9 +8,14 @@
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "postinstall": "patch-package",
     "build:unpack": "electron-vite build && electron-builder --dir",
     "build:mac": "electron-vite build && electron-builder --mac",
-    "build:win": "electron-vite build && electron-builder --win",
+    "build:mac:arm64": "electron-vite build && electron-builder --mac --arm64",
+    "build:mac:x64": "electron-vite build && electron-builder --mac --x64",
+    "build:mac:universal": "electron-vite build && electron-builder --mac --universal",
+    "build:win": "electron-vite build && electron-builder --win --x64",
+    "build:win:arm64": "electron-vite build && electron-builder --win --arm64",
     "build:linux": "electron-vite build && electron-builder --linux",
     "build:all": "electron-vite build && electron-builder --mac --win"
   },
@@ -23,8 +28,10 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^4.7.0",
     "electron": "^41.6.1",
-    "electron-builder": "^26.15.3",
+    "electron-builder": "^26.15.7",
     "electron-vite": "^5.0.0",
+    "patch-package": "^8.0.1",
+    "postinstall-postinstall": "^2.1.0",
     "typescript": "^7.0.2",
     "vite": "^6.4.3"
   },
@@ -55,9 +62,31 @@
     "directories": {
       "output": "release"
     },
+    "afterPack": "./scripts/afterPack.js",
     "mac": {
       "target": "dmg",
-      "category": "public.app-category.productivity"
+      "category": "public.app-category.productivity",
+      "identity": null
+    },
+    "dmg": {
+      "title": "Shiba Track",
+      "window": {
+        "width": 540,
+        "height": 380
+      },
+      "contents": [
+        {
+          "x": 150,
+          "y": 190,
+          "type": "file"
+        },
+        {
+          "x": 390,
+          "y": 190,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
     },
     "win": {
       "target": "nsis"

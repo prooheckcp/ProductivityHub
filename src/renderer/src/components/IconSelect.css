@@ -1,0 +1,97 @@
+.icon-select {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.icon-select__trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  font: inherit;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s;
+}
+
+.icon-select__trigger:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+.icon-select__trigger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.icon-select__trigger svg {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+}
+
+.icon-select__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.icon-select__icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.icon-select__emoji {
+  font-size: 17px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.icon-select__menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, 0.18));
+}
+
+.icon-select__option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  font: inherit;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+}
+
+.icon-select__option:hover {
+  background: var(--surface-hover);
+}
+
+.icon-select__option--active {
+  background: var(--surface-active);
+  font-weight: 600;
+}

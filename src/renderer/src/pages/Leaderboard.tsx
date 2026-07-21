@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import Card from '../components/Card'
 import EmptyState from '../components/EmptyState'
+import IconSelect, { type IconOption } from '../components/IconSelect'
 import { useAuth } from '../auth/AuthContext'
 import { useProfile } from '../auth/ProfileContext'
 import {
@@ -122,6 +123,18 @@ export default function Leaderboard(): JSX.Element {
     [country, item]
   )
 
+  const itemOptions = useMemo<IconOption[]>(
+    () => items.map((it) => ({ value: it, label: it, iconUrl: category === 'code' ? languageIcon(it) : null })),
+    [items, category]
+  )
+  const countryOptions = useMemo<IconOption[]>(
+    () => [
+      { value: '', label: 'All countries', emoji: '🌍' },
+      ...countries.map((c) => ({ value: c, label: countryName(c), emoji: countryFlag(c) }))
+    ],
+    [countries]
+  )
+
   if (!signedIn) {
     return (
       <>
@@ -164,30 +177,20 @@ export default function Leaderboard(): JSX.Element {
       {/* Filters */}
       <Card className="lb-card lb-filters">
         <div className="lb-filter">
-          <label htmlFor="lb-item">{meta.itemLabel}</label>
-          <div className="lb-filter__with-icon">
-            {iconUrl && <img className="lb-filter__icon" src={iconUrl} alt="" />}
-            <select id="lb-item" value={item} onChange={(e) => setItem(e.target.value)} disabled={!items.length}>
-              {items.length === 0 && <option value="">No data yet</option>}
-              {items.map((it) => (
-                <option key={it} value={it}>
-                  {it}
-                </option>
-              ))}
-            </select>
-          </div>
+          <label>{meta.itemLabel}</label>
+          <IconSelect
+            value={item}
+            options={itemOptions}
+            onChange={setItem}
+            disabled={!items.length}
+            placeholder={items.length ? 'Select…' : 'No data yet'}
+            ariaLabel={meta.itemLabel}
+          />
         </div>
 
         <div className="lb-filter">
-          <label htmlFor="lb-country">Country</label>
-          <select id="lb-country" value={country} onChange={(e) => setCountry(e.target.value)}>
-            <option value="">🌍 All countries</option>
-            {countries.map((c) => (
-              <option key={c} value={c}>
-                {countryFlag(c)} {countryName(c)}
-              </option>
-            ))}
-          </select>
+          <label>Country</label>
+          <IconSelect value={country} options={countryOptions} onChange={setCountry} ariaLabel="Country" />
         </div>
 
         <div className="lb-periods" role="tablist">
