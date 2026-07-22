@@ -4,6 +4,7 @@ import type {
   AchievementProgress,
   Alarm,
   AlarmFormInput,
+  AppDetailRange,
   AppDetailResult,
   AppSettings,
   AuthMode,
@@ -71,7 +72,7 @@ export type Api = {
     get: (query: StatsQuery) => Promise<StatsResult>
     getTodo: (query: StatsQuery) => Promise<TodoStatsResult>
     getCode: (query: StatsQuery) => Promise<CodeStatsResult>
-    getAppDetail: (appName: string) => Promise<AppDetailResult>
+    getAppDetail: (appName: string, range: AppDetailRange) => Promise<AppDetailResult>
   }
   code: {
     getStatus: () => Promise<CodeTrackerStatus>

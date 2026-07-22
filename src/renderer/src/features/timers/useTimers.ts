@@ -6,12 +6,46 @@ export function useTimers() {
   const [loading, setLoading] = useState(true)
   const [now, setNow] = useState(() => Date.now())
 
-  useEffect(() => {
-    window.api.timers.list().then((list) => {
-      setTimers(list)
-      setLoading(false)
+  // Re-fetch from the main store, but keep the SAME array reference when nothing
+  // relevant changed — otherwise every poll would restart the RAF clock effect
+  // below. This is also what keeps the page in sync with the floating overlay
+  // window (a separate renderer): pausing/starting there updates the store, and
+  // this poll reflects it here within ~1s instead of the page ticking a phantom
+  // time and then "reverting" when you press pause on the page.
+  const refresh = useCallback(async () => {
+    const list = await window.api.timers.list()
+    setTimers((prev) => {
+      const unchanged =
+        prev.length === list.length &&
+        prev.every((t, i) => {
+          const n = list[i]
+          return (
+            n &&
+            t.id === n.id &&
+            t.runningSince === n.runningSince &&
+            t.accumulatedMs === n.accumulatedMs &&
+            t.updatedAt === n.updatedAt
+          )
+        })
+      return unchanged ? prev : list
     })
+    setLoading(false)
   }, [])
+
+  useEffect(() => {
+    refresh()
+    const poll = setInterval(refresh, 1000)
+    const onVisible = (): void => {
+      if (document.visibilityState === 'visible') refresh()
+    }
+    window.addEventListener('focus', refresh)
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearInterval(poll)
+      window.removeEventListener('focus', refresh)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [refresh])
 
   // Drive the live clock with requestAnimationFrame, sampling Date.now() every
   // frame and *immediately* on start. setInterval was stale on the first render

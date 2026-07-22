@@ -7,11 +7,16 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
-  color: var(--text-primary);
+  /* On-background tokens (like PageHeader) so the clock stays legible over every
+     theme gradient — not the card-only --text-primary, which vanished on many. */
+  color: var(--on-bg-text);
+  text-shadow: var(--on-bg-text-shadow);
 }
 
 .live-clock__date {
   margin-top: 2px;
   font-size: 12.5px;
-  color: var(--text-secondary);
+  color: var(--on-bg-text);
+  opacity: 0.75;
+  text-shadow: var(--on-bg-text-shadow);
 }

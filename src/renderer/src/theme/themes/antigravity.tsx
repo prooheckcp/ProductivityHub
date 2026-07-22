@@ -4,15 +4,18 @@ import type { DecorationProps, Gradient } from './types'
 
 const CELL = 46
 const JITTER = 0.8
-const INFLUENCE_RADIUS = 150
-const MAX_DISPLACEMENT = 22
-const EASE = 0.12
-const HUE_SPAN = 200
-const HUE_SPEED = 6 // degrees per second, slow drift across the whole field
-// Slow spiral swirl: every dot orbits the screen center, but inner dots turn
-// faster than outer ones (differential rotation), so the field winds up into
-// spiral arms over time. Radians per second, kept gentle.
-const SPIRAL_SPEED = 0.05
+const INFLUENCE_RADIUS = 200
+const MAX_DISPLACEMENT = 42
+const EASE = 0.19
+const HUE_SPAN = 360 // full rainbow spread across the field
+const HUE_SPEED = 30 // degrees per second — lively rainbow drift
+// How far (in degrees) a dot's hue is shoved when the cursor is right on it, so
+// the color visibly ripples around the pointer, not just brightens.
+const HUE_MOUSE_SHIFT = 150
+// Spiral swirl: every dot orbits the screen center, but inner dots turn faster
+// than outer ones (differential rotation), so the field winds into spiral arms.
+// Radians per second.
+const SPIRAL_SPEED = 0.16
 // How much the orbit slows with distance from center — larger = tighter winding.
 const SPIRAL_FALLOFF = 420
 
@@ -133,15 +136,17 @@ function AntigravityDecoration(_props: DecorationProps): JSX.Element {
         dot.x += (targetX - dot.x) * EASE
         dot.y += (targetY - dot.y) * EASE
 
-        const twinkle = 0.85 + 0.15 * Math.sin(elapsed * 1.4 + dot.phase)
-        const hue = (dot.hue + globalHue) % 360
-        const lightness = 62 + strength * 20
-        const saturation = 70 + strength * 25
+        const twinkle = 0.8 + 0.2 * Math.sin(elapsed * 2.2 + dot.phase)
+        // Hue = per-dot base + global rainbow drift + a strong local shove near
+        // the cursor, so colors swirl around the pointer.
+        const hue = (dot.hue + globalHue + strength * HUE_MOUSE_SHIFT + 360) % 360
+        const lightness = 60 + strength * 22
+        const saturation = Math.min(100, 82 + strength * 18)
 
         ctx!.beginPath()
-        ctx!.arc(dot.x, dot.y, dot.radius + strength * 2.5, 0, Math.PI * 2)
+        ctx!.arc(dot.x, dot.y, dot.radius + strength * 3.5, 0, Math.PI * 2)
         ctx!.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`
-        ctx!.globalAlpha = (0.3 + strength * 0.6) * twinkle
+        ctx!.globalAlpha = Math.min(1, (0.45 + strength * 0.55) * twinkle)
         ctx!.fill()
       }
       frame = requestAnimationFrame(tick)

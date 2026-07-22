@@ -11,6 +11,10 @@ type StatsChartProps = {
   entries: StatsEntry[]
   view: ChartView
   onSelect?: (label: string) => void
+  /** Max bars/slices to show (default 8 — good for app rankings). */
+  limit?: number
+  /** Show the per-tick app icon (default true). Off for time-series breakdowns. */
+  showTickIcons?: boolean
 }
 
 type TickProps = {
@@ -18,18 +22,34 @@ type TickProps = {
   y?: number
   payload?: { value: string }
   icons: Record<string, string | null>
+  showIcons: boolean
 }
 
-function AppTick({ x = 0, y = 0, payload, icons }: TickProps): JSX.Element {
+function AppTick({ x = 0, y = 0, payload, icons, showIcons }: TickProps): JSX.Element {
   const value = payload?.value ?? ''
-  const iconUrl = icons[value]
+  const iconUrl = showIcons ? icons[value] : null
+  // Long labels overlap when laid out horizontally, so the label is tilted
+  // (-32°, right-anchored to the tick) and truncated — the icon stays upright.
+  const label = value.length > 16 ? value.slice(0, 15) + '…' : value
   return (
-    <foreignObject x={x - 36} y={y} width={72} height={46}>
-      <div className="stats-chart__tick">
-        {iconUrl ? <img src={iconUrl} alt="" /> : <span className="stats-chart__tick-dot" />}
-        <span className="stats-chart__tick-label">{value}</span>
-      </div>
-    </foreignObject>
+    <g transform={`translate(${x},${y})`}>
+      {showIcons &&
+        (iconUrl ? (
+          <image href={iconUrl} x={-9} y={2} width={18} height={18} preserveAspectRatio="xMidYMid meet" />
+        ) : (
+          <circle cx={0} cy={11} r={4} fill="var(--text-tertiary)" />
+        ))}
+      <text
+        transform="rotate(-32)"
+        x={-8}
+        y={showIcons ? 34 : 14}
+        textAnchor="end"
+        fontSize={11}
+        fill="var(--text-secondary)"
+      >
+        {label}
+      </text>
+    </g>
   )
 }
 
@@ -58,9 +78,15 @@ function AppLegend({
   )
 }
 
-export default function StatsChart({ entries, view, onSelect }: StatsChartProps): JSX.Element {
-  const shown = entries.slice(0, 8)
-  const icons = useAppIcons(shown)
+export default function StatsChart({
+  entries,
+  view,
+  onSelect,
+  limit = 8,
+  showTickIcons = true
+}: StatsChartProps): JSX.Element {
+  const shown = entries.slice(0, limit)
+  const icons = useAppIcons(showTickIcons ? shown : [])
   const data = shown.map((entry) => ({ name: entry.label, minutes: Math.round(entry.ms / 60000) }))
 
   if (data.length === 0) {
@@ -101,10 +127,10 @@ export default function StatsChart({ entries, view, onSelect }: StatsChartProps)
 
   return (
     <div className="stats-chart">
-      <ResponsiveContainer width="100%" height={260}>
-        <BarChart data={data} margin={{ bottom: 24 }}>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={data} margin={{ bottom: 48 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-          <XAxis dataKey="name" interval={0} height={50} tick={<AppTick icons={icons} />} />
+          <XAxis dataKey="name" interval={0} height={92} tick={<AppTick icons={icons} showIcons={showTickIcons} />} />
           <YAxis tick={{ fontSize: 11 }} />
           <Tooltip formatter={(value) => [`${value}m`, 'Time']} />
           <Bar dataKey="minutes" fill="#6366f1" radius={[4, 4, 0, 0]} onClick={handleClick} cursor={cursor} />

@@ -1,6 +1,7 @@
 import { BrowserWindow, ipcMain, shell } from 'electron'
 import type {
   AlarmFormInput,
+  AppDetailRange,
   AppSettings,
   CategoryFormInput,
   CountdownTimerFormInput,
@@ -183,7 +184,9 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('stats:get', (_event, query: StatsQuery) => getStats(query))
   ipcMain.handle('stats:getTodo', (_event, query: StatsQuery) => getTodoStats(query))
   ipcMain.handle('stats:getCode', (_event, query: StatsQuery) => getCodeStats(query))
-  ipcMain.handle('stats:getAppDetail', (_event, appName: string) => getAppDetail(appName))
+  ipcMain.handle('stats:getAppDetail', (_event, appName: string, range: AppDetailRange = 'all') =>
+    getAppDetail(appName, range)
+  )
   ipcMain.handle('code:getStatus', () => getCodeTrackerStatus())
   ipcMain.handle('code:resetStats', () => {
     resetCodingSessions()

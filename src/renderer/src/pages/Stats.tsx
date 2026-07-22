@@ -39,6 +39,14 @@ const VIEWS: { key: ChartView; label: string }[] = [
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
+const RANGE_LABEL_FULL: Record<StatsRangeKey, string> = {
+  '1d': 'last 24 hours',
+  '7d': 'last 7 days',
+  '30d': 'last 30 days',
+  all: 'all time',
+  custom: 'custom range'
+}
+
 function toDateInputValue(ms: number): string {
   return new Date(ms).toISOString().slice(0, 10)
 }
@@ -220,12 +228,14 @@ export default function Stats(): JSX.Element {
                   <StatsChart entries={stats.apps} view={view} onSelect={setSelectedApp} />
                 </Card>
                 <Card>
-                  <h2 className="stats-section-title">All-time app leaderboard</h2>
-                  {stats.appsAllTime.length === 0 ? (
-                    <EmptyState title="No app activity tracked yet" />
+                  <h2 className="stats-section-title">
+                    {range === 'all' ? 'All-time app leaderboard' : `App leaderboard · ${RANGE_LABEL_FULL[range]}`}
+                  </h2>
+                  {stats.apps.length === 0 ? (
+                    <EmptyState title="No app activity tracked in this range" />
                   ) : (
                     <ol className="leaderboard">
-                      {stats.appsAllTime.map((entry, index) => (
+                      {stats.apps.map((entry, index) => (
                         <li key={entry.key} className="leaderboard__row">
                           <span className="leaderboard__rank">{MEDALS[index] ?? index + 1}</span>
                           <button

@@ -20,6 +20,16 @@ const SUN_X = 0.72
 
 const BALL_COLORS = ['#ff5a5f', '#ffd23f', '#3ea7ff', '#37d67a', '#ff8f3f', '#a66bff']
 
+// The sidebar (220px) overlays the left of the window and hides anything drawn
+// under it. Keep the balls' left wall past it so a kicked ball can't vanish
+// behind the sidebar.
+const SIDEBAR_INSET = 236
+const TOWEL_COLORS = [
+  ['#ff5a5f', '#ffe0e1'],
+  ['#3ea7ff', '#dcefff'],
+  ['#37d67a', '#e0f7e9']
+]
+
 // Ball physics
 const GRAVITY = 0.45 // pull while airborne, above the water surface
 const BUOYANCY = 0.06 // spring that floats a submerged ball back to the surface
@@ -79,9 +89,10 @@ function SummerDecoration(_props: DecorationProps): JSX.Element {
       canvas!.style.height = `${height}px`
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
 
-      // (re)seat each ball at its resting fraction of the new viewport
+      // (re)seat each ball at its resting fraction of the new viewport, but
+      // never under the sidebar.
       for (const b of balls) {
-        b.x = b.fx * width
+        b.x = Math.max(b.fx * width, SIDEBAR_INSET + b.size + 8)
         b.y = b.fy * height
         b.vx = 0
         b.vy = 0
@@ -183,10 +194,11 @@ function SummerDecoration(_props: DecorationProps): JSX.Element {
       b.x += b.vx
       b.y += b.vy
 
-      // bounce off the side walls
+      // bounce off the side walls — left wall sits past the sidebar
       const r = b.size
-      if (b.x < r) {
-        b.x = r
+      const leftWall = SIDEBAR_INSET + r
+      if (b.x < leftWall) {
+        b.x = leftWall
         b.vx = Math.abs(b.vx) * 0.7
       } else if (b.x > width - r) {
         b.x = width - r
@@ -293,6 +305,113 @@ function SummerDecoration(_props: DecorationProps): JSX.Element {
       }
     }
 
+    // A striped beach towel laid flat on the dry sand (drawn in perspective as a
+    // trapezoid so it reads as lying down).
+    function drawTowel(cx: number, cy: number, w: number, colors: string[], tilt: number): void {
+      const h = w * 1.45
+      ctx!.save()
+      ctx!.translate(cx, cy)
+      ctx!.rotate(tilt)
+      // soft shadow
+      ctx!.fillStyle = 'rgba(120, 85, 30, 0.18)'
+      ctx!.beginPath()
+      ctx!.ellipse(0, h * 0.12, w * 0.62, h * 0.5, 0, 0, Math.PI * 2)
+      ctx!.fill()
+      // towel body (top narrower than bottom for a bit of perspective)
+      const topW = w * 0.82
+      ctx!.beginPath()
+      ctx!.moveTo(-topW / 2, -h / 2)
+      ctx!.lineTo(topW / 2, -h / 2)
+      ctx!.lineTo(w / 2, h / 2)
+      ctx!.lineTo(-w / 2, h / 2)
+      ctx!.closePath()
+      ctx!.fillStyle = colors[0]
+      ctx!.fill()
+      // stripes across the towel
+      ctx!.save()
+      ctx!.clip()
+      ctx!.fillStyle = colors[1]
+      const stripes = 5
+      for (let i = 0; i < stripes; i++) {
+        const t0 = i / stripes
+        if (i % 2 === 0) continue
+        ctx!.fillRect(-w / 2, -h / 2 + t0 * h, w, h / stripes)
+      }
+      ctx!.restore()
+      // border
+      ctx!.strokeStyle = 'rgba(255,255,255,0.75)'
+      ctx!.lineWidth = 2
+      ctx!.stroke()
+      ctx!.restore()
+    }
+
+    // A little sandcastle: a battlemented keep with a fluttering flag.
+    function drawSandcastle(cx: number, baseY: number, w: number, elapsed: number): void {
+      const h = w * 0.9
+      ctx!.save()
+      ctx!.translate(cx, baseY)
+      // shadow
+      ctx!.fillStyle = 'rgba(120, 85, 30, 0.16)'
+      ctx!.beginPath()
+      ctx!.ellipse(0, 4, w * 0.75, w * 0.2, 0, 0, Math.PI * 2)
+      ctx!.fill()
+      // body (trapezoid)
+      const topW = w * 0.7
+      const grad = ctx!.createLinearGradient(0, -h, 0, 0)
+      grad.addColorStop(0, '#e9cd8f')
+      grad.addColorStop(1, '#c9a25f')
+      ctx!.fillStyle = grad
+      ctx!.beginPath()
+      ctx!.moveTo(-w / 2, 0)
+      ctx!.lineTo(-topW / 2, -h)
+      ctx!.lineTo(topW / 2, -h)
+      ctx!.lineTo(w / 2, 0)
+      ctx!.closePath()
+      ctx!.fill()
+      // battlements along the top
+      const merlons = 4
+      const mW = topW / (merlons * 2 - 1)
+      ctx!.fillStyle = '#d8b571'
+      for (let i = 0; i < merlons; i++) {
+        ctx!.fillRect(-topW / 2 + i * mW * 2, -h - mW, mW, mW)
+      }
+      // door
+      ctx!.fillStyle = 'rgba(90, 62, 28, 0.7)'
+      ctx!.beginPath()
+      ctx!.moveTo(-w * 0.12, 0)
+      ctx!.lineTo(-w * 0.12, -h * 0.42)
+      ctx!.quadraticCurveTo(0, -h * 0.56, w * 0.12, -h * 0.42)
+      ctx!.lineTo(w * 0.12, 0)
+      ctx!.closePath()
+      ctx!.fill()
+      // flag pole + waving flag
+      const poleTop = -h - mW - w * 0.5
+      ctx!.strokeStyle = '#8a6b3f'
+      ctx!.lineWidth = 2
+      ctx!.beginPath()
+      ctx!.moveTo(0, -h - mW)
+      ctx!.lineTo(0, poleTop)
+      ctx!.stroke()
+      const wave = Math.sin(elapsed * 4) * 2
+      ctx!.fillStyle = '#ff5a5f'
+      ctx!.beginPath()
+      ctx!.moveTo(0, poleTop)
+      ctx!.lineTo(w * 0.34, poleTop + w * 0.09 + wave)
+      ctx!.lineTo(0, poleTop + w * 0.22)
+      ctx!.closePath()
+      ctx!.fill()
+      ctx!.restore()
+    }
+
+    // Static beach props on the dry sand near the viewer, kept right of the sidebar.
+    function drawBeachItems(elapsed: number): void {
+      const sandY = Math.min(height - 26, shoreY + (height - shoreY) * 0.62)
+      const towelW = Math.max(46, Math.min(74, width * 0.05))
+      drawTowel(SIDEBAR_INSET + 90, sandY + 6, towelW, TOWEL_COLORS[0], -0.18)
+      drawTowel(SIDEBAR_INSET + 90 + towelW * 1.7, sandY + 18, towelW, TOWEL_COLORS[1], 0.12)
+      drawSandcastle(width * 0.8, sandY + towelW * 0.7, Math.max(44, Math.min(70, width * 0.05)), elapsed)
+    }
+
     // Tap a ball to whack it: kick it away from the tap point with an upward pop
     // and a bit of spin, so it splashes back down onto the water.
     function onClick(e: MouseEvent): void {
@@ -324,6 +443,7 @@ function SummerDecoration(_props: DecorationProps): JSX.Element {
         drawBall(b)
       }
       drawShore(elapsed)
+      drawBeachItems(elapsed)
 
       frame = requestAnimationFrame(tick)
     }

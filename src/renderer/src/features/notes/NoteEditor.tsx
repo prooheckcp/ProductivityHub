@@ -36,6 +36,10 @@ export default function NoteEditor({ note, onUpdate, onRequestDelete, resolveFil
   const [colorOpen, setColorOpen] = useState(false)
   // The currently focused block — new blocks are inserted right after it.
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  // One-shot "seed" handed to a markdown block when the user starts typing with
+  // no text box focused (see the window keydown handler below).
+  const [seed, setSeed] = useState<{ id: string; char: string; nonce: number } | null>(null)
+  const seedNonce = useRef(0)
   // Which block is being dragged (dimmed) and where a drop would land.
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dropGap, setDropGap] = useState<number | null>(null)
@@ -61,6 +65,34 @@ export default function NoteEditor({ note, onUpdate, onRequestDelete, resolveFil
       const { title, color, blocks } = latestRef.current
       void onUpdate(note.id, { title, color, groupId: note.groupId, blocks })
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Start typing with no text box focused → focus the last markdown block (or
+  // create one if the note has none) and feed it the first character.
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent): void {
+      if (e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return
+      if (e.key.length !== 1) return // ignore Enter/Tab/arrows/etc.
+      const el = document.activeElement as HTMLElement | null
+      if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable)) return
+
+      e.preventDefault()
+      const nonce = ++seedNonce.current
+      const current = latestRef.current.blocks
+      const lastMarkdown = [...current].reverse().find((b) => b.type === 'markdown')
+      if (lastMarkdown) {
+        setSelectedId(lastMarkdown.id)
+        setSeed({ id: lastMarkdown.id, char: e.key, nonce })
+      } else {
+        const nb: NoteBlock = { id: crypto.randomUUID(), type: 'markdown', text: '' }
+        setBlocks((prev) => [...prev, nb])
+        setSelectedId(nb.id)
+        setSeed({ id: nb.id, char: e.key, nonce })
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -365,7 +397,11 @@ export default function NoteEditor({ note, onUpdate, onRequestDelete, resolveFil
                 <GripIcon size={14} />
               </span>
               <div className="note-editor__block-content">
-                <NoteBlockView block={block} onReplace={(next) => replaceBlock(block.id, next)} />
+                <NoteBlockView
+                  block={block}
+                  onReplace={(next) => replaceBlock(block.id, next)}
+                  seed={seed && seed.id === block.id ? { char: seed.char, nonce: seed.nonce } : undefined}
+                />
               </div>
             </div>
           ))

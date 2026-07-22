@@ -96,10 +96,13 @@ export type StatsResult = {
   availableCategories: string[]
 }
 
-// ---- Per-app detail (weekday / month / daily-average breakdown) ----
+// ---- Per-app detail (time-window breakdown) ----
+
+export type AppDetailRange = 'today' | 'week' | 'month' | 'year' | 'all'
 
 export type AppDetailQuery = {
   appName: string
+  range: AppDetailRange
 }
 
 // ---- To-Do stats (completed tasks over a range) ----
@@ -124,10 +127,18 @@ export type AppDetailBucket = {
 export type AppDetailResult = {
   appName: string
   appPath: string | null
+  range: AppDetailRange
+  /** All-time total, regardless of the selected range. */
   totalMs: number
-  averagePerDayMs: number
-  byWeekday: AppDetailBucket[]
-  byMonth: AppDetailBucket[]
+  /** Time tracked within the selected range. */
+  windowMs: number
+  /** Average per sub-unit within the range (see averageUnit). */
+  averageMs: number
+  /** Sub-unit the average is measured over: 'hour' | 'day' | 'month'. */
+  averageUnit: string
+  /** Breakdown buckets appropriate to the range, in chronological order. */
+  breakdown: AppDetailBucket[]
+  breakdownTitle: string
 }
 
 // ---- Settings ----

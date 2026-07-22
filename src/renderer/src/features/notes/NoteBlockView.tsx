@@ -8,10 +8,16 @@ import { toFileUrl } from '../../utils/fileUrl'
 import '../todo/MarkdownField.css'
 import './NoteBlockView.css'
 
+// When the user starts typing with no text box focused, the editor targets a
+// markdown block and passes a one-shot "seed": enter edit mode and append this
+// character. `nonce` changes each time so repeated triggers re-fire the effect.
+type Seed = { char: string; nonce: number }
+
 type NoteBlockViewProps = {
   block: NoteBlock
   /** Replace this block with zero (remove), one (update) or many (split) blocks. */
   onReplace: (blocks: NoteBlock[]) => void
+  seed?: Seed
 }
 
 // A pasted http(s)/data URL is used verbatim; a stored filesystem path is routed
@@ -30,8 +36,8 @@ const MARKDOWN_COMPONENTS = {
   )
 }
 
-export default function NoteBlockView({ block, onReplace }: NoteBlockViewProps): JSX.Element {
-  if (block.type === 'markdown') return <MarkdownBlock block={block} onReplace={onReplace} />
+export default function NoteBlockView({ block, onReplace, seed }: NoteBlockViewProps): JSX.Element {
+  if (block.type === 'markdown') return <MarkdownBlock block={block} onReplace={onReplace} seed={seed} />
   if (block.type === 'table') return <TableBlock block={block} onReplace={onReplace} />
   if (block.type === 'image') return <ImageBlock block={block} onReplace={onReplace} />
   if (block.type === 'drawing') return <DrawingBlock block={block} onReplace={onReplace} />
@@ -41,13 +47,31 @@ export default function NoteBlockView({ block, onReplace }: NoteBlockViewProps):
 
 function MarkdownBlock({
   block,
-  onReplace
+  onReplace,
+  seed
 }: {
   block: Extract<NoteBlock, { type: 'markdown' }>
   onReplace: (blocks: NoteBlock[]) => void
+  seed?: Seed
 }): JSX.Element {
   const [editing, setEditing] = useState(block.text.trim().length === 0)
   const [draft, setDraft] = useState(block.text)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Type-to-focus: when the editor seeds this block, enter edit mode, append the
+  // typed character, and place the caret at the end.
+  useEffect(() => {
+    if (!seed) return
+    setEditing(true)
+    setDraft((prev) => prev + seed.char)
+    requestAnimationFrame(() => {
+      const ta = textareaRef.current
+      if (!ta) return
+      ta.focus()
+      ta.setSelectionRange(ta.value.length, ta.value.length)
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seed?.nonce])
 
   function commit(): void {
     setEditing(false)
@@ -70,6 +94,7 @@ function MarkdownBlock({
   if (editing) {
     return (
       <textarea
+        ref={textareaRef}
         className="note-block__textarea"
         value={draft}
         autoFocus

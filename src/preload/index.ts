@@ -4,6 +4,7 @@ import { electronAPI } from '@electron-toolkit/preload'
 import type {
   AchievementDef,
   AlarmFormInput,
+  AppDetailRange,
   AppSettings,
   CategoryFormInput,
   CountdownTimerFormInput,
@@ -67,7 +68,8 @@ const api = {
     get: (query: StatsQuery) => ipcRenderer.invoke('stats:get', query),
     getTodo: (query: StatsQuery) => ipcRenderer.invoke('stats:getTodo', query),
     getCode: (query: StatsQuery) => ipcRenderer.invoke('stats:getCode', query),
-    getAppDetail: (appName: string) => ipcRenderer.invoke('stats:getAppDetail', appName)
+    getAppDetail: (appName: string, range: AppDetailRange) =>
+      ipcRenderer.invoke('stats:getAppDetail', appName, range)
   },
   code: {
     getStatus: () => ipcRenderer.invoke('code:getStatus'),

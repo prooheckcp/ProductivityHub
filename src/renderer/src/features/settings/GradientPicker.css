@@ -53,6 +53,97 @@
   background: linear-gradient(to top, rgba(0, 0, 0, 0.35), transparent);
 }
 
+/* ---- Animated ("effect") theme swatches ---- */
+.gradient-swatch--effect {
+  height: 68px;
+}
+
+/* Motif emoji pulled from the theme name, centered above the label band. */
+.gradient-swatch__motif {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 14px;
+  font-size: 26px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+  pointer-events: none;
+}
+
+/* Periodic light sweep so the swatch reads as "this one moves". */
+.gradient-swatch__shine {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.gradient-swatch__shine::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -60%;
+  width: 45%;
+  height: 140%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  transform: skewX(-18deg);
+  animation: gradient-shine 3.4s ease-in-out infinite;
+}
+
+@keyframes gradient-shine {
+  0% {
+    left: -60%;
+  }
+  55%,
+  100% {
+    left: 130%;
+  }
+}
+
+.gradient-swatch__live {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.38);
+  color: #ffffff;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.gradient-swatch__live-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: #4ade80;
+  animation: gradient-live-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes gradient-live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gradient-swatch__shine::before,
+  .gradient-swatch__live-dot {
+    animation: none;
+  }
+}
+
 .gradient-swatch__check {
   position: absolute;
   top: 4px;
